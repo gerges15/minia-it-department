@@ -2,10 +2,10 @@ import "./Login.css";
 export const Login = function () {
   return (
     <>
-      <div className="it">
+      <header className="it">
         <img src="Logos/Light_Logo_IT2.svg" alt="it logo" />
         <p>It Department</p>
-      </div>
+      </header>
 
       <form className="login">
         <h1>Login</h1>

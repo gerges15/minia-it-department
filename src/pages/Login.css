@@ -2,9 +2,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 66rem;
 }
 .login {
+  font-size: 2.2rem;
   background: hsla(0, 0%, 100%, 0.3);
   border-radius: 5px;
   box-shadow: 0 0 10px 5px #ccc;
@@ -23,7 +24,7 @@ body {
   display: block;
   margin-top: 1.2rem;
   margin-bottom: 0;
-  font-size: 1.4rem;
+  font-size: 1.8rem;
 }
 
 .link {
@@ -34,7 +35,7 @@ body {
 .link a {
   color: black;
   text-decoration: none;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   transition: color 0.5s ease;
 }
 .link a:hover {
@@ -52,6 +53,7 @@ body {
   border: 1px solid #ccc;
   border-radius: 2px;
   padding: 0.5rem;
+  width: 32rem;
 }
 
 *:focus {
@@ -67,8 +69,8 @@ body {
   border-radius: 2px;
   border: 1px white solid;
   color: white;
-  font-size: 1.6rem;
-  margin-top: 2rem;
+  font-size: 1.8rem;
+  margin-top: 1.5rem;
   padding: 1rem;
   text-transform: uppercase;
   transition: color 0.5s ease-in-out, background 0.5s ease-in-out,
@@ -86,7 +88,7 @@ body {
 .it {
   align-items: center;
   display: flex;
-  font-size: 2rem;
+  font-size: 2.2rem;
   gap: 2rem;
   margin-bottom: 2rem;
 }
