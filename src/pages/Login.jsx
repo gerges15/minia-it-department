@@ -7,22 +7,23 @@ export const Login = function () {
         <p>It Department</p>
       </div>
 
-      <div className="login">
+      <form className="login">
         <h1>Login</h1>
         <div>
-          <p>Username</p>
+          <label htmlFor="user-name">Username</label>
           <input type="text" name="user-name" id="user-name" />
         </div>
         <div>
-          <p>Password</p>
-          <input type="password" name="user-name" id="user-name" />
+          <label htmlFor="user-password">Password</label>
+          <input type="password" name="user-password" id="user-password" />
         </div>
+
         <p className="link">
           <a href="">Forgot Password?</a>
         </p>
 
         <button>Let`s Go !</button>
-      </div>
+      </form>
     </>
   );
 };

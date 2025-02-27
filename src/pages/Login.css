@@ -2,23 +2,26 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh;
 }
 .login {
-  background: rgba(255, 255, 255, 0.5);
-  outline: white 1px solid;
-  margin: auto;
-  width: fit-content;
-  box-shadow: 0 0 10px 5px #ccc;
+  background: hsla(0, 0%, 100%, 0.3);
   border-radius: 5px;
+  box-shadow: 0 0 10px 5px #ccc;
+  margin: auto;
+  outline: white 1px solid;
   padding: 2.5rem;
+  width: fit-content;
 }
 
 .login h1 {
-  margin-top: 0;
   padding-top: 0;
+  margin-top: 0;
 }
 
-.login p {
+.login label {
+  display: block;
+  margin-top: 1.2rem;
   margin-bottom: 0;
   font-size: 1.4rem;
 }
@@ -60,36 +63,36 @@ body {
 }
 
 .login button {
-  border: 1px white solid;
-  padding: 1rem;
-  margin-top: 2rem;
-  border-radius: 2px;
-  font-size: 1.6rem;
-  color: white;
   background: #08d9d6;
+  border-radius: 2px;
+  border: 1px white solid;
+  color: white;
+  font-size: 1.6rem;
+  margin-top: 2rem;
+  padding: 1rem;
   text-transform: uppercase;
   transition: color 0.5s ease-in-out, background 0.5s ease-in-out,
     border 0.5s ease-in-out;
 }
 
 .login button:hover {
-  cursor: pointer;
-  border: black 1px solid;
-  border-radius: 2px;
-  color: black;
   background: white;
-}
-
-div img {
-  width: 60px;
-  height: 60px;
-  border-right: 1px solid palegreen;
+  border-radius: 2px;
+  border: black 1px solid;
+  color: black;
+  cursor: pointer;
 }
 
 .it {
-  display: flex;
   align-items: center;
-  margin-bottom: 2rem;
-  gap: 2rem;
+  display: flex;
   font-size: 2rem;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.it img {
+  width: 60px;
+  height: 60px;
+  border-right: 1px solid palegreen;
 }
