@@ -1,0 +1,13 @@
+@font-face {
+  font-family: "montserrat-r";
+  src: url("../public/fonts/Montserrat/Montserrat-Regular.ttf");
+}
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-size: 1.6rem;
+  height: 100vh;
+  font-family: "montserrat-r";
+}
