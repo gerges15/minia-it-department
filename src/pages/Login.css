@@ -14,7 +14,7 @@ body {
   width: fit-content;
 }
 
-.login h1 {
+.login-header {
   padding-top: 0;
   margin-top: 0;
 }
@@ -26,22 +26,22 @@ body {
   font-size: 1.8rem;
 }
 
-.link {
+.forgot {
   margin-top: 0.1rem;
   text-align: right;
 }
 
-.link a {
+.forgot-link {
   color: black;
   text-decoration: none;
   font-size: 1.6rem;
   transition: color 0.5s ease;
 }
-.link a:hover {
+.forgot-link:hover {
   color: purple;
 }
 
-.login button {
+.login-btn {
   width: 100%;
   margin: 0;
   padding: 0;
@@ -63,7 +63,7 @@ body {
   border: 1px solid lightblue;
 }
 
-.login button {
+.login-btn {
   background: #08d9d6;
   border-radius: 2px;
   border: 1px white solid;
@@ -76,7 +76,7 @@ body {
     border 0.5s ease-in-out;
 }
 
-.login button:hover {
+.login-btn:hover {
   background: white;
   border-radius: 2px;
   border: black 1px solid;
@@ -84,16 +84,8 @@ body {
   cursor: pointer;
 }
 
-.it {
-  align-items: center;
-  display: flex;
-  font-size: 2.2rem;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.it img {
-  width: 60px;
-  height: 60px;
-  border-right: 1px solid palegreen;
+*,
+*::after,
+*::before {
+  transition: all 0.3 linear;
 }
