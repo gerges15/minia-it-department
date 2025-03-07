@@ -17,6 +17,7 @@ body {
 .login__form-header {
   padding-top: 0;
   margin-top: 0;
+  font-size: 2.5rem;
 }
 
 .login__form label {
@@ -52,7 +53,7 @@ body {
   border: 1px solid #ccc;
   border-radius: 2px;
   padding: 0.5rem;
-  width: 32rem;
+  width: 28rem;
 }
 
 *:focus {
