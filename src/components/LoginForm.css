@@ -3,7 +3,7 @@ body {
   justify-content: center;
   align-items: center;
 }
-.login {
+.login__form {
   font-size: 2.2rem;
   background: hsla(0, 0%, 100%, 0.3);
   border-radius: 5px;
@@ -14,12 +14,12 @@ body {
   width: fit-content;
 }
 
-.login-header {
+.login__form-header {
   padding-top: 0;
   margin-top: 0;
 }
 
-.login label {
+.login__form label {
   display: block;
   margin-top: 1.2rem;
   margin-bottom: 0;
@@ -41,14 +41,14 @@ body {
   color: purple;
 }
 
-.login-btn {
+.login__form-btn {
   width: 100%;
   margin: 0;
   padding: 0;
   margin-top: 2rem;
 }
 
-.login input {
+.login__form input {
   border: 1px solid #ccc;
   border-radius: 2px;
   padding: 0.5rem;
@@ -58,12 +58,12 @@ body {
 *:focus {
   outline: none;
 }
-.login input:focus {
+.login__form input:focus {
   outline: none;
   border: 1px solid lightblue;
 }
 
-.login-btn {
+.login__form-btn {
   background: #08d9d6;
   border-radius: 2px;
   border: 1px white solid;
@@ -76,7 +76,7 @@ body {
     border 0.5s ease-in-out;
 }
 
-.login-btn:hover {
+.login__form-btn:hover {
   background: white;
   border-radius: 2px;
   border: black 1px solid;
