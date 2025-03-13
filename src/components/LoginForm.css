@@ -60,7 +60,7 @@ body {
   outline: none;
 }
 .login__form input:focus {
-  outline: none;
+  outline: 1px solid lightblue;
   border: 1px solid lightblue;
 }
 
@@ -119,4 +119,8 @@ body {
 
 .eye:hover {
   cursor: pointer;
+}
+
+.login__form input {
+  font-size: medium;
 }

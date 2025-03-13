@@ -12,11 +12,16 @@ function LoginForm() {
   function handelShown() {
     setShow(!isShowed);
   }
+  const [inputValue, setValue] = useState("");
 
+  function handelInput(e) {
+    setValue(e.target.value);
+  }
+  console.log(inputValue);
   return (
     <Container className="login__form">
       <h1 className="login__form-header">Login</h1>
-      <Input {...userIdProps} />
+      <Input {...userIdProps} getValue={handelInput} />
       <Input
         className="pass-input"
         {...passwordProps}
@@ -38,4 +43,8 @@ function LoginForm() {
   );
 }
 
+function isValidId(ID) {
+  const numbersOnly = /^[0-9]*$/;
+  return numbersOnly.test(ID);
+}
 export default LoginForm;
