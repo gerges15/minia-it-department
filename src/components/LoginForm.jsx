@@ -4,6 +4,8 @@ import { userIdProps, passwordProps } from "../../public/Data/userData";
 
 import "./LoginForm.css";
 import { useState } from "react";
+import eyeRegular from "../../public/eye-regular.svg";
+import eyeSlash from "../../public/eye-slash-regular.svg";
 function LoginForm() {
   const [isShowed, setShow] = useState(false);
 
@@ -15,9 +17,13 @@ function LoginForm() {
     <Container className="login__form">
       <h1 className="login__form-header">Login</h1>
       <Input {...userIdProps} />
-      <Input {...passwordProps} type={isShowed ? "text" : "password"}>
-        <button style={{ position: "absolute" }} onClick={handelShown}>
-          {isShowed ? "Hide" : "Show"}
+      <Input
+        className="pass-input"
+        {...passwordProps}
+        type={isShowed ? "text" : "password"}
+      >
+        <button className="btn" onClick={handelShown}>
+          <img className="eye" src={isShowed ? eyeRegular : eyeSlash} />
         </button>
       </Input>
 

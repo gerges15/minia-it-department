@@ -90,3 +90,33 @@ body {
 *::before {
   transition: all 0.3 linear;
 }
+
+.pass-input {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  flex-direction: column;
+}
+
+.btn {
+  position: absolute;
+  border: none;
+  background: transparent;
+  padding: 0.4rem;
+  margin: 0;
+  margin-right: 0.5rem;
+}
+
+.btn:hover {
+  cursor: pointer;
+}
+
+.eye {
+  width: 20px;
+  height: 20px;
+}
+
+.eye:hover {
+  cursor: pointer;
+}
