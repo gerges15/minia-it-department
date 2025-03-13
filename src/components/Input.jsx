@@ -7,6 +7,7 @@ function Input({
   children,
   className,
   getValue,
+  error,
 }) {
   return (
     <div>
@@ -19,6 +20,7 @@ function Input({
           id={id}
           {...props}
           onChange={getValue}
+          className={error}
         />
         {children}
       </div>

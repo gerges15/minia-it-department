@@ -8,20 +8,24 @@ import eyeRegular from "../../public/eye-regular.svg";
 import eyeSlash from "../../public/eye-slash-regular.svg";
 function LoginForm() {
   const [isShowed, setShow] = useState(false);
+  const [id, setValue] = useState("");
 
   function handelShown() {
     setShow(!isShowed);
   }
-  const [inputValue, setValue] = useState("");
 
   function handelInput(e) {
     setValue(e.target.value);
   }
-  console.log(inputValue);
+
   return (
     <Container className="login__form">
       <h1 className="login__form-header">Login</h1>
-      <Input {...userIdProps} getValue={handelInput} />
+      <Input
+        {...userIdProps}
+        getValue={handelInput}
+        error={isValidId(id) ? "" : "error"}
+      />
       <Input
         className="pass-input"
         {...passwordProps}
@@ -45,6 +49,6 @@ function LoginForm() {
 
 function isValidId(ID) {
   const numbersOnly = /^[0-9]*$/;
-  return numbersOnly.test(ID);
+  return numbersOnly.test(ID) && ID != "";
 }
 export default LoginForm;

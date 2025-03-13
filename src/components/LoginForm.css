@@ -124,3 +124,11 @@ body {
 .login__form input {
   font-size: medium;
 }
+
+.error,
+.login__form .error:focus {
+  border: 1px #ff2e63 solid;
+  outline: 1px #ff2e63 solid;
+  transition: border 0.3s linear;
+  transition: outline 0.3s linear;
+}
