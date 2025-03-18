@@ -1,10 +1,12 @@
 import "./App.css";
+import Admin from "./pages/Admin";
 import { Login } from "./pages/Login";
 
 function App() {
   return (
     <>
-      <Login />
+      <Admin />
+      {/* <Login /> */}
     </>
   );
 }

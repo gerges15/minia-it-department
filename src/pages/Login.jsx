@@ -5,7 +5,7 @@ import LoginForm from "../components/LoginForm";
 
 export const Login = function () {
   return (
-    <Container {...containerStyles}>
+    <Container {...containerStyles} alignItems="center" margin="auto">
       <Logo />
       <LoginForm />
     </Container>
