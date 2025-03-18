@@ -4,8 +4,8 @@ import { userIdProps, passwordProps } from "../../public/Data/userData";
 
 import "./LoginForm.css";
 import { useState } from "react";
-import eyeRegular from "../../public/eye-regular.svg";
-import eyeSlash from "../../public/eye-slash-regular.svg";
+
+import EyeBtn from "./EyeBtn";
 function LoginForm() {
   const [isShowed, setShow] = useState(false);
   const [id, setValue] = useState("");
@@ -31,9 +31,7 @@ function LoginForm() {
         {...passwordProps}
         type={isShowed ? "text" : "password"}
       >
-        <button className="btn" onClick={handelShown}>
-          <img className="eye" src={isShowed ? eyeRegular : eyeSlash} />
-        </button>
+        <EyeBtn handelShown={handelShown} isShowed={isShowed} />
       </Input>
 
       <p className="forgot">
