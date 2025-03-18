@@ -1,0 +1,94 @@
+.admin {
+  display: flex;
+  width: inherit;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.sid-bar {
+  height: 100%;
+  max-width: 20%;
+  padding: 1rem 0;
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+  color: #eeeeee;
+  background: #393e46;
+  position: relative;
+}
+
+.admin header {
+  display: flex;
+  padding: 1rem;
+  border: 1px solid black;
+  min-width: 80%;
+  height: 60px;
+}
+.main {
+  display: flex;
+  padding: 1rem;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 2rem;
+  font-size: 1.6rem;
+  font-weight: 900;
+  border-bottom: 1px solid black;
+  height: 70px;
+  background: inherit;
+}
+.scroll {
+  overflow-y: auto;
+}
+.icon img {
+  width: 60px;
+  height: 60px;
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  align-items: normal;
+  grid-template-rows: auto;
+  padding: 0;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+  height: calc(100% - 70px);
+}
+
+.tab-item {
+  list-style: none;
+  padding: 2.8rem 2rem;
+  color: #eff3ea;
+  border-bottom: 1px solid #1b262c;
+}
+
+.tab-item:last-child {
+  border-bottom: none;
+}
+
+.tab-item:hover {
+  cursor: pointer;
+  background: #000;
+  color: white;
+}
+
+/* Scrollbar  */
+.scroll::-webkit-scrollbar {
+  width: 1rem;
+}
+
+.scroll::-webkit-scrollbar-track {
+  background-color: #e4e4e4;
+  visibility: hidden;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.3);
+}

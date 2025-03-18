@@ -4,11 +4,12 @@
 }
 html {
   font-size: 62.5%;
+  height: 100%;
 }
 
 body {
   font-size: 1.6rem;
-  height: 100vh;
+  height: 100%;
   font-family: "montserrat-r";
   margin: 0;
   padding: 0;
@@ -16,5 +17,6 @@ body {
 
 #root {
   height: 100%;
+  width: 100%;
   display: flex;
 }
