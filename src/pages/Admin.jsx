@@ -6,11 +6,18 @@ import { FaTable, FaEdit, FaBookOpen } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
 import { MdManageHistory } from "react-icons/md";
 import { FaUserCog } from "react-icons/fa";
+import { useEffect, useState } from "react";
 function Admin() {
   const largeIcon = 50;
   const smallIcon = 25;
   const mediumIcon = 37.5;
   const iconColor = "#eff3ea";
+
+  function handelLabel(e) {
+    const headerLabel = document.querySelector(".header h1");
+    headerLabel.textContent = e.target.textContent;
+  }
+
   return (
     <div className="admin">
       <aside className="sid-bar scroll">
@@ -19,7 +26,7 @@ function Admin() {
           Admin
         </div>
         <ul className="tabs">
-          <li className="tab-item">
+          <li className="tab-item" onClick={handelLabel}>
             <RiHome2Fill
               size={smallIcon}
               color={iconColor}
@@ -27,16 +34,16 @@ function Admin() {
             />
             Home
           </li>
-          <li className="tab-item">
+          <li className="tab-item" onClick={handelLabel}>
             <FaTable size={smallIcon} color={iconColor} className="tab-icon" />
             Timetables
           </li>
-          <li className="tab-item">
+          <li className="tab-item" onClick={handelLabel}>
             <FaEdit size={smallIcon} color={iconColor} className="tab-icon" />
             Manage
           </li>
 
-          <li className="tab-item">
+          <li className="tab-item" onClick={handelLabel}>
             {" "}
             <FaBookOpen
               size={smallIcon}
@@ -45,7 +52,7 @@ function Admin() {
             />
             Registration rules
           </li>
-          <li className="tab-item">
+          <li className="tab-item" onClick={handelLabel}>
             <MdManageHistory
               size={smallIcon}
               color={iconColor}
@@ -53,7 +60,7 @@ function Admin() {
             />
             Mange Hall/Lab
           </li>
-          <li className="tab-item">
+          <li className="tab-item" onClick={handelLabel}>
             <FaUserCog
               size={smallIcon}
               color={iconColor}
@@ -61,7 +68,7 @@ function Admin() {
             />
             Teaching Staff
           </li>
-          <li className="tab-item">
+          <li className="tab-item" onClick={handelLabel}>
             <FaUserCog
               size={smallIcon}
               color={iconColor}
