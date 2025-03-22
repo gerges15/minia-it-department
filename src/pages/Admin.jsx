@@ -1,12 +1,15 @@
 import Logo from "../components/Logo";
 import adminImg from "../../public/images/administrator.png";
+import { RiAdminFill } from "react-icons/ri";
+
 import "./Admin.css";
 function Admin() {
+  const iconSize = 50;
   return (
     <div className="admin">
       <aside className="sid-bar scroll">
         <div className="icon">
-          <img src={adminImg} alt="" />
+          <RiAdminFill size={iconSize} />
           Admin
         </div>
         <ul className="tabs">
@@ -28,7 +31,10 @@ function Admin() {
         </nav>
       </header>
       <main className="main">
-        <p>This is the main</p>
+        <h3>
+          {" "}
+          Lets go for a <RiAdminFill color="red" size={60} />?{" "}
+        </h3>
       </main>
     </div>
   );
