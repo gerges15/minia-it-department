@@ -17,7 +17,7 @@ export default function SideBar() {
 
   function handelLabel(e) {
     const headerLabel = document.querySelector(".header h1");
-    if (e.target.nodeName != "svg" && e.target.nodeName != "path") {
+    if (!isIcon(e)) {
       clearTab(e);
       insertClass(e, "active-tab");
       replaceContext(headerLabel, e);
@@ -39,6 +39,10 @@ export default function SideBar() {
 
   function replaceContext(anElement, e) {
     anElement.textContent = e.target.textContent;
+  }
+
+  function isIcon(e) {
+    return e.target.nodeName == "svg" || e.target.nodeName == "path";
   }
 
   return (
