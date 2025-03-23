@@ -18,22 +18,21 @@ export default function SideBar() {
   function handelLabel(e) {
     const headerLabel = document.querySelector(".header h1");
     if (e.target.nodeName != "svg" && e.target.nodeName != "path") {
-      e.target
-        .closest(".tabs")
-        .querySelectorAll(".tab-item")
-        .forEach((el) => {
-          el.classList.remove("active-tab");
-        });
+      clearTab(e);
       e.target.classList.add("active-tab");
 
       headerLabel.textContent = e.target.textContent;
     }
   }
 
-  // function clearTab()
-  // {
-
-  // }
+  function clearTab(e) {
+    e.target
+      .closest(".tabs")
+      .querySelectorAll(".tab-item")
+      .forEach((el) => {
+        el.classList.remove("active-tab");
+      });
+  }
 
   return (
     <aside className="sid-bar scroll">
