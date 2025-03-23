@@ -38,6 +38,7 @@
   font-size: 2rem;
   font-weight: bold;
   height: calc(100% - 70px);
+  transition: all 0.3s linear;
 }
 
 /* tab Item */
@@ -53,6 +54,7 @@
   padding: 2.8rem 2rem;
   color: #eff3ea;
   border-bottom: 1px solid #1b262c;
+  transition: all 0.3s linear;
 }
 
 .tab-item:last-child {
@@ -88,8 +90,11 @@
   cursor: pointer;
   background: #eeeeee;
   color: #205781;
+
+  transition: all 0.3s linear;
 }
 
 .active-tab .tab-icon {
   fill: #205781;
+  transition: all 0.3s linear;
 }

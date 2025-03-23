@@ -5,6 +5,7 @@ import { BiLogOut } from "react-icons/bi";
 import { MdManageHistory } from "react-icons/md";
 import { FaUserCog } from "react-icons/fa";
 import { useEffect, useState } from "react";
+
 import "../admin/SideBar.css";
 
 export default function SideBar() {
@@ -16,10 +17,23 @@ export default function SideBar() {
 
   function handelLabel(e) {
     const headerLabel = document.querySelector(".header h1");
+    if (e.target.nodeName != "svg" && e.target.nodeName != "path") {
+      e.target
+        .closest(".tabs")
+        .querySelectorAll(".tab-item")
+        .forEach((el) => {
+          el.classList.remove("active-tab");
+        });
+      e.target.classList.add("active-tab");
 
-    e.target.classList.add("active-tab");
-    headerLabel.textContent = e.target.textContent;
+      headerLabel.textContent = e.target.textContent;
+    }
   }
+
+  // function clearTab()
+  // {
+
+  // }
 
   return (
     <aside className="sid-bar scroll">
