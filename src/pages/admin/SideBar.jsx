@@ -20,8 +20,7 @@ export default function SideBar() {
     if (e.target.nodeName != "svg" && e.target.nodeName != "path") {
       clearTab(e);
       insertClass(e, "active-tab");
-
-      headerLabel.textContent = e.target.textContent;
+      replaceContext(headerLabel, e);
     }
   }
 
@@ -36,6 +35,10 @@ export default function SideBar() {
 
   function insertClass(e, aClassNames) {
     e.target.classList.add(`${aClassNames}`);
+  }
+
+  function replaceContext(anElement, e) {
+    anElement.textContent = e.target.textContent;
   }
 
   return (
