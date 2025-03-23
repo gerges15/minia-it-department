@@ -1,0 +1,11 @@
+.admin {
+  display: flex;
+  width: inherit;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.main {
+  display: flex;
+  padding: 1rem;
+}

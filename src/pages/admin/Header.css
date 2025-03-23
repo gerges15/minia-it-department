@@ -1,0 +1,14 @@
+.admin header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 5px 5px #eeeeee;
+  padding: 1rem;
+  min-width: 80%;
+  height: 60px;
+  color: #112d4e;
+  font-weight: bolder;
+  font-size: 1.9rem;
+  letter-spacing: 0.5rem;
+  text-transform: capitalize;
+}
