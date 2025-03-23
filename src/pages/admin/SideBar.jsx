@@ -15,27 +15,6 @@ export default function SideBar() {
     }
   }
 
-  function clearTab(e) {
-    e.target
-      .closest(".tabs")
-      .querySelectorAll(".tab-item")
-      .forEach((el) => {
-        el.classList.remove("active-tab");
-      });
-  }
-
-  function insertClass(e, aClassNames) {
-    e.target.classList.add(`${aClassNames}`);
-  }
-
-  function replaceContext(anElement, e) {
-    anElement.textContent = e.target.textContent;
-  }
-
-  function isIcon(e) {
-    return e.target.nodeName == "svg" || e.target.nodeName == "path";
-  }
-
   return (
     <aside className="sid-bar scroll">
       <div className="icon">
@@ -52,5 +31,28 @@ export default function SideBar() {
         ))}
       </ul>
     </aside>
+  );
+}
+function clearTab(e) {
+  e.target
+    .closest(".tabs")
+    .querySelectorAll(".tab-item")
+    .forEach((el) => {
+      el.classList.remove("active-tab");
+    });
+}
+
+function insertClass(e, aClassNames) {
+  e.target.classList.add(`${aClassNames}`);
+}
+
+function replaceContext(anElement, e) {
+  anElement.textContent = e.target.textContent;
+}
+
+function isIcon(e) {
+  const targetElement = e.target.nodeName;
+  return (
+    (targetElement == "svg" || targetElement == "path") && targetElement != "li"
   );
 }
