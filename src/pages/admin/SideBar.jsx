@@ -4,16 +4,13 @@ import { FaTable, FaEdit, FaBookOpen } from "react-icons/fa";
 import { BiLogOut } from "react-icons/bi";
 import { MdManageHistory } from "react-icons/md";
 import { FaUserCog } from "react-icons/fa";
-import { useEffect, useState } from "react";
 
 import "../admin/SideBar.css";
 
 export default function SideBar() {
   const largeIcon = 50;
   const smallIcon = 25;
-  const mediumIcon = 37.5;
   const iconColor = "#eff3ea";
-  const [isToggled, setToggler] = useState(false);
 
   function handelLabel(e) {
     const headerLabel = document.querySelector(".header h1");
