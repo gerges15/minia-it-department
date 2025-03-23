@@ -19,7 +19,7 @@ export default function SideBar() {
     const headerLabel = document.querySelector(".header h1");
     if (e.target.nodeName != "svg" && e.target.nodeName != "path") {
       clearTab(e);
-      e.target.classList.add("active-tab");
+      insertClass(e, "active-tab");
 
       headerLabel.textContent = e.target.textContent;
     }
@@ -32,6 +32,10 @@ export default function SideBar() {
       .forEach((el) => {
         el.classList.remove("active-tab");
       });
+  }
+
+  function insertClass(e, aClassNames) {
+    e.target.classList.add(`${aClassNames}`);
   }
 
   return (
