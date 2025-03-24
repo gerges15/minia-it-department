@@ -1,0 +1,22 @@
+.main {
+  display: flex;
+  padding: 5rem;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  font-size: 1.8rem;
+}
+
+.home {
+  border: 1px solid whitesmoke;
+  padding: 2rem;
+  border-radius: 10px;
+  box-sizing: border-box;
+  flex-grow: 1;
+  box-shadow: 0 0 1px 5px aliceblue;
+  text-transform: capitalize;
+}
+
+.text--bold {
+  font-weight: bolder;
+}
