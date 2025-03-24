@@ -13,7 +13,7 @@ function Admin() {
   return (
     <div className="admin">
       <SideBar>
-        <Container className="icon">
+        <Container className="side-bar--header">
           <RiAdminFill size={50} />
           Admin
         </Container>
