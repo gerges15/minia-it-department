@@ -3,6 +3,7 @@ import SideBar from "./SideBar";
 import Header from "./Header";
 import Main from "./Main";
 import Container from "../../components/Container";
+import Dashboard from "../../components/Dashboard";
 import { RiAdminFill } from "react-icons/ri";
 import Tab from "../../components/Tab";
 import Tabs from "../../components/Tabs";
@@ -11,7 +12,7 @@ import { handelLabel } from "../../../public/Data/handlerFunctions";
 
 function Admin() {
   return (
-    <div className="dashboard-layout">
+    <Dashboard>
       <SideBar>
         <Container className="side-bar--header">
           <RiAdminFill size={50} />
@@ -30,7 +31,7 @@ function Admin() {
 
       <Header />
       <Main />
-    </div>
+    </Dashboard>
   );
 }
 
