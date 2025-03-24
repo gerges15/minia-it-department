@@ -11,7 +11,7 @@ import { handelLabel } from "../../../public/Data/handlerFunctions";
 
 function Admin() {
   return (
-    <div className="admin">
+    <div className="dashboard-layout">
       <SideBar>
         <Container className="side-bar--header">
           <RiAdminFill size={50} />

@@ -1,5 +1,5 @@
 export const handelLabel = (e) => {
-  const headerLabel = document.querySelector(".header h1");
+  const headerLabel = document.querySelector(".dashboard__header");
   if (!isIcon(e)) {
     clearTab(e);
     insertClass(e, "active-tab");
