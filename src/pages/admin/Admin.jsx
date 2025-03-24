@@ -1,5 +1,5 @@
 import "./Admin.css";
-import SideBar from "./SideBar";
+import SideBar from "../../components/SideBar";
 import Header from "./Header";
 import Main from "./Main";
 import Container from "../../components/Container";
