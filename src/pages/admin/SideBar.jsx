@@ -1,20 +1,12 @@
 import Tab from "../../components/Tab";
 import Tabs from "../../components/Tabs";
 import { tabLabels } from "../../../public/Data/tabs";
+import { handelLabel } from "../../../public/Data/handlerFunctions";
 
 import "../admin/SideBar.css";
 import "./Admin.css";
 
 export default function SideBar(props) {
-  function handelLabel(e) {
-    const headerLabel = document.querySelector(".header h1");
-    if (!isIcon(e)) {
-      clearTab(e);
-      insertClass(e, "active-tab");
-      replaceContext(headerLabel, e);
-    }
-  }
-
   return (
     <aside className="sid-bar scroll">
       {props.children}
@@ -28,28 +20,5 @@ export default function SideBar(props) {
         ))}
       </Tabs>
     </aside>
-  );
-}
-function clearTab(e) {
-  e.target
-    .closest(".tabs")
-    .querySelectorAll(".tab-item")
-    .forEach((el) => {
-      el.classList.remove("active-tab");
-    });
-}
-
-function insertClass(e, aClassNames) {
-  e.target.classList.add(`${aClassNames}`);
-}
-
-function replaceContext(anElement, e) {
-  anElement.textContent = e.target.textContent;
-}
-
-function isIcon(e) {
-  const targetElement = e.target.nodeName;
-  return (
-    (targetElement == "svg" || targetElement == "path") && targetElement != "li"
   );
 }
