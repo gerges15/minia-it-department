@@ -1,0 +1,13 @@
+.tabs {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  align-items: normal;
+  grid-template-rows: auto;
+  padding: 0;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+  height: calc(100% - 70px);
+  transition: all 0.3s linear;
+}

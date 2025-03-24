@@ -17,6 +17,7 @@ function Admin() {
           <RiAdminFill size={50} />
           Admin
         </Container>
+
         <Tabs>
           {tabLabels.map((aTab) => (
             <Tab className="tab-item" handelLabel={handelLabel}>
