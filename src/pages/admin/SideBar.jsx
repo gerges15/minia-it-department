@@ -1,10 +1,10 @@
-import { RiAdminFill } from "react-icons/ri";
 import Tab from "../../components/Tab";
 import { tabLabels } from "../../../public/Data/tabs";
+
 import "../admin/SideBar.css";
 import "./Admin.css";
 
-export default function SideBar() {
+export default function SideBar(props) {
   const largeIcon = 50;
   function handelLabel(e) {
     const headerLabel = document.querySelector(".header h1");
@@ -17,10 +17,7 @@ export default function SideBar() {
 
   return (
     <aside className="sid-bar scroll">
-      <div className="icon">
-        <RiAdminFill size={largeIcon} />
-        Admin
-      </div>
+      {props.children}
 
       <ul className="tabs">
         {tabLabels.map((aTab) => (
