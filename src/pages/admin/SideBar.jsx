@@ -1,11 +1,11 @@
 import Tab from "../../components/Tab";
+import Tabs from "../../components/Tabs";
 import { tabLabels } from "../../../public/Data/tabs";
 
 import "../admin/SideBar.css";
 import "./Admin.css";
 
 export default function SideBar(props) {
-  const largeIcon = 50;
   function handelLabel(e) {
     const headerLabel = document.querySelector(".header h1");
     if (!isIcon(e)) {
@@ -19,14 +19,14 @@ export default function SideBar(props) {
     <aside className="sid-bar scroll">
       {props.children}
 
-      <ul className="tabs">
+      <Tabs>
         {tabLabels.map((aTab) => (
           <Tab className="tab-item" handelLabel={handelLabel}>
             {aTab.icon}
             {aTab.label}
           </Tab>
         ))}
-      </ul>
+      </Tabs>
     </aside>
   );
 }
