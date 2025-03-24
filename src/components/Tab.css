@@ -1,0 +1,42 @@
+/* tab Item */
+
+.tab-item {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: flex-start;
+  align-items: center;
+  list-style: none;
+  letter-spacing: 0.2rem;
+  font-weight: lighter;
+  padding: 2.8rem 2rem;
+  color: #eff3ea;
+  border-bottom: 1px solid #1b262c;
+  transition: all 0.3s linear;
+}
+
+.tab-item:last-child {
+  border-bottom: none;
+}
+
+.tab-item:hover {
+  cursor: pointer;
+  background: #eeeeee;
+  color: #205781;
+}
+.tab-item:hover .tab-icon {
+  fill: #205781;
+}
+
+/* active state */
+.active-tab {
+  cursor: pointer;
+  background: #eeeeee;
+  color: #205781;
+
+  transition: all 0.3s linear;
+}
+
+.active-tab .tab-icon {
+  fill: #205781;
+  transition: all 0.3s linear;
+}
