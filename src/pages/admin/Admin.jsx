@@ -21,7 +21,11 @@ function Admin() {
 
         <Tabs>
           {tabLabels.map((aTab) => (
-            <Tab className="tab-item" handelLabel={handelLabel}>
+            <Tab
+              key={aTab.label}
+              className="tab-item"
+              handelLabel={handelLabel}
+            >
               {aTab.icon}
               {aTab.label}
             </Tab>
