@@ -1,22 +1,23 @@
 .main {
   display: flex;
-  padding: 5rem;
-  justify-content: center;
-  align-items: center;
+  padding: 2rem 3rem;
   flex-grow: 1;
   font-size: 1.8rem;
   transition: all 0.3s linear;
 }
 
 .home {
-  border: 1px solid whitesmoke;
   padding: 2rem;
   border-radius: 10px;
   box-sizing: border-box;
   flex-grow: 1;
+  border: 1px solid whitesmoke;
   box-shadow: 0 0 1px 5px aliceblue;
   text-transform: capitalize;
   transition: all 0.3s linear;
+  align-self: center;
+  justify-self: center;
+  backdrop-filter: blur(10px);
 }
 
 .text--bold {
@@ -26,4 +27,29 @@
 .hide {
   display: none;
   transition: all 0.3s linear;
+}
+
+.manage {
+  flex-grow: 1;
+}
+
+.course {
+  display: flex;
+  border-radius: 10px;
+  padding: 2rem;
+  flex-direction: column;
+  gap: 2rem;
+  color: blueviolet;
+  background: rgb(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 10px 5px whitesmoke;
+}
+
+.course h3 {
+  margin-top: 0;
+}
+
+.course_form {
+  display: flex;
+  gap: 2rem;
 }
