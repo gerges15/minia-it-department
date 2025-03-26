@@ -1,5 +1,8 @@
 import "../admin/Main.css";
+import Input from "../../components/Input";
+import { useState } from "react";
 export default function Main() {
+  const [course, setCourse] = useState("");
   return (
     <main className="main">
       <div id="home-section" className="home section">
@@ -23,8 +26,22 @@ export default function Main() {
         </p>
       </div>
 
-      <section id="table-section" className="table section">
+      <section id="table-section" className="table section hide">
         <p>this is the table</p>
+      </section>
+      <section id="manage-section" className="manage section hide">
+        <div className="course">
+          <h3>Courses</h3>
+          <div className="course_form">
+            <Input label="Code" />
+            <Input label="Case" />
+            <input
+              type="text"
+              onChange={(e) => setCourse(e.target.value)}
+            ></input>
+          </div>
+        </div>
+        <p>current Value: {course}</p>
       </section>
     </main>
   );
