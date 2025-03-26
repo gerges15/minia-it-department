@@ -2,7 +2,7 @@ import "../admin/Main.css";
 export default function Main() {
   return (
     <main className="main">
-      <div className="home">
+      <div id="home-section" className="home section">
         <p>
           <span className="text--bold">First Name:</span> Girgis
         </p>
@@ -22,6 +22,10 @@ export default function Main() {
           <span className="text--bold">phone number:</span> 01288348198
         </p>
       </div>
+
+      <section id="table-section" className="table section">
+        <p>this is the table</p>
+      </section>
     </main>
   );
 }

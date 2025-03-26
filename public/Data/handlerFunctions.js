@@ -1,9 +1,17 @@
 export const handelLabel = (e) => {
   const headerLabel = document.querySelector(".dashboard__header");
+  const sections = document.querySelectorAll(".section");
+  const sectionId = `${e.target.id}`;
   if (!isIcon(e)) {
     clearTab(e);
     insertClass(e, "active-tab");
     replaceContext(headerLabel, e);
+
+    sections.forEach((el) => {
+      el.classList.add("hide");
+    });
+
+    document.querySelector(`#${sectionId}-section`).classList.remove("hide");
   }
 };
 

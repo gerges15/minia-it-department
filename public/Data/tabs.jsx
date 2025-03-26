@@ -14,34 +14,42 @@ export const tabLabels = [
   {
     label: "Home",
     icon: <RiHome2Fill {...iconProps} />,
+    id: "home",
   },
   {
     label: "Timetables",
     icon: <FaTable {...iconProps} />,
+    id: "table",
   },
   {
     label: "Manage",
     icon: <FaEdit {...iconProps} />,
+    id: "manage",
   },
 
   {
     label: "Registration Rules",
     icon: <FaBookOpen {...iconProps} />,
+    id: "rules",
   },
   {
     label: "Manage Hall/Lab",
     icon: <MdManageHistory {...iconProps} />,
+    id: "lab",
   },
   {
     label: "Teaching Staff",
     icon: <FaUserCog {...iconProps} />,
+    id: "teacher",
   },
   {
     label: "Student",
     icon: <FaUserCog {...iconProps} />,
+    id: "student",
   },
   {
     label: "Logout",
     icon: <BiLogOut {...iconProps} />,
+    id: "logout",
   },
 ];

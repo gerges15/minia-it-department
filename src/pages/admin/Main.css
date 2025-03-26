@@ -5,6 +5,7 @@
   align-items: center;
   flex-grow: 1;
   font-size: 1.8rem;
+  transition: all 0.3s linear;
 }
 
 .home {
@@ -15,8 +16,14 @@
   flex-grow: 1;
   box-shadow: 0 0 1px 5px aliceblue;
   text-transform: capitalize;
+  transition: all 0.3s linear;
 }
 
 .text--bold {
   font-weight: bolder;
+}
+
+.hide {
+  display: none;
+  transition: all 0.3s linear;
 }

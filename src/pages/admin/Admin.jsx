@@ -22,6 +22,7 @@ function Admin() {
         <Tabs>
           {tabLabels.map((aTab) => (
             <Tab
+              id={aTab.id}
               key={aTab.label}
               className="tab-item"
               handelLabel={handelLabel}
