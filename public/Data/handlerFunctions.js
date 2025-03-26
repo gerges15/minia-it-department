@@ -1,16 +1,11 @@
 export const handelLabel = (e) => {
   const headerLabel = document.querySelector(".dashboard__header");
-  const sections = document.querySelectorAll(".section");
   const sectionId = `${e.target.id}`;
   if (!isIcon(e)) {
     clearTab(e);
     insertClass(e, "active-tab");
     replaceContext(headerLabel, e);
-
-    sections.forEach((el) => {
-      el.classList.add("hide");
-    });
-
+    clearSection();
     document.querySelector(`#${sectionId}-section`).classList.remove("hide");
   }
 };
@@ -37,4 +32,11 @@ function isIcon(e) {
   return (
     (targetElement == "svg" || targetElement == "path") && targetElement != "li"
   );
+}
+
+function clearSection() {
+  const sections = document.querySelectorAll(".section");
+  sections.forEach((section) => {
+    section.classList.add("hide");
+  });
 }
