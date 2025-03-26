@@ -1,12 +1,11 @@
 export const handelLabel = (e) => {
   const headerLabel = document.querySelector(".dashboard__header");
-  const sectionId = `${e.target.id}`;
   if (!isIcon(e)) {
     clearTab(e);
     insertClass(e, "active-tab");
     replaceContext(headerLabel, e);
     clearSection();
-    document.querySelector(`#${sectionId}-section`).classList.remove("hide");
+    showCurrentSection(e);
   }
 };
 
@@ -39,4 +38,9 @@ function clearSection() {
   sections.forEach((section) => {
     section.classList.add("hide");
   });
+}
+
+function showCurrentSection(e) {
+  const sectionId = `${e.target.id}`;
+  document.querySelector(`#${sectionId}-section`).classList.remove("hide");
 }
