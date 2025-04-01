@@ -6,7 +6,8 @@ import "./LoginForm.css";
 import { useState } from "react";
 
 import EyeBtn from "./EyeBtn";
-function LoginForm() {
+import { NavLink } from "react-router";
+function LoginForm({ path }) {
   const [isShowed, setShow] = useState(false);
   const [id, setValue] = useState("");
 
@@ -39,8 +40,9 @@ function LoginForm() {
           Forgot Password?
         </a>
       </p>
-
-      <button className="login__form-btn">Let`s Go !</button>
+      <NavLink to={path}>
+        <button className="login__form-btn">Let`s Go !</button>
+      </NavLink>
     </Container>
   );
 }

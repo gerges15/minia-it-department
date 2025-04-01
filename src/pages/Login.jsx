@@ -7,7 +7,8 @@ export const Login = function () {
   return (
     <Container {...containerStyles} alignItems="center" margin="auto">
       <Logo />
-      <LoginForm />
+
+      <LoginForm path="/admin" />
     </Container>
   );
 };

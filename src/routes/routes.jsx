@@ -1,11 +1,11 @@
 import { createBrowserRouter } from "react-router";
 import App from "../App";
-import LoginForm from "../components/LoginForm";
+import { Login } from "../pages/Login";
 import Admin from "../pages/admin/Admin";
 const router = createBrowserRouter([
   {
     children: [
-      { index: true, Component: LoginForm },
+      { index: true, Component: Login },
       { path: "admin", Component: Admin },
     ],
   },
@@ -25,13 +25,13 @@ const router = createBrowserRouter([
     path: "/projects",
     children: [
       { index: true, Component: Admin },
-      { path: ":pid", Component: LoginForm },
+      { path: ":pid", Component: Login },
       { path: ":pid/edit", Component: Admin },
     ],
   },
   {
     path: "login",
-    Component: LoginForm,
+    Component: Login,
   },
   {
     path: "student",
