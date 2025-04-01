@@ -1,11 +1,11 @@
-import Container from "./Container";
-import Input from "./Input";
-import { userIdProps, passwordProps } from "../../public/Data/userData";
+import Container from "../atoms/Container";
+import Input from "../atoms/Input";
+import { userIdProps, passwordProps } from "../../../public/Data/userData";
 
 import "./LoginForm.css";
 import { useState } from "react";
 
-import EyeBtn from "./EyeBtn";
+import EyeBtn from "../atoms/EyeBtn";
 import { NavLink } from "react-router";
 function LoginForm({ path }) {
   const [isShowed, setShow] = useState(false);

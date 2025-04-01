@@ -1,14 +1,14 @@
-import "./Admin.css";
-import SideBar from "../../components/SideBar";
+import SideBar from "../../templates/SideBar";
 import Header from "./Header";
 import Main from "./Main";
-import Container from "../../components/Container";
-import Dashboard from "../../components/Dashboard";
+import Container from "../../atoms/Container";
+import Dashboard from "../../templates/Dashboard";
 import { RiAdminFill } from "react-icons/ri";
-import Tab from "../../components/Tab";
-import Tabs from "../../components/Tabs";
-import { tabLabels } from "../../../public/Data/tabs";
-import { handelLabel } from "../../../public/Data/handlerFunctions";
+import Tab from "../../atoms/Tab";
+import Tabs from "../../atoms/Tabs";
+import { tabLabels } from "../../../../public/Data/tabs";
+import { handelLabel } from "../../../../public/Data/handlerFunctions";
+import "./Admin.css";
 
 function Admin() {
   return (

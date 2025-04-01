@@ -1,4 +1,4 @@
-import "../admin/Header.css";
+import "./Header.css";
 export default function Header() {
   return (
     <header className="dashboard__header">

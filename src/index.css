@@ -1,6 +1,6 @@
 @font-face {
   font-family: "montserrat-r";
-  src: url("../public/fonts/Montserrat/Montserrat-Regular.ttf");
+  src: url("../src/assets//fonts//Montserrat/Montserrat-Regular.ttf");
 }
 html {
   font-size: 62.5%;

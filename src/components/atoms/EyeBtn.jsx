@@ -1,5 +1,5 @@
-import eyeRegular from "../../public/eye-regular.svg";
-import eyeSlash from "../../public/eye-slash-regular.svg";
+import eyeSlash from "../../assets/svg/eye-slash-regular.svg";
+import eyeRegular from "../../assets/svg/eye-regular.svg";
 
 function EyeBtn({ handelShown, isShowed }) {
   return (

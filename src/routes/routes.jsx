@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router";
-import App from "../App";
-import { Login } from "../pages/Login";
-import Admin from "../pages/admin/Admin";
+import { Login } from "../components/pages/Login";
+import Admin from "../components/pages/admin/Admin";
 const router = createBrowserRouter([
   {
     children: [

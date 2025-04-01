@@ -1,5 +1,5 @@
-import "../admin/Main.css";
-import Input from "../../components/Input";
+import "./Main.css";
+import Input from "../../atoms/Input";
 import { useState } from "react";
 export default function Main() {
   const [course, setCourse] = useState("");
