@@ -1,14 +1,13 @@
-import SideBar from "../../templates/SideBar";
-import Header from "./Header";
-import Main from "./Main";
-import Container from "../../atoms/Container";
-import Dashboard from "../../templates/Dashboard";
+import SideBar from "../templates/SideBar";
+import Header from "../atoms/Header";
+import Main from "../molecules/Main";
+import Container from "../atoms/Container";
+import Dashboard from "../templates/Dashboard";
 import { RiAdminFill } from "react-icons/ri";
-import Tab from "../../atoms/Tab";
-import Tabs from "../../atoms/Tabs";
-import { tabLabels } from "../../../../public/Data/tabs";
-import { handelLabel } from "../../../../public/Data/handlerFunctions";
-import "./Admin.css";
+import Tab from "../atoms/Tab";
+import Tabs from "../atoms/Tabs";
+import { tabLabels } from "../../../public/Data/tabs";
+import { handelLabel } from "../../../public/Data/handlerFunctions";
 
 function Admin() {
   return (

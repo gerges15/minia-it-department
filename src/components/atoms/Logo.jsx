@@ -1,4 +1,4 @@
-import "./Logo.css";
+import "../../styles/atoms/Logo.css";
 import logo from "../../assets/svg/Logos/Light_Logo_IT2.svg";
 function Logo() {
   return (

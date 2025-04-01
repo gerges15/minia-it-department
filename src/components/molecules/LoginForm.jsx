@@ -2,7 +2,7 @@ import Container from "../atoms/Container";
 import Input from "../atoms/Input";
 import { userIdProps, passwordProps } from "../../../public/Data/userData";
 
-import "./LoginForm.css";
+import "../../styles/molecules/LoginForm.css";
 import { useState } from "react";
 
 import EyeBtn from "../atoms/EyeBtn";

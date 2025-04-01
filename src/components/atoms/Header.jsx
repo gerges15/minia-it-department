@@ -1,4 +1,4 @@
-import "./Header.css";
+import "../../styles/atoms/Header.css";
 export default function Header() {
   return (
     <header className="dashboard__header">
