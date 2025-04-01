@@ -15,7 +15,6 @@ function Input({
       <div className={className}>
         <input
           type={type}
-          typ
           name={name}
           id={id}
           {...props}
