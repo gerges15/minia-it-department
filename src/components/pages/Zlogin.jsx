@@ -1,10 +1,10 @@
 import '../../styles/pages/Zlogin.css';
-import Form from '../organisms/Form';
+import Forms from '../organisms/Forms';
 
 function Zlogin() {
   return (
     <div className="login-page">
-      <Form className="form" />
+      <Forms className="form--container" />
     </div>
   );
 }

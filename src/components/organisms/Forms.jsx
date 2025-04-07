@@ -1,5 +1,7 @@
 import { useState } from 'react';
-export default function Form(props) {
+import '../../styles/organisms/forms.css';
+
+export default function Forms(props) {
   const [showForm, setShowForm] = useState(true);
 
   const toggleForm = e => {
@@ -20,7 +22,7 @@ export default function Form(props) {
           </a>
         </p>
       </form>
-
+      {props.children}
       <form className={`password-form  ${!showForm ? 'show' : 'hide'}`}>
         <input type="password" placeholder="new password" />
         <input type="password" placeholder="conform password" />
