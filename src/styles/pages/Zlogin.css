@@ -18,12 +18,12 @@ body {
 *::before {
   box-sizing: border-box;
 }
-
 .login-page {
   width: 360px;
   padding: 8% 0 0;
   margin: auto;
   transition: all 3s linear;
+  z-index: 999;
 }
 
 .form {
