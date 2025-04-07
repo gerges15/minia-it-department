@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import '../../styles/organisms/forms.css';
+import Form from '../molecules/Form';
 
 export default function Forms(props) {
   const [showForm, setShowForm] = useState(true);
@@ -11,30 +12,32 @@ export default function Forms(props) {
 
   return (
     <div className={props.className}>
-      <form className={`login-form  ${showForm ? 'show' : 'hide'}`}>
+      <Form
+        className="login-form"
+        toggleForm={toggleForm}
+        showForm={showForm}
+        buttonName="Login"
+        messageP="Forgot password?"
+        messageA="reset"
+      >
         <input type="text" placeholder="username" />
         <input type="password" placeholder="password" />
-        <button>login</button>
-        <p className="message">
-          Forgot password?{' '}
-          <a href="#" onClick={toggleForm}>
-            Reset
-          </a>
-        </p>
-      </form>
-      {props.children}
-      <form className={`password-form  ${!showForm ? 'show' : 'hide'}`}>
+      </Form>
+
+      <Form
+        className="password-form"
+        toggleForm={toggleForm}
+        showForm={!showForm}
+        buttonName="Conform"
+        messageP="Already remember?"
+        messageA="Sign In"
+      >
         <input type="password" placeholder="new password" />
         <input type="password" placeholder="conform password" />
         <input type="email" placeholder="email address" />
-        <button>Conform</button>
-        <p className="message">
-          Already remember?{' '}
-          <a onClick={toggleForm} href="#">
-            Sign In
-          </a>
-        </p>
-      </form>
+      </Form>
+
+      {props.children}
     </div>
   );
 }
