@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+
+/* add here any tailwind custom class you want */
 @theme{
     --font-poppins: Poppins, Tahoma, Verdana, sans-serif ;
+}
+
+body{
+    font-family: var(--font-poppins);
 }
