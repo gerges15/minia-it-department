@@ -4,23 +4,27 @@ import LoginPage from "./Pages/Login";
 import SignupPage from "./Pages/SignUp";
 import ForgotPasswordPage from "./Pages/ForgotPassword";
 import { Route, Routes } from "react-router-dom";
+import NotFound from "./Pages/NotFound";
+import HomePage from "./Pages/HomePage";
+import ExplorePage from "./Pages/Explore";
 
 function App() {
-    // <div className="relative w-full h-screen">
-    //     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-    //         <h1 className="font-poppins font-extrabold text-6xl"> Keep Waiting </h1>
-    //     </div>
-    // </div>
-    // <LoginPage />
-    // <SignupPage />
-    // <Error />
-
     return (
         <Routes>
-            <Route path="/" element={<Error />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/SignUp" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/" element={<HomePage />}>
+                {/* Parent route using the layout */}
+                {/* Child routes that render inside HomePageLayout's <Outlet /> */}
+                {/* <Route index element={<DashboardPage />} /> Default page for "/" */}
+                <Route path="explore" element={<ExplorePage />} />
+                {/* <Route path="analytics" element={<AnalyticsPage />} /> */}
+                {/* <Route path="settings" element={<SettingsPage />} /> */}
+                {/* Add other routes that should use the sidebar layout here */}
+            </Route>
+            <Route path="*" element={<NotFound />} />
         </Routes>
     );
 }
