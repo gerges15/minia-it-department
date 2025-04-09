@@ -2,18 +2,33 @@ import React from "react";
 import MobileNavToggle from "./MobileNavToggle";
 import MobileSidebar from "./MobileSidebar";
 import { Link, NavLink } from "react-router-dom";
-import { FiHome, FiCompass, FiSettings, FiLogOut, FiBarChart2, FiMenu, FiX } from "react-icons/fi";
-
-export default function SidebarContent({ setIsSidebarOpen }) {
+import {
+    FiHome, // Home
+    FiCalendar, // Timetables (better fit than FaTable)
+    FiEdit, // Manage (direct equivalent to FaEdit)
+    FiBookOpen, // Registration Rules (good fit)
+    FiClipboard, // Manage Hall/Lab (suggests managing resources/lists)
+    FiUsers, // Teaching Staff / Student (common for user groups)
+    FiLogOut, // Logout (standard)
+    FiX,
+} from "react-icons/fi";
+import useSidebarStore from "../../Stores/useSidebarStore";
+export default function SidebarContent() {
     const navigation = [
-        { name: "Dashboard", href: "/", icon: FiHome },
-        { name: "Explore", href: "/explore", icon: FiCompass },
-        { name: "Analytics", href: "/analytics", icon: FiBarChart2 },
-        { name: "Settings", href: "/settings", icon: FiSettings },
+        { name: "Home", href: "/", icon: FiHome },
+        { name: "Timetables", href: "/timetables", icon: FiCalendar },
+        { name: "Manage", href: "/manage", icon: FiEdit }, // General management/editing
+        { name: "Registration Rules", href: "/rules", icon: FiBookOpen },
+        { name: "Manage Hall/Lab", href: "/halls-labs", icon: FiClipboard }, // Or FiBriefcase
+        { name: "Teaching Staff", href: "/staff", icon: FiUsers }, // Or FiAward
+        { name: "Student", href: "/students", icon: FiUsers }, // Or FiUser
+        // { name: 'Student', href: '/students', icon: FaUserCog }, // If you must use FaUserCog
     ];
 
     const activeLinkStyle = "bg-[#ede7f6] text-[#7e57c2] font-semibold";
     const defaultLinkStyle = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
+    const { toggle } = useSidebarStore();
+
     return (
         <>
             {/* Logo/Brand Area & Close Button (Mobile) */}
@@ -23,7 +38,7 @@ export default function SidebarContent({ setIsSidebarOpen }) {
                 <button
                     type="button"
                     className="md:hidden p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#7e57c2]"
-                    onClick={() => setIsSidebarOpen(false)}
+                    onClick={() => toggle()}
                 >
                     <span className="sr-only">Close sidebar</span>
                     <FiX className="h-6 w-6" aria-hidden="true" />
@@ -42,7 +57,7 @@ export default function SidebarContent({ setIsSidebarOpen }) {
                                 isActive ? activeLinkStyle : defaultLinkStyle
                             }`
                         }
-                        onClick={() => setIsSidebarOpen(false)} // Close sidebar on mobile nav click
+                        onClick={() => toggle()} // Close sidebar on mobile nav click
                     >
                         <item.icon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
                         {item.name}
