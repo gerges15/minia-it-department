@@ -11,6 +11,8 @@ import ManageTeachingPlaces from "./Pages/ManageTeachingPlaces";
 import ManageStudents from "./Pages/ManageStudents";
 import ManageCourses from "./Pages/ManageCourses";
 import AddTeachingPlacePage from "./Pages/AddTeachingPlacePage";
+import UpdateTeachingPlacePage from "./Pages/UpdateTeachingPlacePage";
+import DeleteTeachingPlacePage from "./Pages/DeleteTeachingPlacePage";
 
 function App() {
     return (
@@ -42,9 +44,9 @@ function App() {
             >
                 <Route path="manage-places/add" element={<AddTeachingPlacePage />} />
                 <Route path="/manage-teaching-places/view" element={<AddTeachingPlacePage />} />
-                <Route path="/manage-teaching-places/edit" element={<AddTeachingPlacePage />} />
+                <Route path="/manage-teaching-places/edit" element={<UpdateTeachingPlacePage />} />
                 <Route path="/manage-teaching-places/schedules" element={<AddTeachingPlacePage />} />
-                <Route path="/manage-teaching-places/delete" element={<AddTeachingPlacePage />} />
+                <Route path="/manage-teaching-places/delete" element={<DeleteTeachingPlacePage />} />
             </Route>
 
             {/* public routes */}
