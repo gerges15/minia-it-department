@@ -1,44 +1,74 @@
 import React from "react";
-import MobileNavToggle from "./MobileNavToggle";
-import MobileSidebar from "./MobileSidebar";
 import { Link, NavLink } from "react-router-dom";
-import {
-    FiHome, // Home
-    FiCalendar, // Timetables (better fit than FaTable)
-    FiEdit, // Manage (direct equivalent to FaEdit)
-    FiBookOpen, // Registration Rules (good fit)
-    FiClipboard, // Manage Hall/Lab (suggests managing resources/lists)
-    FiUsers, // Teaching Staff / Student (common for user groups)
-    FiLogOut, // Logout (standard)
-    FiX,
-} from "react-icons/fi";
+import { FiHome, FiCalendar, FiBook, FiUsers, FiBriefcase, FiGrid, FiLogOut, FiX } from "react-icons/fi";
 import useSidebarStore from "../../Stores/useSidebarStore";
-export default function SidebarContent() {
-    const navigation = [
-        { name: "Home", href: "/", icon: FiHome },
-        { name: "Timetables", href: "/timetables", icon: FiCalendar },
-        { name: "Manage", href: "/manage", icon: FiEdit }, // General management/editing
-        { name: "Registration Rules", href: "/rules", icon: FiBookOpen },
-        { name: "Manage Hall/Lab", href: "/halls-labs", icon: FiClipboard }, // Or FiBriefcase
-        { name: "Teaching Staff", href: "/staff", icon: FiUsers }, // Or FiAward
-        { name: "Student", href: "/students", icon: FiUsers }, // Or FiUser
-        // { name: 'Student', href: '/students', icon: FaUserCog }, // If you must use FaUserCog
-    ];
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
+export default function SidebarContent() {
     const activeLinkStyle = "bg-[#ede7f6] text-[#7e57c2] font-semibold";
     const defaultLinkStyle = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
     const { toggle } = useSidebarStore();
 
+    let decodedToken = null;
+    let role = null;
+    let userName = "User";
+
+    try {
+        const token = Cookies.get("access_token");
+        if (token) {
+            decodedToken = jwtDecode(token);
+            role = decodedToken?.role;
+        }
+    } catch (error) {
+        console.error("Error decoding token:", error);
+        window.location.href = "/login";
+    }
+
+    const adminNavigation = [
+        { name: "Home", href: "/", icon: FiHome },
+        { name: "Manage Timetables", href: "/manage-timetables", icon: FiCalendar },
+        { name: "Manage Courses", href: "/manage-courses", icon: FiBook },
+        { name: "Manage Students", href: "/manage-students", icon: FiUsers },
+        { name: "Manage Teaching Places", href: "/manage-places", icon: FiBriefcase },
+    ];
+
+    const teachingStaffNavigation = [
+        { name: "Home", href: "/", icon: FiHome },
+        { name: "View Timetable", href: "/timetables", icon: FiCalendar },
+    ];
+
+    const studentsNavigation = [
+        { name: "Home", href: "/", icon: FiHome },
+        { name: "View Timetable", href: "/timetables", icon: FiCalendar },
+    ];
+
+    let navigation = [];
+    switch (role) {
+        case "Admin":
+            navigation = adminNavigation;
+            break;
+        case "TeachingStaff":
+            navigation = teachingStaffNavigation;
+            break;
+        case "Student":
+            navigation = studentsNavigation;
+            break;
+        default:
+            navigation = [{ name: "Home", href: "/", icon: FiHome }];
+            break;
+    }
+
     return (
         <>
-            {/* Logo/Brand Area & Close Button (Mobile) */}
+            {/* Header */}
             <div className="flex items-center justify-between flex-shrink-0 px-4 h-16 border-b border-gray-200">
-                <h1 className="text-lg font-semibold text-[#7e57c2]">Welcome Name</h1>
+                <h1 className="text-lg font-semibold text-[#7e57c2] truncate">Welcome, {userName}</h1>
                 {/* Close button - only visible inside the mobile overlay */}
                 <button
                     type="button"
                     className="md:hidden p-1 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#7e57c2]"
-                    onClick={() => toggle()}
+                    onClick={toggle} // Use the toggle function directly
                 >
                     <span className="sr-only">Close sidebar</span>
                     <FiX className="h-6 w-6" aria-hidden="true" />
@@ -46,18 +76,19 @@ export default function SidebarContent() {
             </div>
 
             {/* Navigation */}
-            <nav className="mt-5 flex-1 px-2 space-y-1">
+            <nav className="mt-5 flex-1 px-2 space-y-1 overflow-y-auto">
+                {/* Added overflow-y-auto */}
                 {navigation.map((item) => (
                     <NavLink
                         key={item.name}
                         to={item.href}
-                        end
+                        end // Use 'end' prop for exact matching on parent routes like "/"
                         className={({ isActive }) =>
                             `group flex items-center px-3 py-2.5 text-sm rounded-md transition-colors duration-150 ease-in-out ${
                                 isActive ? activeLinkStyle : defaultLinkStyle
                             }`
                         }
-                        onClick={() => toggle()} // Close sidebar on mobile nav click
+                        onClick={() => toggle()} // Use the handler function
                     >
                         <item.icon className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
                         {item.name}
@@ -65,10 +96,10 @@ export default function SidebarContent() {
                 ))}
             </nav>
 
-            {/* Optional: Footer/User section in sidebar */}
+            {/* Logout */}
             <div className="flex-shrink-0 px-2 pt-4 pb-4 border-t border-gray-200">
                 <Link
-                    to="/logout" // Or handle logout via onClick
+                    to="/logout" // Ensure you have a route/handler for /logout
                     className={`group flex items-center px-3 py-2.5 text-sm rounded-md transition-colors duration-150 ease-in-out ${defaultLinkStyle}`}
                 >
                     <FiLogOut className="mr-3 flex-shrink-0 h-5 w-5" aria-hidden="true" />
