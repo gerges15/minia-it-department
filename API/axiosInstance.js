@@ -42,8 +42,8 @@ api.interceptors.response.use(
                     throw new Error('Missing refresh token or user ID');
                 }
 
-                const response = await axios.get(
-                    `${API_URL}/Users/${fullId}/Authentications?refreshToken=${refreshToken}`
+                const response = await api.get(
+                    `/Users/${fullId}/Authentications?refreshToken=${refreshToken}`
                 );
 
                 const newAccessToken = response.data;
@@ -55,6 +55,7 @@ api.interceptors.response.use(
                 return api(originalRequest);
 
             } catch (refreshError) {
+
                 Cookies.remove('access_token');
                 Cookies.remove('refresh_token');
                 Cookies.remove('fullId');
