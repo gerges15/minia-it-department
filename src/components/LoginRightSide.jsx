@@ -5,7 +5,6 @@ import useAuthStore from '../Stores/useAuthStore';
 import EyeIcon from '../assets/svg/EyeIcon';
 import EyeOffIcon from '../assets/svg/EyeOffIcon';
 import Spinner from '../Components/Common/Spinner';
-import SingUpLink from '../Components/SingUpLink';
 
 export default function LoginRightSide() {
   const [error, setError] = useState('');
@@ -32,10 +31,10 @@ export default function LoginRightSide() {
   };
 
   return (
-    <div className="w-full lg:w-1/2 p-6 md:p-12 flex items-center justify-center bg-white">
+    <div className="w-fit  p-6 md:p-5 flex items-center justify-center bg-white rounded-xl">
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Log in</h1>
-        <SingUpLink />
+        <h1 className="text-3xl font-bold text-gray-800 mb-8">Log in</h1>
+
         <form onSubmit={handleSubmit}>
           {/* userName input */}
           <div className="mb-5">
@@ -96,7 +95,7 @@ export default function LoginRightSide() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex justify-center items-center p-4 bg-[#7e57c2] text-white rounded-xl font-semibold mb-8 hover:bg-[#6a4aaa] transition-colors shadow-md cursor-pointer duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full flex justify-center items-center p-4 bg-[#7e57c2] text-white rounded-xl font-semibold mt-8 hover:bg-[#6a4aaa] transition-colors shadow-md cursor-pointer duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLoading ? <Spinner /> : 'Log in'}
           </button>
