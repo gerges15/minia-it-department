@@ -1,22 +1,11 @@
-@font-face {
-  font-family: "montserrat-r";
-  src: url("../src/assets//fonts//Montserrat/Montserrat-Regular.ttf");
-}
-html {
-  font-size: 62.5%;
-  height: 100%;
+@import "tailwindcss";
+
+
+/* add here any tailwind custom class you want */
+@theme{
+    --font-poppins: Poppins, Tahoma, Verdana, sans-serif ;
 }
 
-body {
-  font-size: 1.6rem;
-  height: 100%;
-  font-family: "montserrat-r";
-  margin: 0;
-  padding: 0;
-}
-
-#root {
-  height: 100%;
-  width: 100%;
-  display: flex;
+body{
+    font-family: var(--font-poppins);
 }

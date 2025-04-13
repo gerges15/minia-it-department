@@ -1,0 +1,1401 @@
+openapi: 3.0.0
+info:
+  title: Graduation Project API
+  version: '1.0.0'
+  description: |-
+    API for managing courses, users, teaching places, schedules, and authentication for the Graduation Project.
+
+    **Roles:**
+    - `Public`: Accessible without authentication.
+    - `Admin`: Requires Admin role authentication.
+    - `TeachingStaff`: Requires Teaching Staff role authentication.
+    - `Student`: Requires Student role authentication.
+    - `Any Authenticated`: Requires any valid logged-in user (Admin, TeachingStaff, or Student).
+
+    **Note:** Timetable generation, manipulation (add/remove intervals), and real-time searching are handled via a SignalR Hub (`/TimeTableHub`) and are not documented as REST endpoints here.
+servers:
+  - url: http://localhost:5165
+    description: Development server (HTTP)
+  - url: https://localhost:7262
+    description: Development server (HTTPS)
+
+tags:
+  - name: Authentications
+    description: User authentication, token refresh, and logout operations.
+  - name: Courses
+    description: Managing courses, including prerequisites and dependencies.
+  - name: TeachingPlaces
+    description: Managing physical locations like halls and labs, and their availability schedules.
+  - name: Users
+    description: User registration, profile management, and managing teaching staff availability schedules.
+
+paths:
+  /api/Authentications:
+    post:
+      tags:
+        - Authentications
+      summary: Authenticate a user and get tokens
+      description: |-
+        Verifies a user's credentials (username and password). If successful, it generates and returns a JWT access token (short-lived) for accessing protected endpoints and a refresh token (longer-lived) used to obtain new access tokens without re-entering credentials. Logs the login attempt details (IP, device, browser, OS) in the background. Only the last 3 login records per user are kept.
+
+        **Required Roles:** `Public`
+      operationId: Auth_AuthenticateUser
+      requestBody:
+        description: User's username and password.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthModel'
+      responses:
+        '200':
+          description: Authentication successful. Returns the access token, refresh token, and refresh token expiry time.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponseDto'
+        '400':
+          description: Bad Request. Likely indicates invalid credentials (username/password mismatch) or malformed request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. The authentication service or its dependencies (like the database) might be down.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Courses:
+    post:
+      tags:
+        - Courses
+      summary: Add a new course
+      description: |-
+        Creates a new course entry in the system with details like code, name, credit hours, level, semester, type, and lecture hours. The system ensures that the combination of `Code` and `Type` is unique. The user creating the course (must be an Admin) is recorded.
+
+        **Required Roles:** `Admin`
+      operationId: Courses_AddCourse
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: [] # Uncomment if API key is enforced
+      requestBody:
+        description: Full details of the new course.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCommandDto'
+      responses:
+        '200':
+          description: Course created successfully. Returns the details of the newly created course, including its generated ID. Cache related to courses might be cleared.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseQueryDto'
+        '400':
+          description: Bad Request. Input validation failed (e.g., missing fields, invalid enum values).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '409':
+          description: Conflict. A course with the same `Code` and `Type` already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database or another critical service.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    get:
+      tags:
+        - Courses
+      summary: Get courses with pagination
+      description: |-
+        Retrieves a list of courses, allowing for pagination and sorting. Useful for displaying courses in lists or selection dialogs.
+
+        **Required Roles:** `Any Authenticated`
+      operationId: Courses_GetCoursesByPagination
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination (0-indexed). Defaults to 0.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Number of courses per page. Server might enforce a default/maximum (e.g., 100) if 0 or a large value is provided. Defaults to server-defined size.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sortByLevelAscending
+          in: query
+          description: If true, sorts courses by `Level` ascending (First, Second, ...). If false, sorts descending. Defaults to true.
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Successfully retrieved a list (potentially empty) of courses according to pagination and sorting parameters.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseQueryDto'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+        - Courses
+      summary: Delete multiple courses by ID
+      description: |-
+        Removes one or more courses from the system based on their IDs. Accepts a maximum of 50 IDs per request. If a course is listed as a dependency for another course (`ParentId` or `ChildId` in `DependentCourse`), the deletion might be restricted by the database depending on constraints (likely `Restrict` in this schema, meaning deletion will fail if referenced).
+
+        **Required Roles:** `Admin`
+      operationId: Courses_DeleteCourses
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters: # Assuming IDs are passed via query string
+        - name: corsId
+          in: query
+          description: Array of course IDs to delete (e.g., ?corsId=1&corsId=2). Maximum 50 IDs.
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: integer
+            maxItems: 50
+      responses:
+        '204':
+          description: Courses were successfully deleted (or none matched the provided IDs). Cache related to courses might be cleared.
+        '400':
+          description: Bad Request. Invalid input, likely too many IDs provided (> 50).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '409': # Or could be 400/422 depending on how DB constraint violations are handled
+          description: Conflict / Unprocessable Entity. Deletion failed, likely because one of the courses is referenced as a dependency by another course.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Courses/{corId}/Dependencies:
+    post:
+      tags:
+        - Courses
+      summary: Add prerequisite courses (dependencies) to a course
+      description: |-
+        Establishes prerequisite relationships. Specifies that the course identified by `corId` (the child) requires the completion of courses listed in the request body (`CoursesId` - the parents). The system prevents adding duplicate dependencies and creating cyclic dependencies (e.g., Course A requires B, and Course B requires A).
+
+        **Required Roles:** `Admin`
+      operationId: Courses_AddCourseDependencies
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: corId
+          in: path
+          description: The ID of the course (child) to which prerequisites are being added.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: A list containing the IDs of the prerequisite courses (parents).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseDependencyCommandDto'
+      responses:
+        '200':
+          description: Dependencies added successfully. Returns the full list of current parent and child dependencies for the target course (`corId`).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDependenciesQueryDto'
+        '400':
+          description: Bad Request. Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '404':
+          description: Not Found. The target course (`corId`) or one of the specified prerequisite courses does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+           description: Conflict. One or more of the specified courses are already prerequisites for the target course.
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Unprocessable Entity. Adding this dependency would create a cyclic relationship.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    get:
+      tags:
+        - Courses
+      summary: Get all dependencies for a course
+      description: |-
+        Retrieves both the prerequisite courses (parents) that the specified course (`corId`) depends on, and the courses (children) that depend on this course (`corId`).
+
+        **Required Roles:** `Any Authenticated`
+      operationId: Courses_GetCourseDependencies
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: corId
+          in: path
+          description: The ID of the course for which to retrieve dependencies.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved the parent and child dependencies for the course. Lists might be empty if no dependencies exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDependenciesQueryDto'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '404':
+          description: Not Found. The course with the specified `corId` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Courses/{corId}:
+    put:
+      tags:
+        - Courses
+      summary: Update an existing course
+      description: |-
+        Modifies the details of a course specified by `corId`. Ensures the updated `Code` and `Type` combination remains unique across courses (excluding the one being updated).
+
+        **Required Roles:** `Admin`
+      operationId: Courses_UpdateCourse
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: corId
+          in: path
+          description: The ID of the course to update.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The updated course details. All fields from `UpdateCourseDto` should be provided.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCourseDto'
+      responses:
+        '200':
+          description: Course updated successfully. Returns the complete updated course details. Cache related to courses might be cleared.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseQueryDto'
+        '400':
+          description: Bad Request. Input validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '404':
+          description: Not Found. The course with the specified `corId` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+           description: Conflict. The updated `Code` and `Type` combination conflicts with another existing course.
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/TeachingPlaces:
+    post:
+      tags:
+        - TeachingPlaces
+      summary: Add a new teaching place
+      description: |-
+        Creates a new teaching place (e.g., lecture hall, computer lab) with a name, capacity, and type. The name must be unique across all teaching places. The user creating the place (must be an Admin) is recorded.
+
+        **Required Roles:** `Admin`
+      operationId: TeachingPlaces_AddTeachingPlace
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      requestBody:
+        description: Details of the teaching place to add (name, capacity, type).
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeachingPlaceCommandDto'
+      responses:
+        '200':
+          description: Teaching place added successfully. Returns the details of the added place, including its generated ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeachingPlaceQueryDto'
+        '400':
+          description: Bad Request. Input validation failed (e.g., missing name, invalid type).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '409':
+           description: Conflict. A teaching place with the same `Name` already exists.
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    get:
+      tags:
+        - TeachingPlaces
+      summary: Get teaching places with pagination
+      description: |-
+        Retrieves a list of teaching places, allowing for pagination. Useful for browsing available locations.
+
+        **Required Roles:** `Any Authenticated`
+      operationId: TeachingPlaces_GetTeachingPlacesByPagination
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination (0-indexed). Defaults to 0.
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Number of teaching places per page. Server might enforce a default/maximum (e.g., 100). Defaults to server-defined size.
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Successfully retrieved a list (potentially empty) of teaching places.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeachingPlaceQueryDto'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+        - TeachingPlaces
+      summary: Delete multiple teaching places by ID
+      description: |-
+        Removes one or more teaching places from the system based on their IDs. Accepts a maximum of 50 IDs per request. Also deletes any associated schedules for these places. Returns the potentially updated list of remaining teaching places (subject to pagination, likely defaults to first page).
+
+        **Required Roles:** `Admin`
+      operationId: TeachingPlaces_DeleteTeachingPlaces
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters: # Assuming IDs are passed via query string
+        - name: ids
+          in: query
+          description: Array of teaching place IDs to delete (e.g., ?ids=1&ids=2). Maximum 50 IDs.
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: integer
+            maxItems: 50
+      responses:
+        '200': # Changed from 204 because the handler returns the remaining list
+          description: Teaching places and their schedules deleted successfully. Returns a potentially updated list of teaching places (likely first page).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeachingPlaceQueryDto'
+        '400':
+          description: Bad Request. Invalid input, likely too many IDs provided (> 50).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/TeachingPlaces/{placeId}/Schedules:
+    post:
+      tags:
+        - TeachingPlaces
+      summary: Add or update schedules for a teaching place
+      description: |-
+        Sets the availability schedule for a specific teaching place. This operation *replaces* any existing schedule for the place with the provided list. The provided intervals are normalized (merged overlapping/adjacent intervals). Accepts a maximum of 50 schedule interval entries per request. Input intervals must be valid (StartFrom < EndTo, within allowed hours 8-18).
+
+        **Required Roles:** `Admin`
+      operationId: TeachingPlaces_AddSchedules
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: placeId
+          in: path
+          description: The ID of the teaching place whose schedule is being set.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: A list of schedule intervals (day, start hour, end hour). Maximum 50 entries. This list will replace the existing schedule.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScheduleBase'
+              maxItems: 50
+      responses:
+        '200':
+          description: Schedules added/updated successfully. Returns the final, normalized list of schedules for the place.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleBase'
+        '400':
+          description: Bad Request. Invalid input data (e.g., invalid interval values like StartFrom >= EndTo, out of range hours, too many entries > 50).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '404':
+          description: Not Found. The teaching place with the specified `placeId` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    get:
+      tags:
+        - TeachingPlaces
+      summary: Get schedules for a teaching place
+      description: |-
+        Retrieves the current availability schedule (list of time intervals) for a specific teaching place.
+
+        **Required Roles:** `Admin`
+      operationId: TeachingPlaces_GetSchedules
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: placeId
+          in: path
+          description: The ID of the teaching place to query.
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successfully retrieved the schedule intervals for the teaching place. The list may be empty if no schedule is set.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleBase'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '404':
+          description: Not Found. The teaching place with the specified `placeId` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/TeachingPlaces/{placeId}:
+    put:
+      tags:
+        - TeachingPlaces
+      summary: Update an existing teaching place
+      description: |-
+        Modifies the details (name, capacity, type) of a teaching place specified by `placeId`. Ensures the updated `Name` remains unique across all teaching places (excluding the one being updated).
+
+        **Required Roles:** `Admin`
+      operationId: TeachingPlaces_UpdateTeachingPlace
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: placeId
+          in: path
+          description: The ID of the teaching place to update.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: The updated teaching place details.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeachingPlaceCommandDto'
+      responses:
+        '200':
+          description: Teaching place updated successfully. Returns the complete updated place details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeachingPlaceQueryDto'
+        '400':
+          description: Bad Request. Input validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '404':
+          description: Not Found. The teaching place with the specified `placeId` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+           description: Conflict. The updated `Name` conflicts with another existing teaching place.
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Users:
+    post:
+      tags:
+        - Users
+      summary: Register a new user (Student or Teaching Staff)
+      description: |-
+        Creates a new user account. Requires providing user details including username, password, name, date of birth, gender, level, and role (`Student` or `TeachingStaff`). The `Admin` role cannot be assigned via this endpoint. Username must be unique. A unique `FullId` (GUID) is generated internally.
+
+        **Required Roles:** `Public`
+      operationId: Users_RegisterUser
+      requestBody:
+        description: Details of the user to register. `Role` must be `Student` or `TeachingStaff`.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserCommandDto'
+      responses:
+        '204': # Changed from implicit 200 to 204 as handler returns Task (void)
+          description: User registered successfully.
+        '400':
+          description: Bad Request. Input validation failed (e.g., username already exists, invalid role, missing fields).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Users/{userName}/Schedules:
+    post:
+      tags:
+        - Users
+      summary: Add or update schedules for a specific teaching staff member
+      description: |-
+        Sets the availability schedule for a teaching staff member identified by their `userName`. This operation *replaces* any existing schedule for the staff member. The target user must have the `TeachingStaff` role. The provided intervals are normalized. Accepts a maximum of 50 schedule interval entries per request. Input intervals must be valid.
+
+        **Required Roles:** `Admin`
+      operationId: Users_AddStaffSchedules
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: userName
+          in: path
+          description: The username of the teaching staff member whose schedule is being set. Max length 100.
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+      requestBody:
+        description: A list of schedule intervals (day, start hour, end hour). Maximum 50 entries. This list will replace the existing schedule.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ScheduleBase'
+              maxItems: 50
+      responses:
+        '200':
+          description: Schedules added/updated successfully. Returns the final, normalized list of schedules for the staff member.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleBase'
+        '400':
+          description: Bad Request. Invalid input data (e.g., invalid interval values, too many entries > 50).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+          description: Forbidden. The authenticated user does not have the required `Admin` role.
+        '404':
+          description: Not Found. The user with the specified `userName` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Unprocessable Entity. The target user does not have the `TeachingStaff` role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Users/{fullId}:
+    put:
+      tags:
+        - Users
+      summary: Update user's basic information
+      description: |-
+        Updates basic profile information (First Name, Last Name, Date of Birth, Gender) for the user identified by `fullId`. Username, Role, Level, and Password cannot be changed via this endpoint. Users can typically update their own information. Admins might potentially update others, although the primary intent is self-update.
+
+        **Required Roles:** `Any Authenticated` (intended for self-update, Admin may be able to update others)
+      operationId: Users_UpdateUser
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: fullId
+          in: path
+          description: The unique `FullId` (GUID) of the user to update. Max length 50.
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      requestBody:
+        description: The user information fields to update. Note that `UserName`, `Role`, `Level` in the DTO might be ignored by the backend for updates.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserDto'
+      responses:
+        '200':
+          description: User updated successfully. Returns the updated basic user information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoDto'
+        '400':
+          description: Bad Request. Input validation failed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired. (Or potentially trying to update another user without Admin rights, if enforced).
+        '403':
+           description: Forbidden. Potentially if a non-Admin tries to update another user and it's disallowed.
+        '404':
+          description: Not Found. The user with the specified `fullId` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    get:
+      tags:
+        - Users
+      summary: Get user's basic information by Full ID
+      description: |-
+        Retrieves basic profile information (First Name, Last Name, Username, Gender, etc.) for the user identified by `fullId`. Does not return sensitive information like password hash.
+
+        **Required Roles:** `Any Authenticated` (intended for self-viewing or Admin viewing)
+      operationId: Users_GetUserInfo
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: fullId
+          in: path
+          description: The unique `FullId` (GUID) of the user to retrieve information for. Max length 50.
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      responses:
+        '200':
+          description: User information retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoDto'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+           description: Forbidden. Potentially if a non-Admin tries to view another user and it's disallowed.
+        '404':
+          description: Not Found. The user with the specified `fullId` does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Users/{fullId}/Authentications:
+    delete:
+      tags:
+        - Authentications
+      summary: Logout user session (revoke refresh token)
+      description: |-
+        Invalidates a specific user session by revoking the provided `refreshToken` associated with the user's `fullId`. This effectively logs the user out from the session that uses this refresh token. A user can revoke their own token, or an Admin might revoke a token for any user.
+
+        **Required Roles:** `Any Authenticated` (for self-logout), `Admin` (to logout others)
+      operationId: Users_Logout
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: fullId
+          in: path
+          description: The unique `FullId` (GUID) of the user whose session is being logged out. Max length 50.
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      requestBody:
+        description: The specific refresh token to revoke for this user.
+        required: true
+        content:
+          application/json: # Assuming refresh token is sent in body based on [FromBody] attribute
+             schema:
+               type: string
+               maxLength: 50 # Matches annotation
+               example: "your_refresh_token_string"
+      responses:
+        '204':
+          description: Logout successful. The specified refresh token has been marked as revoked.
+        '400':
+          description: Bad Request. Invalid input (e.g., malformed refresh token format).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '401':
+          description: Unauthorized. JWT token invalid, or the provided refresh token is already expired/revoked, or does not belong to the specified user. (Or potentially trying to revoke another user's token without Admin rights).
+        '403':
+           description: Forbidden. Potentially if a non-Admin tries to revoke another user's token and it's disallowed.
+        '404':
+          description: Not Found. The user (`fullId`) or the specific refresh token associated with that user was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    get:
+      tags:
+        - Authentications
+      summary: Get a new access token using a refresh token
+      description: |-
+        Allows a client to obtain a new JWT access token without requiring the user to log in again. Requires providing the user's `fullId` and a valid, non-expired, non-revoked `refreshToken`.
+
+        **Required Roles:** `Public`
+      operationId: Auth_GetAccessToken
+      parameters:
+        - name: fullId
+          in: path
+          description: The unique `FullId` (GUID) of the user requesting a new token. Max length 50.
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+        - name: refreshToken
+          in: query
+          description: The valid refresh token previously issued to the user. Max length 50.
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      responses:
+        '200':
+          description: New access token generated successfully. The response body contains the new JWT string.
+          content:
+            text/plain: # Or application/json if wrapped in an object
+              schema:
+                type: string
+                description: The new JWT access token.
+        '404':
+          description: Not Found. The user (`fullId`) or the provided refresh token was not found or does not match.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '422':
+          description: Unprocessable Entity. The provided refresh token has expired or has been revoked.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+  /api/Users/{fullId}/Schedules:
+    get:
+      tags:
+        - Users
+      summary: Get availability schedules for a specific teaching staff member by Full ID
+      description: |-
+        Retrieves the current availability schedule (list of time intervals) for a user identified by `fullId`. The target user *must* have the `TeachingStaff` role.
+
+        **Required Roles:** `Any Authenticated` (intended for self-viewing or Admin viewing)
+      operationId: Users_GetStaffSchedules
+      security:
+        - BearerAuth: []
+        # - ApiKeyAuth: []
+      parameters:
+        - name: fullId
+          in: path
+          description: The unique `FullId` (GUID) of the teaching staff member to query. Max length 50.
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      responses:
+        '200':
+          description: Successfully retrieved the schedule intervals for the staff member. The list may be empty if no schedule is set.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ScheduleBase'
+        '401':
+          description: Unauthorized. JWT token is missing, invalid, or expired.
+        '403':
+           description: Forbidden. Potentially if a non-Admin tries to view another user's schedule and it's disallowed.
+        '404':
+          description: Not Found. The user with the specified `fullId` does not exist or does not have the `TeachingStaff` role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '503':
+          description: Service Unavailable. Could not connect to the database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
+components:
+  schemas:
+    AuthModel:
+      type: object
+      properties:
+        userName:
+          type: string
+          maxLength: 100
+        passworod: # Note: Typo in original code 'Passworod'
+          type: string
+          format: password
+          maxLength: 100
+      required:
+        - userName
+        - passworod
+
+    AuthResponseDto:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT Access Token.
+        refreshToken:
+          type: string
+          description: Refresh Token.
+        refreshTokenExpireTime:
+          type: string
+          format: date-time
+          description: Expiry date/time of the refresh token.
+      required:
+        - token
+        - refreshToken
+        - refreshTokenExpireTime
+
+    CourseBase: # Base class, properties included directly in derived DTOs
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 100
+          description: Unique code identifying the course (e.g., "CS101"). Unique in combination with Type.
+        name:
+          type: string
+          maxLength: 100
+          description: Full name of the course (e.g., "Introduction to Programming").
+        creditHours:
+          type: integer
+          description: Number of credit hours awarded for completing the course.
+        level:
+          $ref: '#/components/schemas/Levels'
+          description: The academic level this course belongs to.
+        semester:
+          $ref: '#/components/schemas/Semesters'
+          description: The semester (First or Second) in which the course is typically offered.
+        type:
+          $ref: '#/components/schemas/CourseTypes'
+          description: The type of course (Lecture or Practical).
+        lectureHours:
+          type: integer
+          description: Number of hours per week required for this course component (used for scheduling).
+      required:
+        - code
+        - name
+        - creditHours
+        - level
+        - semester
+        - type
+        - lectureHours
+
+    CourseCommandDto:
+      description: DTO for creating a new course. Inherits properties from CourseBase.
+      allOf:
+        - $ref: '#/components/schemas/CourseBase'
+
+    UpdateCourseDto:
+      description: DTO for updating an existing course. Inherits properties from CourseBase.
+      allOf:
+        - $ref: '#/components/schemas/CourseBase'
+
+    CourseQueryDto:
+      description: DTO representing a course returned by the API, including its ID. Inherits properties from CourseBase.
+      allOf:
+        - $ref: '#/components/schemas/CourseBase'
+      type: object # Need to specify type: object again when using allOf
+      properties:
+        id:
+          type: integer
+          description: The unique database identifier for the course.
+      required: # Add required from base + new
+        - code
+        - name
+        - creditHours
+        - level
+        - semester
+        - type
+        - lectureHours
+        - id
+
+    CourseDependencyCommandDto:
+      type: object
+      properties:
+        coursesId:
+          type: array
+          items:
+            type: integer
+          description: List of parent course IDs that are prerequisites for the target course.
+      required:
+        - coursesId
+
+    CourseDependenciesQueryDto:
+      type: object
+      properties:
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseQueryDto'
+          description: List of prerequisite courses (parents) that the target course depends on.
+        childs:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseQueryDto'
+          description: List of courses (children) that have the target course listed as their prerequisite.
+      required:
+        - parents
+        - childs
+
+    TeachingPlaceBase: # Base class
+      type: object
+      properties:
+        name:
+          type: string
+          description: Unique name of the teaching place (e.g., "Hall A", "Lab 301").
+        capacity:
+          type: integer
+          description: Maximum number of students the place can accommodate.
+        type:
+          $ref: '#/components/schemas/TeachingPlaces'
+          description: The type of the teaching place.
+      required:
+        - name
+        - capacity
+        - type
+
+    TeachingPlaceCommandDto:
+      description: DTO for creating or updating a teaching place. Inherits properties from TeachingPlaceBase.
+      allOf:
+        - $ref: '#/components/schemas/TeachingPlaceBase'
+
+    TeachingPlaceQueryDto:
+      description: DTO representing a teaching place returned by the API, including its ID. Inherits properties from TeachingPlaceBase.
+      allOf:
+        - $ref: '#/components/schemas/TeachingPlaceBase'
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique database identifier for the teaching place.
+      required: # Add required from base + new
+        - name
+        - capacity
+        - type
+        - id
+
+    ScheduleBase:
+      type: object
+      properties:
+        day:
+          $ref: '#/components/schemas/DayOfWeek'
+          description: The day of the week for this schedule interval.
+        startFrom:
+          type: integer
+          format: int32
+          minimum: 8
+          maximum: 17
+          description: The hour when the interval starts (inclusive, e.g., 8 means 8:00). Range 8-17.
+        endTo:
+          type: integer
+          format: int32
+          minimum: 9
+          maximum: 18
+          description: The hour when the interval ends (exclusive, e.g., 9 means ending at 9:00). Range 9-18. Must be greater than `startFrom`.
+      required:
+        - day
+        - startFrom
+        - endTo
+      example:
+        day: Monday
+        startFrom: 10
+        endTo: 12 # Represents the interval 10:00 - 12:00
+
+    UserBase: # Base class
+      type: object
+      properties:
+        firstName:
+          type: string
+          maxLength: 100
+          description: User's first name.
+        lastName:
+          type: string
+          maxLength: 100
+          description: User's last name.
+        userName:
+          type: string
+          maxLength: 100
+          description: Unique username for login.
+        gender:
+          $ref: '#/components/schemas/Gender'
+          description: User's gender.
+        role:
+          $ref: '#/components/schemas/UserRoles'
+          description: The role assigned to the user (influences permissions).
+        level:
+          $ref: '#/components/schemas/Levels'
+          description: Academic level (for Students) or professional level (for Staff).
+        dateOfBirth:
+          type: string
+          format: date
+          description: User's date of birth.
+      required:
+        - firstName
+        - lastName
+        - userName
+        - gender
+        - role
+        - level
+        - dateOfBirth
+
+    RegisterUserCommandDto:
+      description: DTO for registering a new user. Includes password. Inherits properties from UserBase.
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+          description: User's chosen password. Will be hashed before storing.
+      required: # Add required from base + new
+        - firstName
+        - lastName
+        - userName
+        - gender
+        - role
+        - level
+        - dateOfBirth
+        - password
+
+    UpdateUserDto:
+      description: DTO for updating basic user information. Role, Level, Username changes might be ignored. Inherits properties from UserBase.
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+
+    UserInfoDto:
+      description: DTO representing basic user information returned by the API. Inherits properties from UserBase. Does not include sensitive data.
+      allOf:
+        - $ref: '#/components/schemas/UserBase'
+
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          description: A URI reference that identifies the problem type.
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type.
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem.
+        instance:
+          type: string
+          description: A URI reference that identifies the specific occurrence of the problem (often the request path).
+        requestId: # Custom extension from code
+           type: string
+           description: The trace identifier for the request, useful for correlation in logs.
+        traceId: # Custom extension from code
+           type: string
+           description: The activity trace identifier, useful for distributed tracing.
+      description: Standard RFC 7807 problem details object used for error responses.
+
+    # --- Enums ---
+    Levels:
+      type: string
+      enum:
+        - None
+        - First
+        - Second
+        - Third
+        - Fourth
+        - Graduated
+        - TeachingAssistant
+        - TeachingLecturer
+      description: Represents academic or staff levels.
+    Semesters:
+      type: string # Stored as string in DB based on config
+      enum: [First, Second]
+      description: Represents the academic semester.
+    CourseTypes:
+      type: string # Stored as string in DB based on config
+      enum: [Lecture, Practical]
+      description: Represents the type of the course component.
+    TeachingPlaces:
+      type: string # Stored as string in DB based on config
+      enum: [Hall, Lab, Stadium]
+      description: Represents the type of physical teaching location.
+    Gender:
+      type: string # Stored as string in DB based on config
+      enum: [Male, Female]
+      description: Represents the gender of a user.
+    UserRoles:
+      type: string # Stored as string in DB based on config
+      enum: [Admin, TeachingStaff, Student]
+      description: Represents the role determining user permissions.
+    DayOfWeek:
+      type: string # Stored as string in DB based on config
+      enum:
+       - Sunday
+       - Monday
+       - Tuesday
+       - Wednesday
+       - Thursday
+       - Friday
+       - Saturday
+      description: Represents the day of the week.
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |-
+        Enter JWT Bearer token **_only_**. Example: `Bearer {your_token}`.
+        Obtained via the `/api/Authentications` (POST) endpoint. Required for most endpoints unless marked `Public`.
+    ApiKeyAuth:
+       type: apiKey
+       in: header
+       name: x-api-key # From appsettings.json
+       description: API Key for server-to-server or authorized external access. May be required depending on deployment configuration and endpoint attributes.
