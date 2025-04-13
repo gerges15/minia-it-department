@@ -3,10 +3,11 @@ import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import api from "./axiosInstance";
 import { setErrorMsg, clearErrorMsg } from '../src/state/errorMsgSlice';
+import { openLoading, disableLoading } from '../src/state/loadingSlice';
+export const login = async (credentials, dispatch, auth_store) => {
 
-export const login = async (credentials, dispatch, auth_store, setIsLoading) => {
-
-    setIsLoading(true)
+  
+    dispatch(openLoading())
 
     try {
         const API_KEY = import.meta.env.VITE_API_KEY;
@@ -53,7 +54,7 @@ export const login = async (credentials, dispatch, auth_store, setIsLoading) => 
         throw err;
     }
     finally {
-        setIsLoading(false);
+        dispatch(disableLoading());
     }
 };
 
