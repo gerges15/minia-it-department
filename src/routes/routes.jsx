@@ -1,16 +1,22 @@
 import { createBrowserRouter } from 'react-router';
-
+import NotFound from '../pages/NotFound';
+import ForgotPassword from '../pages/ForgotPassword';
 import Admin from '../components/pages/Admin';
 
 import Login from '../pages/Login';
 
+const rootPage = {
+  path: '/',
+  errorElement: <NotFound />,
+  children: [
+    { index: true, Component: Login },
+    { path: 'forgot-password', Component: ForgotPassword },
+    { path: 'admin', Component: Admin },
+  ],
+};
+
 const router = createBrowserRouter([
-  {
-    children: [
-      { index: true, Component: Login },
-      { path: 'admin', Component: Admin },
-    ],
-  },
+  rootPage,
   {
     path: 'admin',
     Component: Admin,
