@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 
 import { login } from '../../API/auth';
-import useAuthStore from '../Stores/useAuthStore';
+import useAuthStore from '../store/useAuthStore';
 
 import UserNameInput from './UserNameInput';
 import PasswordInput from './PasswordInput';
 import ForgotPasswordLink from './ForgotPasswordLink';
 import SubmitButton from './SubmitButton';
-import ErrorMsg from './ErrorMsg';
+import ErrMsg from './ErrMsg';
 
 export default function LoginRightSide() {
-  const [error, setError] = useState('');
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const auth_store = useAuthStore();
 
@@ -34,7 +34,7 @@ export default function LoginRightSide() {
           <UserNameInput />
           <PasswordInput />
           <ForgotPasswordLink />
-          <ErrorMsg />
+          <ErrMsg />
           <SubmitButton />
         </form>
       </div>
