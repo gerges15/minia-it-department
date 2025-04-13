@@ -1,32 +1,37 @@
 import EyeIcon from '../assets/svg/EyeIcon';
 import EyeOffIcon from '../assets/svg/EyeOffIcon';
 import { useState } from 'react';
+import { useDispatch,useSelector } from 'react-redux';
+import { setPassword } from "../state/userSlice.js";
+import { clearErrorMsg } from '../state/errorMsgSlice.js';
 
-export default function PasswordInput() {
-  const [error, setError] = useState('');
-
-  const [password, setPassword] = useState('');
+export default function PasswordInput() { 
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const error = useSelector(state => state.errorMsg.value)
+  const isLoading = useSelector(state => state.loading.value)
+  const password = useSelector(state => state.user.value.password)
 
-  // Clear error when user starts typing again
-  const handleInputChange = setter => e => {
-    setter(e.target.value);
+  const handleInputChange = function(e){
+    const targetValue = e.target.value;
+    dispatch(setPassword(targetValue))
+
     if (error) {
-      setError('');
+      dispatch(clearErrorMsg())
     }
-  };
+  }
   return (
     <div className="mb-5 relative">
       <input
         type={showPassword ? 'text' : 'password'}
         placeholder="Enter your password"
         value={password}
-        onChange={handleInputChange(setPassword)}
+        onChange={handleInputChange}
         required
         disabled={isLoading}
         className="w-full p-4 border border-gray-300 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7e57c2] transition-all disabled:bg-gray-100 disabled:cursor-not-allowed" // Added disabled styles
       />
+      
       {/* show password btn */}
       <button
         type="button"
