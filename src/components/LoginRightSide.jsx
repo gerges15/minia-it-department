@@ -13,7 +13,6 @@ import { useDispatch } from 'react-redux';
 export default function LoginRightSide() {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const auth_store = useAuthStore();
 
@@ -22,7 +21,7 @@ export default function LoginRightSide() {
 
     const credentials = { userName, password };
 
-    await login(credentials, dispatch, auth_store, setIsLoading);
+    await login(credentials, dispatch, auth_store);
   };
 
   return (
