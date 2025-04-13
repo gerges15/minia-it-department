@@ -1,50 +1,24 @@
 import { createBrowserRouter } from 'react-router';
 import NotFound from '../pages/NotFound';
 import ForgotPassword from '../pages/ForgotPassword';
-import Admin from '../components/pages/Admin';
-
 import Login from '../pages/Login';
+import HomePage from '../pages/HomePage';
+import { Component } from 'react';
 
-const rootPage = {
+const rootRoute = {
   path: '/',
   errorElement: <NotFound />,
   children: [
     { index: true, Component: Login },
     { path: 'forgot-password', Component: ForgotPassword },
-    { path: 'admin', Component: Admin },
   ],
 };
 
-const router = createBrowserRouter([
-  rootPage,
-  {
-    path: 'admin',
-    Component: Admin,
-    children: [
-      {
-        index: true,
-        element: <div>hello</div>,
-      },
-    ],
-  },
+const loginRoute = {
+  path: 'login',
+  Component: Login,
+};
 
-  {
-    // no component, just a path
-    path: '/projects',
-    children: [
-      { index: true, Component: Admin },
-      { path: ':pid', Component: Login },
-      { path: ':pid/edit', Component: Admin },
-    ],
-  },
-  {
-    path: 'login',
-    Component: Login,
-  },
-  {
-    path: 'student',
-    element: <h1>Hello this is the page of student</h1>,
-  },
-]);
+const router = createBrowserRouter([rootRoute, loginRoute]);
 
 export default router;

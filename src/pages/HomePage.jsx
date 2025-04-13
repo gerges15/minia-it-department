@@ -3,12 +3,12 @@ import { Outlet, useLocation } from "react-router-dom";
 import MobileNavToggle from "../Components/Home/MobileNavToggle";
 import MobileSidebar from "../Components/Home/MobileSidebar";
 import DesktopSidebar from "../Components/Home/DesktopSidebar";
-import useSidebarStore from "../Stores/useSidebarStore";
+import useSidebarStore from "../store/useSidebarStore";
 
-const HomePage = () => {
+export default function HomePage() {
     const { isSidebarOpen, toggle } = useSidebarStore();
     const currentPath = useLocation().pathname;
-
+    console.log("current in home page")
     const renderMainPage = () => {
         if (currentPath === "/")
             return (
@@ -46,4 +46,3 @@ const HomePage = () => {
     );
 };
 
-export default HomePage;

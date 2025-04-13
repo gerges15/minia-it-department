@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import { FiHome, FiCalendar, FiBook, FiUsers, FiBriefcase, FiGrid, FiLogOut, FiX } from "react-icons/fi";
-import useSidebarStore from "../../Stores/useSidebarStore";
+import useSidebarStore from "../../store/useSidebarStore";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 

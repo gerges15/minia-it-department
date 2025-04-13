@@ -1,5 +1,5 @@
 import React from "react";
-import useSidebarStore from "../../Stores/useSidebarStore";
+import useSidebarStore from "../../store/useSidebarStore";
 import SidebarContent from "./SidebarContent";
 export default function MobileSidebar() {
     const { isSidebarOpen } = useSidebarStore();

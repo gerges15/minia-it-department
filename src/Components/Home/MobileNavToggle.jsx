@@ -1,6 +1,6 @@
 import React from "react";
 import { FiMenu } from "react-icons/fi";
-import useSidebarStore from "../../Stores/useSidebarStore";
+import useSidebarStore from "../../store/useSidebarStore";
 
 export default function MobileNavToggle() {
     const { toggle } = useSidebarStore();
