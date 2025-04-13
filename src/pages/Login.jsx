@@ -1,17 +1,11 @@
 import React from 'react';
 import LoginLeftSide from '../components/LoginLeftSide';
 import LoginRightSide from '../components/LoginRightSide';
-
+import LoginForm from '../components/molecules/LoginForm';
 const LoginPage = () => {
-  const LoginPageStyles = {
-    container: 'flex h-screen  w-screen bg-[#f5f5f0]',
-    login: 'flex justify-center w-full h-full',
-  };
-
   return (
-    <div className={LoginPageStyles.container}>
-      <div className={LoginPageStyles.login}>
-        <LoginLeftSide />
+    <div className="flex h-screen  w-screen bg-[#f5f5f0]">
+      <div className="flex justify-center w-full h-full">
         <LoginRightSide />
       </div>
     </div>

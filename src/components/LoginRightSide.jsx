@@ -5,6 +5,7 @@ import useAuthStore from '../Stores/useAuthStore';
 import EyeIcon from '../assets/svg/EyeIcon';
 import EyeOffIcon from '../assets/svg/EyeOffIcon';
 import Spinner from '../Components/Common/Spinner';
+import SingUpLink from '../Components/SingUpLink';
 
 export default function LoginRightSide() {
   const [error, setError] = useState('');
@@ -34,13 +35,7 @@ export default function LoginRightSide() {
     <div className="w-full lg:w-1/2 p-6 md:p-12 flex items-center justify-center bg-white">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Log in</h1>
-        <p className="text-gray-500 mb-8">
-          Don't have an account?{' '}
-          <Link to="/signup" className="text-[#7e57c2] hover:underline">
-            Sign up
-          </Link>
-        </p>
-
+        <SingUpLink />
         <form onSubmit={handleSubmit}>
           {/* userName input */}
           <div className="mb-5">
