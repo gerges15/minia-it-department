@@ -1,11 +1,13 @@
 import { createBrowserRouter } from 'react-router';
-import { Login } from '../components/pages/Login';
-import Zlogin from '../components/pages/Zlogin';
+
 import Admin from '../components/pages/Admin';
+
+import Login from '../pages/Login';
+
 const router = createBrowserRouter([
   {
     children: [
-      { index: true, Component: Zlogin },
+      { index: true, Component: Login },
       { path: 'admin', Component: Admin },
     ],
   },
