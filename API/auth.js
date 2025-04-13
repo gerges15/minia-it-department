@@ -1,22 +1,24 @@
+
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import api from "./axiosInstance";
+import { setErrorMsg, clearErrorMsg } from '../src/state/errorMsgSlice';
 
-export const login = async (credentials, setError, auth_store, setIsLoading) => {
+export const login = async (credentials, dispatch, auth_store, setIsLoading) => {
 
     setIsLoading(true)
 
     try {
         const API_KEY = import.meta.env.VITE_API_KEY;
         console.log(API_KEY)
-        setError('');
+        dispatch(clearErrorMsg());
 
         // fetch
         const res = await api.post('/Authentications', credentials);
         const { token, refreshToken, refreshTokenExpireTime } = res.data;
 
         if (!token || !refreshToken) {
-            setError('Invalid authentication response')
+            dispatch(setErrorMsg('Invalid authentication response'))
             throw new Error('Invalid authentication response');
         }
 
@@ -46,7 +48,7 @@ export const login = async (credentials, setError, auth_store, setIsLoading) => 
 
     } catch (err) {
         const errorMessage = err.response?.data?.detail || 'Authentication failed';
-        setError(errorMessage);
+        dispatch(setErrorMsg(errorMessage));
         console.error('Login error:', err);
         throw err;
     }
