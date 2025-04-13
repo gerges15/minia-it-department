@@ -1,26 +1,20 @@
-import { useDispatch,useSelector } from 'react-redux';
-import { setUserName as aSetUsrN } from "../state/userSlice.js";
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserName } from '../state/userSlice.js';
 import { clearErrorMsg } from '../state/errorMsgSlice.js';
-
 
 export default function UserNameInput() {
   const dispatch = useDispatch();
-  const isLoading = useSelector(state => state.loading.value)
-  const aUserName = useSelector(state => state.user.value.name)
-  const error = useSelector(state => state.errorMsg.value)
+  const isLoading = useSelector(state => state.loading.value);
+  const aUserName = useSelector(state => state.user.value.name);
 
-
-  const handleInputChange = function(e){
+  const handleInputChange = function (e) {
     const targetValue = e.target.value;
-    dispatch(aSetUsrN(targetValue))
+    dispatch(setUserName(targetValue));
+    dispatch(clearErrorMsg());
+  };
 
-    if (error) {
-      dispatch(clearErrorMsg())
-    }
-  }
+  console.log(aUserName);
 
-  
-  
   return (
     <div className="mb-5">
       <input
