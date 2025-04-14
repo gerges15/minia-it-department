@@ -1,6 +1,6 @@
 import React from "react";
 import { FiPlusSquare, FiList, FiEdit, FiTrash2, FiCalendar } from "react-icons/fi";
-import ActionBox from "../Components/TeachingPlaces/ActionBox";
+import ActionBox from "../components/TeachingPlaces/ActionBox";
 
 const ManageTeachingPlaces = () => {
     return (

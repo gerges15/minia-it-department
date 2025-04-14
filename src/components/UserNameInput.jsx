@@ -13,8 +13,6 @@ export default function UserNameInput() {
     dispatch(clearErrorMsg());
   };
 
-  console.log(aUserName);
-
   return (
     <div className="mb-5">
       <input

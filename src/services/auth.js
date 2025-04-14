@@ -1,8 +1,8 @@
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import api from './axiosInstance';
-import { setErrorMsg, clearErrorMsg } from '../src/state/errorMsgSlice';
-import { openLoading, disableLoading } from '../src/state/loadingSlice';
+import { setErrorMsg, clearErrorMsg } from '../state/errorMsgSlice';
+import { openLoading, disableLoading } from '../state/loadingSlice';
 export const login = async (credentials, dispatch, auth_store) => {
   dispatch(openLoading());
 

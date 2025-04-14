@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { login } from '../../API/auth';
+import { login } from '../services/auth';
 import useAuthStore from '../store/useAuthStore';
 
 import { useDispatch, useSelector } from 'react-redux';

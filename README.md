@@ -11,37 +11,35 @@ The Scholar Management System is a comprehensive web-based platform designed to 
 ## 📁 Project Structure
 
 ```
-project-root/
+minia-it-department/
+├── docs/
+├── examples/
 ├── public/
-│   ├── index.html
-│   └── assets/
 ├── src/
 │   ├── assets/
-│   │   ├── fonts/
-│   │   ├── images/
-│   │   ├── icons/
-│   │   └── svg/
 │   ├── components/
-│   │   │   ├── atoms/
-│   │   │   │
-│   │   ├── molecules/
-│   │   ├── organisms/
-│   │   ├── templates/
-│   │   └── pages/
 │   ├── hooks/
-│   ├── context/
+│   ├── pages/
+│   ├── routes/
 │   ├── services/
 │   │   ├── api.js
 │   │   └── auth.js
+│   ├── state/
+│   ├── store/
 │   ├── utils/
-│   ├── styles/
-│   ├── routes/
+│   │   ├── helpers.js
+│   │   └── validators.js
+│   ├── App.css
 │   ├── App.jsx
-│   └── index.jsx
-├── package.json
-├── .eslintrc.js
-├── .prettierrc
+│   ├── Index.css
+│   └── Main.jsx
 ├── .gitignore
+├── .prettierrc
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
 ├── README.md
-└── vite.config.js (or webpack.config.js)
+├── vercel.json
+└── vite.config.js
 ```

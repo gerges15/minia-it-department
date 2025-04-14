@@ -1,8 +1,8 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import MobileNavToggle from "../Components/Home/MobileNavToggle";
-import MobileSidebar from "../Components/Home/MobileSidebar";
-import DesktopSidebar from "../Components/Home/DesktopSidebar";
+import MobileNavToggle from "../components/Home/MobileNavToggle";
+import MobileSidebar from "../components/Home/MobileSidebar";
+import DesktopSidebar from "../components/Home/DesktopSidebar";
 import useSidebarStore from "../store/useSidebarStore";
 
 export default function HomePage() {

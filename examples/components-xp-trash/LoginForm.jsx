@@ -1,15 +1,15 @@
-import Container from "../atoms/Container";
-import Input from "../atoms/Input";
-import { userIdProps, passwordProps } from "../../../public/Data/userData";
+import Container from '../atoms/Container';
+import Input from '../atoms/Input';
+import { userIdProps, passwordProps } from '../../public/Data/userData';
 
-import "../../styles/molecules/LoginForm.css";
-import { useState } from "react";
+import '../../styles/molecules/LoginForm.css';
+import { useState } from 'react';
 
-import EyeBtn from "../atoms/EyeBtn";
-import { NavLink } from "react-router";
+import EyeBtn from '../atoms/EyeBtn';
+import { NavLink } from 'react-router';
 function LoginForm({ path }) {
   const [isShowed, setShow] = useState(false);
-  const [id, setValue] = useState("");
+  const [id, setValue] = useState('');
 
   function handelShown() {
     setShow(!isShowed);
@@ -25,12 +25,12 @@ function LoginForm({ path }) {
       <Input
         {...userIdProps}
         getValue={handelInput}
-        error={isValidId(id) ? "" : "error"}
+        error={isValidId(id) ? '' : 'error'}
       />
       <Input
         className="pass-input"
         {...passwordProps}
-        type={isShowed ? "text" : "password"}
+        type={isShowed ? 'text' : 'password'}
       >
         <EyeBtn handelShown={handelShown} isShowed={isShowed} />
       </Input>
@@ -49,6 +49,6 @@ function LoginForm({ path }) {
 
 function isValidId(ID) {
   const numbersOnly = /^[0-9]*$/;
-  return numbersOnly.test(ID) && ID != "";
+  return numbersOnly.test(ID) && ID != '';
 }
 export default LoginForm;

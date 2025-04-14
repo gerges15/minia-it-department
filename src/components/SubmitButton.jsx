@@ -1,5 +1,4 @@
-
-import Spinner from '../Components/Common/Spinner';
+import Spinner from '../components/Common/Spinner';
 import { useSelector } from 'react-redux';
 export default function SubmitButton() {
   const isLoading = useSelector(state => state.loading.value);
