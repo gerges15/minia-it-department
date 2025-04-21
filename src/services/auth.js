@@ -53,8 +53,6 @@ export const login = async () => {
 
     // set token in headers
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-    window.location.href = '/';
   } catch (err) {
     const errorMessage = err.response?.data?.detail || 'Authentication failed';
     setError(errorMessage);
