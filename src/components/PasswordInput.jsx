@@ -1,28 +1,27 @@
 import EyeIcon from '../assets/svg/EyeIcon';
 import EyeOffIcon from '../assets/svg/EyeOffIcon';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setPassword } from '../state/userSlice.js';
-import { clearError, setError } from '../store/useErrorMessageStore.js';
+import { useSelector } from 'react-redux';
+
+import { useUserStore } from '../store/useUserStore.js';
+import { clearError } from '../store/useErrorMessageStore.js';
 
 export default function PasswordInput() {
+  const { setPassword, userPassword } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
-  const dispatch = useDispatch();
   const isLoading = useSelector(state => state.loading.value);
-  const password = useSelector(state => state.user.value.password);
 
   const handleInputChange = function (e) {
-    const targetValue = e.target.value;
-    dispatch(setPassword(targetValue));
-
+    setPassword(e.target.value);
     clearError();
   };
+
   return (
     <div className="mb-5 relative">
       <input
         type={showPassword ? 'text' : 'password'}
         placeholder="Enter your password"
-        value={password}
+        value={userPassword}
         onChange={handleInputChange}
         required
         disabled={isLoading}

@@ -1,16 +1,13 @@
-import { useDispatch, useSelector } from 'react-redux';
-import { setUserName } from '../state/userSlice.js';
-
+import { useSelector } from 'react-redux';
+import { useUserStore } from '../store/useUserStore.js';
 import { clearError } from '../store/useErrorMessageStore.js';
 
 export default function UserNameInput() {
-  const dispatch = useDispatch();
+  const { setUserName, userName } = useUserStore();
   const isLoading = useSelector(state => state.loading.value);
-  const aUserName = useSelector(state => state.user.value.name);
 
   const handleInputChange = function (e) {
-    const targetValue = e.target.value;
-    dispatch(setUserName(targetValue));
+    setUserName(e.target.value);
     clearError();
   };
 
@@ -19,7 +16,7 @@ export default function UserNameInput() {
       <input
         type="text"
         placeholder="Username"
-        value={aUserName}
+        value={userName}
         onChange={handleInputChange}
         required
         disabled={isLoading}
