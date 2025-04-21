@@ -4,15 +4,19 @@ import api from './axiosInstance';
 import { openLoading, disableLoading } from '../store/useLoadingStore';
 
 import { clearError, setError } from '../store/useErrorMessageStore';
-export const login = async (credentials, dispatch, auth_store) => {
+import { userName, userPassword } from '../store/useUserStore';
+export const login = async auth_store => {
   openLoading();
-
+  const theCredentials = {
+    userName: userName(),
+    password: userPassword(),
+  };
   try {
     clearError();
     const API_KEY = 'hiL56ugahSWEoYuaQT3Bg_1R-Ggz7rrxlfRxch5O9tQ';
 
     // fetch
-    const res = await api.post('api/Authentications', credentials);
+    const res = await api.post('api/Authentications', theCredentials);
     const { token, refreshToken, refreshTokenExpireTime } = res.data;
 
     if (!token || !refreshToken) {

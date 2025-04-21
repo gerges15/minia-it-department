@@ -1,20 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { login } from '../services/auth';
 import useAuthStore from '../store/useAuthStore';
 
-import { useDispatch, useSelector } from 'react-redux';
-
 export default function LoginRightSide(props) {
   const auth_store = useAuthStore();
-  const dispatch = useDispatch();
-  const password = useSelector(state => state.user.value.password);
-  const userName = useSelector(state => state.user.value.name);
 
   const handleSubmit = async e => {
     e.preventDefault();
-    const credentials = { userName, password };
-    await login(credentials, dispatch, auth_store);
+
+    await login(auth_store);
   };
 
   return (
