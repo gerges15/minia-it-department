@@ -1,11 +1,11 @@
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import api from './axiosInstance';
+import { openLoading, disableLoading } from '../store/useLoadingStore';
 
-import { openLoading, disableLoading } from '../state/loadingSlice';
 import { clearError, setError } from '../store/useErrorMessageStore';
 export const login = async (credentials, dispatch, auth_store) => {
-  dispatch(openLoading());
+  openLoading();
 
   try {
     clearError();
@@ -49,7 +49,7 @@ export const login = async (credentials, dispatch, auth_store) => {
     console.error('Login error:', err);
     throw err;
   } finally {
-    dispatch(disableLoading());
+    disableLoading();
   }
 };
 

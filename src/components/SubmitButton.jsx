@@ -1,7 +1,9 @@
 import Spinner from '../components/Common/Spinner';
-import { useSelector } from 'react-redux';
+
+import { useLoadingStore } from '../store/useLoadingStore';
 export default function SubmitButton() {
-  const isLoading = useSelector(state => state.loading.value);
+  const { isLoading } = useLoadingStore();
+
   return (
     <button
       type="submit"
