@@ -11,7 +11,7 @@ let accessTokenCookie = '';
 let refreshTokenCookie = '';
 let fullIdCookie = '';
 
-export const login = async auth_store => {
+export const login = async () => {
   openLoading(); ///
   const theCredentials = {
     userName: userName(),
