@@ -1,20 +1,26 @@
 import { create } from 'zustand';
 
-const useAuthStore = create((set) => ({
-    isAuthenticated: false,
-    role: null,
+export const useAuthStore = create(set => ({
+  isAuthenticated: false,
+  role: '',
 
-    login: (role) =>
-        set({
-            isAuthenticated: true,
-            role,
-        }),
+  setRole: theRole =>
+    set({
+      isAuthenticated: true,
+      role: theRole,
+    }),
 
-    logout: () =>
-        set({
-            isAuthenticated: false,
-            role: null,
-        }),
+  resetRole: () =>
+    set({
+      isAuthenticated: false,
+      role: '',
+    }),
 }));
 
-export default useAuthStore;
+export const setRole = role => {
+  useAuthStore.getState().setRole(role);
+};
+export const resetRole = () => {
+  useAuthStore.getState().resetRole();
+};
+export const getRole = () => useAuthStore.getState().role;

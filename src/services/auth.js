@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import api from './axiosInstance';
 import { openLoading, disableLoading } from '../store/useLoadingStore';
@@ -6,6 +5,7 @@ import { openLoading, disableLoading } from '../store/useLoadingStore';
 import { clearError, setError } from '../store/useErrorMessageStore';
 import { userName, userPassword } from '../store/useUserStore';
 import { Cookie } from '../utils/cookies';
+import { setRole, resetRole } from '../store/useAuthStore';
 
 let accessTokenCookie = '';
 let refreshTokenCookie = '';
@@ -49,7 +49,7 @@ export const login = async auth_store => {
     fullIdCookie = new Cookie('fullId', fullId, refreshTokenExpireTime);
 
     // set role in zustand
-    auth_store.login(role);
+    setRole(role);
 
     // set token in headers
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -67,8 +67,6 @@ export const login = async auth_store => {
 
 export const logout = async auth_store => {
   try {
-    // Remove all authentication cookies
-
     accessTokenCookie.remove();
     refreshTokenCookie.remove();
     fullIdCookie.remove();
@@ -77,7 +75,7 @@ export const logout = async auth_store => {
 
     // Update auth state
     if (auth_store) {
-      auth_store.logout();
+      resetRole();
     }
 
     // await api.post('/logout');
