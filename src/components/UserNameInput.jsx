@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { setUserName } from '../state/userSlice.js';
-import { clearErrorMsg } from '../state/errorMsgSlice.js';
+
+import { clearError } from '../store/useErrorMessageStore.js';
 
 export default function UserNameInput() {
   const dispatch = useDispatch();
@@ -10,7 +11,7 @@ export default function UserNameInput() {
   const handleInputChange = function (e) {
     const targetValue = e.target.value;
     dispatch(setUserName(targetValue));
-    dispatch(clearErrorMsg());
+    clearError();
   };
 
   return (

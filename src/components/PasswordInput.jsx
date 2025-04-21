@@ -3,7 +3,7 @@ import EyeOffIcon from '../assets/svg/EyeOffIcon';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPassword } from '../state/userSlice.js';
-import { clearErrorMsg } from '../state/errorMsgSlice.js';
+import { clearError, setError } from '../store/useErrorMessageStore.js';
 
 export default function PasswordInput() {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +15,7 @@ export default function PasswordInput() {
     const targetValue = e.target.value;
     dispatch(setPassword(targetValue));
 
-    dispatch(clearErrorMsg());
+    clearError();
   };
   return (
     <div className="mb-5 relative">
