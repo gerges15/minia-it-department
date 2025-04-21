@@ -17,3 +17,5 @@ export const openLoading = () => {
 export const disableLoading = () => {
   useLoadingStore.getState().disableLoading();
 };
+
+export const isLoading = () => useLoadingStore.getState().isLoading;

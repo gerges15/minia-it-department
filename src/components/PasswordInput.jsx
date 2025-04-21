@@ -1,15 +1,14 @@
 import EyeIcon from '../assets/svg/EyeIcon';
 import EyeOffIcon from '../assets/svg/EyeOffIcon';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-
 import { useUserStore } from '../store/useUserStore.js';
 import { clearError } from '../store/useErrorMessageStore.js';
+import { useLoadingStore } from '../store/useLoadingStore.js';
 
 export default function PasswordInput() {
   const { setPassword, userPassword } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
-  const isLoading = useSelector(state => state.loading.value);
+  const { isLoading } = useLoadingStore();
 
   const handleInputChange = function (e) {
     setPassword(e.target.value);

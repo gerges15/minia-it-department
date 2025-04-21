@@ -1,10 +1,10 @@
-import { useSelector } from 'react-redux';
 import { useUserStore } from '../store/useUserStore.js';
 import { clearError } from '../store/useErrorMessageStore.js';
+import { useLoadingStore } from '../store/useLoadingStore.js';
 
 export default function UserNameInput() {
   const { setUserName, userName } = useUserStore();
-  const isLoading = useSelector(state => state.loading.value);
+  const { isLoading } = useLoadingStore();
 
   const handleInputChange = function (e) {
     setUserName(e.target.value);
