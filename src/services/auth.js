@@ -5,15 +5,22 @@ import { openLoading, disableLoading } from '../store/useLoadingStore';
 
 import { clearError, setError } from '../store/useErrorMessageStore';
 import { userName, userPassword } from '../store/useUserStore';
+import { Cookie } from '../utils/cookies';
+
+let accessTokenCookie = '';
+let refreshTokenCookie = '';
+let fullIdCookie = '';
+
 export const login = async auth_store => {
-  openLoading();
+  openLoading(); ///
   const theCredentials = {
     userName: userName(),
     password: userPassword(),
   };
+
   try {
     clearError();
-    const API_KEY = 'hiL56ugahSWEoYuaQT3Bg_1R-Ggz7rrxlfRxch5O9tQ';
+    const API_KEY = import.meta.env.API_KEY;
 
     // fetch
     const res = await api.post('api/Authentications', theCredentials);
@@ -24,21 +31,22 @@ export const login = async auth_store => {
       throw new Error('Invalid authentication response');
     }
 
-    // set cookies
-    const cookieOptions = {
-      secure: true,
-      sameSite: 'strict',
-      expires: new Date(refreshTokenExpireTime),
-    };
-
-    Cookies.set('access_token', token, cookieOptions);
-    Cookies.set('refresh_token', refreshToken, cookieOptions);
+    accessTokenCookie = new Cookie(
+      'accessToken',
+      token,
+      refreshTokenExpireTime
+    );
+    refreshTokenCookie = new Cookie(
+      'refreshToken',
+      refreshToken,
+      refreshTokenExpireTime
+    );
 
     // decode token and get role
     const decoded_token = jwtDecode(token);
     const { role, nameid: fullId } = decoded_token;
 
-    Cookies.set('fullId', fullId, cookieOptions);
+    fullIdCookie = new Cookie('fullId', fullId, refreshTokenExpireTime);
 
     // set role in zustand
     auth_store.login(role);
@@ -60,10 +68,10 @@ export const login = async auth_store => {
 export const logout = async auth_store => {
   try {
     // Remove all authentication cookies
-    Cookies.remove('access_token');
-    Cookies.remove('refresh_token');
-    Cookies.remove('fullId');
 
+    accessTokenCookie.remove();
+    refreshTokenCookie.remove();
+    fullIdCookie.remove();
     // Remove Authorization header
     delete api.defaults.headers.common['Authorization'];
 
