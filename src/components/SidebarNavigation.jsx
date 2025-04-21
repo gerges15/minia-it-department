@@ -12,6 +12,8 @@ import Cookies from 'js-cookie';
 
 export default function SidebarNavigation() {
   const activeLinkStyle = 'bg-[#ede7f6] text-[#7e57c2] font-semibold';
+  const defaultLinkStyle =
+    'text-gray-600 hover:bg-gray-100 hover:text-gray-900';
   const { toggle } = useSidebarStore();
 
   let decodedToken = null;
