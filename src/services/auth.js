@@ -74,7 +74,7 @@ export const logout = async auth_store => {
 
     resetRole();
 
-    // await api.post('/logout');
+    await api.post('/logout');
 
     return true;
   } catch (error) {
