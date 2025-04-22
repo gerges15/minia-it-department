@@ -6,10 +6,12 @@ import ForgotPasswordLink from '../components/ForgotPasswordLink';
 import SubmitButton from '../components/SubmitButton';
 import ErrMsg from '../components/ErrMsg';
 import LoginContainer from '../components/LoginContainer';
+import Logo from '../components/Logo';
 
 const LoginPage = () => {
   return (
     <LoginContainer>
+      <Logo />
       <LoginRightSide>
         <UserNameInput />
         <PasswordInput />
