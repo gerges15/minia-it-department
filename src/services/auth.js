@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import api from './axiosInstance';
+import Cookies from 'js-cookie';
 import { openLoading, disableLoading } from '../store/useLoadingStore';
 
 import { clearError, setError } from '../store/useErrorMessageStore';
@@ -12,7 +13,7 @@ let refreshTokenCookie = '';
 let fullIdCookie = '';
 
 export const login = async () => {
-  openLoading(); ///
+  openLoading();
   const theCredentials = {
     userName: userName(),
     password: userPassword(),
@@ -65,10 +66,10 @@ export const login = async () => {
 
 export const logout = async auth_store => {
   try {
-    accessTokenCookie.remove();
-    refreshTokenCookie.remove();
-    fullIdCookie.remove();
-    // Remove Authorization header
+    Cookies.remove('accessToken');
+    Cookies.remove('refreshToken');
+    Cookies.remove('fullId');
+
     delete api.defaults.headers.common['Authorization'];
 
     resetRole();

@@ -16,8 +16,8 @@ export default function SidebarNavigation() {
     'text-gray-600 hover:bg-gray-100 hover:text-gray-900';
   const { toggle } = useSidebarStore();
 
-  let decodedToken = null;
-  let role = null;
+  let decodedToken = jwtDecode(Cookies.get('accessToken'));
+  let role = decodedToken.role;
 
   try {
     const token = Cookies.get('access_token');
