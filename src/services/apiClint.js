@@ -4,6 +4,11 @@ const KEY = import.meta.env.VITE_API_KEY;
 
 class ApiClint {
   constructor(url = URL) {
+    if (!url) {
+      throw new Error(
+        'API base URL is missing! Make sure VITE_API_URL is set.'
+      );
+    }
     this._baseURL = url;
   }
 
