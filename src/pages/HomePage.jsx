@@ -10,7 +10,7 @@ export default function HomePage() {
   const currentPath = useLocation().pathname;
   console.log('current in home page');
   const renderMainPage = () => {
-    if (currentPath === '/')
+    if (currentPath === '/home')
       return (
         <>
           <h1 className="text-3xl font-bold text-gray-800 mb-6">

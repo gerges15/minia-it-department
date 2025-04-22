@@ -31,8 +31,12 @@ export default function SidebarNavigation() {
   }
 
   const adminNavigation = [
-    { name: 'Home', href: '/', icon: FiHome },
-    { name: 'Manage Timetables', href: '/manage-timetables', icon: FiCalendar },
+    { name: 'Home', href: '/home', icon: FiHome },
+    {
+      name: 'Manage Timetables',
+      href: '/manage-timetables',
+      icon: FiCalendar,
+    },
     { name: 'Manage Courses', href: '/manage-courses', icon: FiBook },
     { name: 'Manage Students', href: '/manage-students', icon: FiUsers },
     {
