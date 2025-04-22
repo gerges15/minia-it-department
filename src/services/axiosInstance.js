@@ -15,7 +15,7 @@ const api = axios.create({
 // Request interceptor - adds token to all requests
 api.interceptors.request.use(
   config => {
-    const token = Cookies.get('accessToken');
+    const token = Cookies.get('accessToken'); // ensure this matches the cookie name
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -48,7 +48,8 @@ api.interceptors.response.use(
 
         const newAccessToken = response.data;
 
-        Cookies.set('access_token', newAccessToken);
+        // Consistent cookie name for access token
+        Cookies.set('accessToken', newAccessToken); // Update this to match 'accessToken'
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
