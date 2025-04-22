@@ -1,5 +1,5 @@
 import { jwtDecode } from 'jwt-decode';
-import api from './axiosInstance';
+import api from './apiClint';
 import Cookies from 'js-cookie';
 import { openLoading, disableLoading } from '../store/useLoadingStore';
 
@@ -24,8 +24,8 @@ export const login = async () => {
     const API_KEY = import.meta.env.API_KEY;
 
     // fetch
-    const res = await api.post('api/Authentications', theCredentials);
-    const { token, refreshToken, refreshTokenExpireTime } = res.data;
+    const data = await api.post('/api/Authentications', theCredentials);
+    const { token, refreshToken, refreshTokenExpireTime } = data;
 
     if (!token || !refreshToken) {
       setError('Invalid authentication response');
@@ -46,14 +46,10 @@ export const login = async () => {
     // decode token and get role
     const decoded_token = jwtDecode(token);
     const { role, nameid: fullId } = decoded_token;
-
     fullIdCookie = new Cookie('fullId', fullId, refreshTokenExpireTime);
 
     // set role in zustand
     setRole(role);
-
-    // set token in headers
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   } catch (err) {
     const errorMessage = err.response?.data?.detail || 'Authentication failed';
     setError(errorMessage);
@@ -64,17 +60,13 @@ export const login = async () => {
   }
 };
 
-export const logout = async auth_store => {
+export const logout = async () => {
   try {
     Cookies.remove('accessToken');
     Cookies.remove('refreshToken');
     Cookies.remove('fullId');
 
-    delete api.defaults.headers.common['Authorization'];
-
     resetRole();
-
-    await api.post('/logout');
 
     return true;
   } catch (error) {

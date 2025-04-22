@@ -11,7 +11,10 @@ const api = axios.create({
 
 async function login(username, password) {
   try {
-    const response = await api.post('/Authentications', { username, password });
+    const response = await api.post('api/Authentications', {
+      username,
+      password,
+    });
     if (!response.ok) {
       throw new Error('Login failed');
     }
