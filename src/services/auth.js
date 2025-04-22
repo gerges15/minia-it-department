@@ -71,10 +71,7 @@ export const logout = async auth_store => {
     // Remove Authorization header
     delete api.defaults.headers.common['Authorization'];
 
-    // Update auth state
-    if (auth_store) {
-      resetRole();
-    }
+    resetRole();
 
     // await api.post('/logout');
 
