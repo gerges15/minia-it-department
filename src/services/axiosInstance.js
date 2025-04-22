@@ -15,7 +15,7 @@ const api = axios.create({
 // Request interceptor - adds token to all requests
 api.interceptors.request.use(
   config => {
-    const token = Cookies.get('access_token');
+    const token = Cookies.get('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -54,8 +54,8 @@ api.interceptors.response.use(
 
         return api(originalRequest);
       } catch (refreshError) {
-        Cookies.remove('access_token');
-        Cookies.remove('refresh_token');
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
         Cookies.remove('fullId');
 
         // redirect to login page
