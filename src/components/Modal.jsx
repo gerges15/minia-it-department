@@ -16,12 +16,9 @@ export default function LogoutModal() {
 
   if (isOpen) {
     return (
-      <div
-        className="fixed inset-0 flex items-center justify-center bg-black 
-     opacity-75  z-50"
-      >
+      <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
         <div className="bg-white p-6 rounded-xl shadow-lg text-center">
-          <h2 className="text-xl font-semibold mb-4">Confirm Logout</h2>
+          <h2 className="text-xl font-semibold mb-4 ">Confirm Logout</h2>
 
           <p className="mb-6">Are you sure you want to logout?</p>
 
