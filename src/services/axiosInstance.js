@@ -35,7 +35,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = Cookies.get('refresh_token');
+        const refreshToken = Cookies.get('refreshToken');
         const fullId = Cookies.get('fullId');
 
         if (!refreshToken || !fullId) {
