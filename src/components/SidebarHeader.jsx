@@ -1,12 +1,14 @@
 import useSidebarStore from '../store/useSidebarStore';
 import { FiX } from 'react-icons/fi';
+import { useAuthStore } from '../store/useAuthStore';
 export default function SidebarHeader() {
-  let userName = 'User';
+  let { role } = useAuthStore();
+  let userName = 'you are';
   const { toggle } = useSidebarStore();
   return (
     <div className="flex items-center justify-between flex-shrink-0 px-4 h-16 border-b border-gray-200">
       <h1 className="text-lg font-semibold text-[#7e57c2] truncate">
-        Welcome, {userName}
+        {userName} {role}
       </h1>
 
       {/* Close button - only visible inside the mobile overlay */}
