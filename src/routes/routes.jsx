@@ -5,7 +5,7 @@ import ForgotPassword from '../pages/ForgotPassword';
 import Login from '../pages/Login';
 import HomePage from '../pages/HomePage';
 import ProtectedRoute from '../utils/ProtectedRoute';
-import ManageTimetable from '../pages/ManageTimetables';
+import ManageTimetable from '../pages/ManageTimetable';
 import ManageCourses from '../pages/ManageCourses';
 import ManageStudents from '../pages/ManageStudents';
 import ManageTeachingPlace from '../pages/ManageTeachingPlaces';
