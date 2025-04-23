@@ -8,6 +8,7 @@ import ProtectedRoute from '../utils/ProtectedRoute';
 import ManageTimetable from '../pages/ManageTimetable';
 import ManageCourses from '../pages/ManageCourses';
 import ManageStudents from '../pages/ManageStudents';
+import ManageTeachingStaff from '../pages/ManageTeachingStaff';
 import ManageTeachingPlace from '../pages/ManageTeachingPlaces';
 
 const RootLayout = () => <Outlet />;
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
       {
         path: 'manage-students',
         element: <ManageStudents />,
+      },
+      {
+        path: 'manage-teaching-staff',
+        element: <ManageTeachingStaff />,
       },
       {
         path: 'manage-places',
