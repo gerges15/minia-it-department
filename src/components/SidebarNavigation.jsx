@@ -7,6 +7,7 @@ import {
   FiUsers,
   FiBriefcase,
 } from 'react-icons/fi';
+
 import useSidebarStore from '../store/useSidebarStore';
 import Cookies from 'js-cookie';
 
@@ -39,6 +40,11 @@ export default function SidebarNavigation() {
     },
     { name: 'Manage Courses', href: '/manage-courses', icon: FiBook },
     { name: 'Manage Students', href: '/manage-students', icon: FiUsers },
+    {
+      name: 'Manage Teaching Staff',
+      href: '/manage-teaching-staff',
+      icon: FiUsers,
+    },
     {
       name: 'Manage Teaching Places',
       href: '/manage-places',
