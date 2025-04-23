@@ -1,6 +1,9 @@
 import Cookies from 'js-cookie';
+
 const URL = import.meta.env.VITE_API_URL;
 const KEY = import.meta.env.VITE_API_KEY;
+
+const isProduction = import.meta.env.PROD;
 
 class ApiClint {
   constructor(url = URL) {
@@ -9,12 +12,13 @@ class ApiClint {
         'API base URL is missing! Make sure VITE_API_URL is set.'
       );
     }
-    this._baseURL = url;
+
+    this._baseURL = isProduction ? '/api/proxy' : url;
+    this._originalURL = url;
   }
 
   async request(endpoint, method = 'GET', body = null, retry = true) {
     const accessToken = Cookies.get('accessToken');
-
     const headers = {
       'Content-Type': 'application/json',
       'x-api-key': KEY,
@@ -24,15 +28,14 @@ class ApiClint {
     const config = {
       method,
       headers,
-      body,
     };
     if (body) config.body = JSON.stringify(body);
 
     try {
       const response = await fetch(`${this.url}${endpoint}`, config);
+
       if (response.status == 401 && retry) {
         const refreshed = await this.refreshToken();
-
         if (refreshed) {
           return this.request(endpoint, method, body, false);
         } else {
@@ -58,18 +61,22 @@ class ApiClint {
   async refreshToken() {
     const refreshToken = Cookies.get('refreshToken');
     const fullId = Cookies.get('fullId');
+
     if (!refreshToken || !fullId) return false;
+
     try {
-      const res = await fetch(
-        `${this.url}/Users/${fullId}/Authentications?refreshToken=${refreshToken}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': KEY,
-          },
-        }
-      );
+      // For the refresh token, ensure we're using the correct path
+      const refreshUrl = isProduction
+        ? `/api/proxy/Users/${fullId}/Authentications?refreshToken=${refreshToken}`
+        : `${this._originalURL}/Users/${fullId}/Authentications?refreshToken=${refreshToken}`;
+
+      const res = await fetch(refreshUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': KEY,
+        },
+      });
 
       if (!res.ok) return false;
 
@@ -87,9 +94,11 @@ class ApiClint {
   get(endpoint) {
     return this.request(endpoint, 'GET');
   }
+
   post(endpoint, data) {
     return this.request(endpoint, 'POST', data);
   }
+
   put(endpoint, data) {
     return this.request(endpoint, 'PUT', data);
   }
@@ -99,4 +108,4 @@ class ApiClint {
   }
 }
 
-export default new ApiClint();
+export default new ApiClint(URL);
