@@ -10,7 +10,7 @@ export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
   const currentPath = useLocation().pathname;
 
-  // mock stats data (This will come from the `api/Statistic` endpoin)
+  // mock stats data
   const stats = [
     { name: 'Total Students', value: '220', icon: FiUsers, color: 'text-blue-500' },
     { name: 'Active Courses', value: '45', icon: FiBook, color: 'text-green-500' },
