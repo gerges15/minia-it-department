@@ -4,26 +4,102 @@ import MobileNavToggle from '../components/Home/MobileNavToggle';
 import MobileSidebar from '../components/Home/MobileSidebar';
 import DesktopSidebar from '../components/Home/DesktopSidebar';
 import useSidebarStore from '../store/useSidebarStore';
+import { FiCalendar, FiUsers, FiBook, FiBriefcase, FiPlusCircle } from 'react-icons/fi';
 
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
   const currentPath = useLocation().pathname;
-  console.log('current in home page');
+
+  // mock stats data (This will come from the `api/Statistic` endpoin)
+  const stats = [
+    { name: 'Total Students', value: '220', icon: FiUsers, color: 'text-blue-500' },
+    { name: 'Active Courses', value: '45', icon: FiBook, color: 'text-green-500' },
+    { name: 'Teaching Staff', value: '15', icon: FiBriefcase, color: 'text-purple-500' },
+    { name: 'Classrooms', value: '15', icon: FiCalendar, color: 'text-orange-500' },
+  ];
+
+  // mokc recent courses added
+  const recentCourses = [
+    { title: 'Software Engineering', updatedAt: 'Today', instructor: 'Mohamed Ahmed' },
+    { title: 'Database Design', updatedAt: 'Yesterday', instructor: 'David Nady' },
+    { title: 'Web Development', updatedAt: '2 days ago', instructor: 'Girgis Samy' },
+    { title: 'Data Structures', updatedAt: '3 days ago', instructor: 'Moaz Ebrahim' },
+  ];
+
   const renderMainPage = () => {
     if (currentPath === '/home')
       return (
-        <>
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">
-            hello world this is the main
-          </h1>
-        </>
+        <div className="space-y-6">
+          {/* Welcome Section */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h1 className="text-2xl font-bold text-gray-800">Welcome to Minia University IT Department</h1>
+            <p className="text-gray-600 mt-2">Manage your academic activities efficiently</p>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {stats.map((stat) => (
+              <div key={stat.name} className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center">
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Courses */}
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Recently Added / Updated Courses</h2>
+                <FiPlusCircle className="h-5 w-5 text-gray-400" />
+              </div>
+              <div className="space-y-4">
+                {recentCourses.map((course, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">{course.title}</p>
+                      <p className="text-sm text-gray-500">Instructor: {course.instructor}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-500">{course.updatedAt}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-4">
+                <button className="p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors w-full">
+                  Add New Course
+                </button>
+                <button className="p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors w-full">
+                  Schedule Class
+                </button>
+                <button className="p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors w-full">
+                  Manage Students
+                </button>
+                <button className="p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors w-full">
+                  Manage Teaching Staff
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       );
   };
 
   return (
     <div className="flex h-screen w-screen bg-[#f5f5f0] overflow-hidden">
       {/* --- Mobile Sidebar Overlay --- */}
-      {/* Background overlay */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/60 md:hidden"
