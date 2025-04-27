@@ -10,4 +10,7 @@ export default defineConfig({
       '/api': 'http://graduationprojecthost.runasp.net',
     },
   },
+  test: {
+    environment: 'jsdom', // Make sure this is set to 'jsdom'
+  },
 });
