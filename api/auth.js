@@ -1,12 +1,12 @@
 import { jwtDecode } from 'jwt-decode';
 import api from './apiClint';
 import Cookies from 'js-cookie';
-import { openLoading, disableLoading } from '../store/useLoadingStore';
+import { openLoading, disableLoading } from '../src/store/useLoadingStore';
 
-import { clearError, setError } from '../store/useErrorMessageStore';
-import { userName, userPassword } from '../store/useUserStore';
-import { Cookie } from '../utils/cookies';
-import { setRole, resetRole } from '../store/useAuthStore';
+import { clearError, setError } from '../src/store/useErrorMessageStore';
+import { userName, userPassword } from '../src/store/useUserStore';
+import { Cookie } from '../src/utils/cookies';
+import { setRole, resetRole } from '../src/store/useAuthStore';
 
 let accessTokenCookie = '';
 let refreshTokenCookie = '';

@@ -1,4 +1,4 @@
-import { logout } from '../services/auth';
+import { logout } from '../../api/auth';
 import { useLogoutModalStore } from '../store/useLogoutModalStore';
 import { useNavigate } from 'react-router';
 export default function LogoutModal() {
