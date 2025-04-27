@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import NotFound from '../pages/NotFound';
 import ForgotPassword from '../pages/ForgotPassword';
 import Login from '../pages/Login/Login';
-import HomePage from '../pages/HomePage';
+import HomePage from '../pages/Home/HomePage';
 import ProtectedRoute from '../utils/ProtectedRoute';
 import ManageTimetable from '../pages/ManageTimetables';
 import ManageCourses from '../pages/ManageCourses';

@@ -1,10 +1,16 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import MobileNavToggle from '../components/Home/MobileNavToggle';
-import MobileSidebar from '../components/Home/MobileSidebar';
-import DesktopSidebar from '../components/Home/DesktopSidebar';
-import useSidebarStore from '../store/useSidebarStore';
-import { FiCalendar, FiUsers, FiBook, FiBriefcase, FiPlusCircle } from 'react-icons/fi';
+import MobileNavToggle from './MobileNavToggle';
+import MobileSidebar from './Sidebar/MobileSidebar';
+import DesktopSidebar from './Sidebar/DesktopSidebar';
+import useSidebarStore from '../../store/useSidebarStore';
+import {
+  FiCalendar,
+  FiUsers,
+  FiBook,
+  FiBriefcase,
+  FiPlusCircle,
+} from 'react-icons/fi';
 
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
@@ -12,18 +18,54 @@ export default function HomePage() {
 
   // mock stats data (This will come from the `api/Statistic` endpoin)
   const stats = [
-    { name: 'Total Students', value: '220', icon: FiUsers, color: 'text-blue-500' },
-    { name: 'Active Courses', value: '45', icon: FiBook, color: 'text-green-500' },
-    { name: 'Teaching Staff', value: '15', icon: FiBriefcase, color: 'text-purple-500' },
-    { name: 'Classrooms', value: '15', icon: FiCalendar, color: 'text-orange-500' },
+    {
+      name: 'Total Students',
+      value: '220',
+      icon: FiUsers,
+      color: 'text-blue-500',
+    },
+    {
+      name: 'Active Courses',
+      value: '45',
+      icon: FiBook,
+      color: 'text-green-500',
+    },
+    {
+      name: 'Teaching Staff',
+      value: '15',
+      icon: FiBriefcase,
+      color: 'text-purple-500',
+    },
+    {
+      name: 'Classrooms',
+      value: '15',
+      icon: FiCalendar,
+      color: 'text-orange-500',
+    },
   ];
 
   // mokc recent courses added
   const recentCourses = [
-    { title: 'Software Engineering', updatedAt: 'Today', instructor: 'Mohamed Ahmed' },
-    { title: 'Database Design', updatedAt: 'Yesterday', instructor: 'David Nady' },
-    { title: 'Web Development', updatedAt: '2 days ago', instructor: 'Girgis Samy' },
-    { title: 'Data Structures', updatedAt: '3 days ago', instructor: 'Moaz Ebrahim' },
+    {
+      title: 'Software Engineering',
+      updatedAt: 'Today',
+      instructor: 'Mohamed Ahmed',
+    },
+    {
+      title: 'Database Design',
+      updatedAt: 'Yesterday',
+      instructor: 'David Nady',
+    },
+    {
+      title: 'Web Development',
+      updatedAt: '2 days ago',
+      instructor: 'Girgis Samy',
+    },
+    {
+      title: 'Data Structures',
+      updatedAt: '3 days ago',
+      instructor: 'Moaz Ebrahim',
+    },
   ];
 
   const renderMainPage = () => {
@@ -32,19 +74,30 @@ export default function HomePage() {
         <div className="space-y-6">
           {/* Welcome Section */}
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h1 className="text-2xl font-bold text-gray-800">Welcome to Minia University IT Department</h1>
-            <p className="text-gray-600 mt-2">Manage your academic activities efficiently</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Welcome to Minia University IT Department
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Manage your academic activities efficiently
+            </p>
           </div>
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.name} className="bg-white rounded-xl shadow-sm p-6">
+            {stats.map(stat => (
+              <div
+                key={stat.name}
+                className="bg-white rounded-xl shadow-sm p-6"
+              >
                 <div className="flex items-center">
                   <stat.icon className={`h-8 w-8 ${stat.color}`} />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                    <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      {stat.name}
+                    </p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {stat.value}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -56,18 +109,29 @@ export default function HomePage() {
             {/* Recent Courses */}
             <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">Recently Added / Updated Courses</h2>
+                <h2 className="text-lg font-semibold text-gray-800">
+                  Recently Added / Updated Courses
+                </h2>
                 <FiPlusCircle className="h-5 w-5 text-gray-400" />
               </div>
               <div className="space-y-4">
                 {recentCourses.map((course, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  >
                     <div>
-                      <p className="font-medium text-gray-900">{course.title}</p>
-                      <p className="text-sm text-gray-500">Instructor: {course.instructor}</p>
+                      <p className="font-medium text-gray-900">
+                        {course.title}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Instructor: {course.instructor}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">{course.updatedAt}</p>
+                      <p className="text-sm text-gray-500">
+                        {course.updatedAt}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -76,7 +140,9 @@ export default function HomePage() {
 
             {/* Quick Actions */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
+              <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                Quick Actions
+              </h2>
               <div className="grid grid-cols-2 md:grid-cols-1 gap-4">
                 <button className="p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors w-full">
                   Add New Course

@@ -1,6 +1,6 @@
 import { FiLogOut } from 'react-icons/fi';
-import { useLogoutModalStore } from '../store/useLogoutModalStore';
-import LogoutModal from './Modal';
+import { useLogoutModalStore } from '../../../store/useLogoutModalStore';
+import LogoutModal from '../../../components/Modal';
 
 export default function SidebarLogoutBtn() {
   const defaultBtnStyle = 'text-gray-600 hover:bg-gray-100 hover:text-gray-900';

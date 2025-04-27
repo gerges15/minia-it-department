@@ -1,6 +1,6 @@
-import useSidebarStore from '../store/useSidebarStore';
+import useSidebarStore from '../../../store/useSidebarStore';
 import { FiX } from 'react-icons/fi';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 export default function SidebarHeader() {
   let { role } = useAuthStore();
   let userName = 'you are';

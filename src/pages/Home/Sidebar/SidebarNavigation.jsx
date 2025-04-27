@@ -8,7 +8,7 @@ import {
   FiBriefcase,
 } from 'react-icons/fi';
 
-import useSidebarStore from '../store/useSidebarStore';
+import useSidebarStore from '../../../store/useSidebarStore';
 import Cookies from 'js-cookie';
 
 export default function SidebarNavigation() {
