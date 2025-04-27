@@ -1,12 +1,24 @@
 import React from 'react';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
-import { Course } from '../../types/course';
+import { Course, CourseLevel, CourseSemester, CourseType } from '../../types/course';
 
 interface CourseTableProps {
   courses: Course[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
 }
+
+const getLevelName = (level: CourseLevel): string => {
+  return CourseLevel[level];
+};
+
+const getSemesterName = (semester: CourseSemester): string => {
+  return CourseSemester[semester];
+};
+
+const getTypeName = (type: CourseType): string => {
+  return CourseType[type];
+};
 
 const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete }) => {
   return (
@@ -15,7 +27,7 @@ const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete }) 
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {['Course Code', 'Course Name', 'Year', 'Semester', 'Credits', 'Instructor', 'Type', 'Actions'].map(
+              {['Course Code', 'Course Name', 'Level', 'Semester', 'Credit Hours', 'Lecture Hours', 'Type', 'Actions'].map(
                 (header) => (
                   <th
                     key={header}
@@ -32,19 +44,19 @@ const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete }) 
               <tr key={course.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">{course.code}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{course.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{course.year}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{course.semester}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{course.credits}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{course.instructor}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{getLevelName(course.level)} Year</td>
+                <td className="px-6 py-4 whitespace-nowrap">{getSemesterName(course.semester)} Semester</td>
+                <td className="px-6 py-4 whitespace-nowrap">{course.creditHours}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{course.lectureHours}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-2 py-1 text-xs rounded-full font-semibold ${
-                      course.type === 'Theory'
+                      course.type === CourseType.Lecture
                         ? 'bg-yellow-100 text-yellow-800'
                         : 'bg-blue-100 text-blue-800'
                     }`}
                   >
-                    {course.type}
+                    {getTypeName(course.type)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">
