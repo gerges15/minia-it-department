@@ -1,5 +1,5 @@
 import React from 'react';
-import LoginRightSide from './LoginRightSide';
+import LoginForm from './LoginForm';
 import UserNameInput from './UserNameInput';
 import PasswordInput from './PasswordInput';
 import ForgotPasswordLink from './ForgotPasswordLink';
@@ -12,13 +12,13 @@ const LoginPage = () => {
   return (
     <LoginContainer>
       <Logo />
-      <LoginRightSide>
+      <LoginForm>
         <UserNameInput />
         <PasswordInput />
         <ForgotPasswordLink />
         <ErrMsg />
         <SubmitButton />
-      </LoginRightSide>
+      </LoginForm>
     </LoginContainer>
   );
 };

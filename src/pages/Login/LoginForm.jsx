@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { login } from '../../services/auth';
-export default function LoginRightSide(props) {
+export default function LoginForm(props) {
   const navigate = useNavigate();
   const handleSubmit = async e => {
     e.preventDefault();
