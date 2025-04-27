@@ -117,7 +117,7 @@ export default function ManageCourses() {
     const matchesSearch =
       course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesYear = selectedYear === 'All' || course.year === selectedYear;
+    const matchesYear = selectedYear === 'All' || course.level === selectedYear;
     const matchesSemester = selectedSemester === 'All' || course.semester === selectedSemester;
     return matchesSearch && matchesYear && matchesSemester;
   });
