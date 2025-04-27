@@ -1,6 +1,5 @@
-import Spinner from '../components/Common/Spinner';
-
-import { useLoadingStore } from '../store/useLoadingStore';
+import Spinner from '../../components/Common/Spinner';
+import { useLoadingStore } from '../../store/useLoadingStore';
 export default function SubmitButton() {
   const { isLoading } = useLoadingStore();
 
