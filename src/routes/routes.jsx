@@ -1,15 +1,15 @@
 import { createBrowserRouter } from 'react-router';
 import { Outlet } from 'react-router-dom';
-import NotFound from '../pages/NotFound';
-import ForgotPassword from '../pages/ForgotPassword';
-import Login from '../pages/Login/Login';
-import HomePage from '../pages/Home/HomePage';
+import NotFound from '../features/NotFound';
+import ForgotPassword from '../features/ForgotPassword';
+import Login from '../features/Login/Login';
+import HomePage from '../features/Home/HomePage';
 import ProtectedRoute from '../utils/ProtectedRoute';
-import ManageTimetable from '../pages/ManageTimetables';
-import ManageCourses from '../pages/ManageCourses';
-import ManageStudents from '../pages/ManageStudents';
-import ManageTeachingStaff from '../pages/ManageTeachingStaff';
-import ManageTeachingPlace from '../pages/ManageTeachingPlaces';
+import ManageTimetable from '../features/ManageTimetables';
+import ManageCourses from '../features/ManageCourses';
+import ManageStudents from '../features/ManageStudents';
+import ManageTeachingStaff from '../features/ManageTeachingStaff';
+import ManageTeachingPlace from '../features/ManageTeachingPlaces';
 
 const RootLayout = () => <Outlet />;
 

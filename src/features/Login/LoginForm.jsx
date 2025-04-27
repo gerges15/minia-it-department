@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
-import { login } from '../../services/auth';
+import { login } from '../../../api/auth';
 export default function LoginForm(props) {
   const navigate = useNavigate();
   const handleSubmit = async e => {
