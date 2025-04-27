@@ -5,51 +5,25 @@ import { openLoading, disableLoading } from '../src/store/useLoadingStore';
 
 import { clearError, setError } from '../src/store/useErrorMessageStore';
 import { userName, userPassword } from '../src/store/useUserStore';
-import { Cookie } from '../src/utils/cookies';
 import { setRole, resetRole } from '../src/store/useAuthStore';
 
-let accessTokenCookie = '';
-let refreshTokenCookie = '';
-let fullIdCookie = '';
-
 export const login = async () => {
-  openLoading();
-  const theCredentials = {
-    userName: userName(),
-    password: userPassword(),
-  };
-
   try {
+    openLoading();
     clearError();
-    const API_KEY = import.meta.env.API_KEY;
 
-    // fetch
-    const data = await api.post('/api/Authentications', theCredentials);
-    const { token, refreshToken, refreshTokenExpireTime } = data;
-
-    if (!token || !refreshToken) {
-      setError('Invalid authentication response');
-      throw new Error('Invalid authentication response');
+    const data = await fetchTokens();
+    const { role, nameid: id } = decodeAccessToken(data.token);
+    if (isValidTokens(data)) {
+      setAccessToken(data);
+      setRefreshToken(data);
+      setUserIdToken(id, data);
+      setRole(role);
+    } else {
+      const message = 'Invalid authentication response';
+      setError(message);
+      throw new Error(message);
     }
-
-    accessTokenCookie = new Cookie(
-      'accessToken',
-      token,
-      refreshTokenExpireTime
-    );
-    refreshTokenCookie = new Cookie(
-      'refreshToken',
-      refreshToken,
-      refreshTokenExpireTime
-    );
-
-    // decode token and get role
-    const decoded_token = jwtDecode(token);
-    const { role, nameid: fullId } = decoded_token;
-    fullIdCookie = new Cookie('fullId', fullId, refreshTokenExpireTime);
-
-    // set role in zustand
-    setRole(role);
   } catch (err) {
     const errorMessage = err.response?.data?.detail || 'Authentication failed';
     setError(errorMessage);
@@ -60,17 +34,45 @@ export const login = async () => {
   }
 };
 
+const fetchTokens = async () => {
+  const theCredentials = {
+    userName: userName(),
+    password: userPassword(),
+  };
+  return await api.post('/api/Authentications', theCredentials);
+};
+
+const isValidTokens = function (data) {
+  return data.accessToken || data.refreshToken || data.refreshTokenExpireTime;
+};
+
+const setAccessToken = function (data) {
+  Cookies.set('accessToken', data.token, data.refreshTokenExpireTime);
+};
+const setRefreshToken = function (data) {
+  Cookies.set('refreshToken', data.refreshToken, data.refreshTokenExpireTime);
+};
+const setUserIdToken = function (id, data) {
+  Cookies.set('id', id, data.refreshTokenExpireTime);
+};
+
+const decodeAccessToken = function (token) {
+  return jwtDecode(token);
+};
+
 export const logout = async () => {
   try {
-    Cookies.remove('accessToken');
-    Cookies.remove('refreshToken');
-    Cookies.remove('fullId');
-
+    removeAllTokens();
     resetRole();
-
     return true;
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
   }
+};
+
+const removeAllTokens = function () {
+  Cookies.remove('accessToken');
+  Cookies.remove('refreshToken');
+  Cookies.remove('id');
 };
