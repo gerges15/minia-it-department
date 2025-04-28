@@ -16,11 +16,13 @@ describe('Token Class and its methods', () => {
   it('should fetch access token successfully', async () => {
     testValidToken(tokens.accessToken);
     testValidToken(tokens.refreshToken);
+    testValidToken(tokens.refreshTokenExpTime);
   });
 
   it('should be string', async () => {
     testTypeIsString(tokens.accessToken);
     testTypeIsString(tokens.refreshToken);
+    testTypeIsString(tokens.refreshTokenExpTime);
   });
 });
 
