@@ -33,8 +33,15 @@ describe('Token Class and its methods', () => {
   });
 
   it('should return decoded object', () => {
-    expect(tokens.dataOfAccessToken).toBeDefined();
-    expect(tokens.dataOfAccessToken).toBeTypeOf('object');
+    expect(tokens.decodeAccessToken).toBeDefined();
+    expect(tokens.decodeAccessToken).toBeTypeOf('object');
+  });
+  it('should contains {nameid, rol, given_name} properties', () => {
+    const decodedTokenData = tokens.decodeAccessToken;
+
+    assert(Object.hasOwn(decodedTokenData, 'nameid'));
+    assert(Object.hasOwn(decodedTokenData, 'role'));
+    assert(Object.hasOwn(decodedTokenData, 'given_name'));
   });
 });
 
