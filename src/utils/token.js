@@ -5,10 +5,10 @@ class Token {
     this._refreshToken = this._data.refreshToken;
   }
 
-  accessToken() {
+  get accessToken() {
     return this._accessToken;
   }
-  refreshToken() {
+  get refreshToken() {
     return this._accessToken;
   }
 }
