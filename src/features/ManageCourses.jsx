@@ -53,8 +53,9 @@ export default function ManageCourses() {
   };
 
   // Course CRUD operations
-  const handleSubmitCourse = async formData => {
+  const handleSubmitCourse = async (formData) => {
     try {
+      setError(null);
       if (isEditing && editCourseId) {
         // todo: replace with the API call
         // await fetch(`/api/courses/${editCourseId}`, {
@@ -65,13 +66,9 @@ export default function ManageCourses() {
         const updatedCourse = {
           ...formData,
           id: editCourseId,
-          prerequisites: formData.prerequisites.split(',').map(pr => pr.trim()),
+          dependencies: formData.dependencies ? formData.dependencies.split(',').map(d => d.trim()) : []
         };
-        setCourses(prev =>
-          prev.map(course =>
-            course.id === editCourseId ? updatedCourse : course
-          )
-        );
+        setCourses((prev) => prev.map((course) => (course.id === editCourseId ? updatedCourse : course)));
       } else {
         // todo: replace with the API call
         // const response = await fetch('/api/courses', {
@@ -83,9 +80,9 @@ export default function ManageCourses() {
         const newCourse = {
           ...formData,
           id: Date.now(), // temp id until API real one
-          prerequisites: formData.prerequisites.split(',').map(pr => pr.trim()),
+          dependencies: formData.dependencies ? formData.dependencies.split(',').map(d => d.trim()) : []
         };
-        setCourses(prev => [...prev, newCourse]);
+        setCourses((prev) => [...prev, newCourse]);
       }
       handleCloseModal();
     } catch (err) {
@@ -94,8 +91,8 @@ export default function ManageCourses() {
     }
   };
 
-  const handleEditCourse = id => {
-    const course = courses.find(c => c.id === id);
+  const handleEditCourse = (id) => {
+    const course = courses.find((c) => c.id === id);
     if (course) {
       setEditCourseId(id);
       setIsEditing(true);
@@ -103,12 +100,12 @@ export default function ManageCourses() {
     }
   };
 
-  const handleDeleteCourse = async id => {
+  const handleDeleteCourse = async (id) => {
     if (window.confirm('Are you sure you want to delete this course?')) {
       try {
         // todo: replace with the API call
         // await fetch(`/api/courses/${id}`, { method: 'DELETE' });
-        setCourses(prev => prev.filter(course => course.id !== id));
+        setCourses((prev) => prev.filter((course) => course.id !== id));
       } catch (err) {
         setError('Failed to delete course. Please try again later.');
         console.error('Error deleting course:', err);
@@ -117,13 +114,12 @@ export default function ManageCourses() {
   };
 
   // filter courses based on search and filters (course code, course name)
-  const filteredCourses = courses.filter(course => {
+  const filteredCourses = courses.filter((course) => {
     const matchesSearch =
       course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesYear = selectedYear === 'All' || course.level === selectedYear;
-    const matchesSemester = selectedSemester === 'All' || course.semester === selectedSemester;
-
+    const matchesYear = selectedYear === 'All' || course.level === parseInt(selectedYear);
+    const matchesSemester = selectedSemester === 'All' || course.semester === parseInt(selectedSemester);
     return matchesSearch && matchesYear && matchesSemester;
   });
 
@@ -137,10 +133,7 @@ export default function ManageCourses() {
 
   if (error) {
     return (
-      <div
-        className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
-        role="alert"
-      >
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
         <strong className="font-bold">Error!</strong>
         <span className="block sm:inline"> {error}</span>
         <button
@@ -148,18 +141,8 @@ export default function ManageCourses() {
           className="absolute top-0 bottom-0 right-0 px-4 py-3"
         >
           <span className="sr-only">Dismiss</span>
-          <svg
-            className="h-6 w-6 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -173,9 +156,7 @@ export default function ManageCourses() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Manage Courses</h1>
-            <p className="text-gray-600 mt-1">
-              View and manage all courses in the department
-            </p>
+            <p className="text-gray-600 mt-1">View and manage all courses in the department</p>
           </div>
           <button
             onClick={handleOpenModal}
@@ -215,11 +196,8 @@ export default function ManageCourses() {
         initialData={
           isEditing && editCourseId
             ? {
-                ...courses.find(c => c.id === editCourseId),
-                prerequisites:
-                  courses
-                    .find(c => c.id === editCourseId)
-                    ?.prerequisites.join(', ') || '',
+                ...courses.find((c) => c.id === editCourseId),
+                dependencies: courses.find((c) => c.id === editCourseId)?.dependencies?.join(', ') || ''
               }
             : undefined
         }
