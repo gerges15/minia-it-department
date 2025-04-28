@@ -24,6 +24,13 @@ describe('Token Class and its methods', () => {
     testTypeIsString(tokens.refreshToken);
     testTypeIsString(tokens.refreshTokenExpTime);
   });
+
+  it('should reset refreshToken', () => {
+    const oldRefreshToken = tokens.refreshToken;
+    tokens.resetRefreshToken();
+    const newRefreshToken = tokens.refreshToken;
+    assert(oldRefreshToken != newRefreshToken);
+  });
 });
 
 function testValidToken(token) {
