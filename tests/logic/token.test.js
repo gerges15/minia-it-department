@@ -19,11 +19,8 @@ describe('Token Class and its methods', () => {
   });
 
   it('should be string', async () => {
-    expect(typeof tokens.accessToken).toBe('string');
-  });
-
-  it('should be string', async () => {
-    expect(typeof tokens.refreshToken).toBe('string');
+    testTypeIsString(tokens.accessToken);
+    testTypeIsString(tokens.refreshToken);
   });
 });
 
@@ -32,4 +29,8 @@ function testValidToken(token) {
   expect(token).not.toBeNull();
   expect(token).not.toBe('');
   expect(token).toBeDefined();
+}
+
+function testTypeIsString(token) {
+  expect(typeof token).toBe('string');
 }
