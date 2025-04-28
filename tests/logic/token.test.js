@@ -14,23 +14,22 @@ describe('Token Class and its methods', () => {
   });
 
   it('should fetch access token successfully', async () => {
-    expect(tokens.accessToken).not.toBeUndefined();
-    expect(tokens.accessToken).not.toBeNull();
-    expect(tokens.accessToken).not.toBe('');
-    expect(tokens.accessToken).toBeDefined();
+    testValidToken(tokens.accessToken);
+    testValidToken(tokens.refreshToken);
   });
 
   it('should be string', async () => {
     expect(typeof tokens.accessToken).toBe('string');
-  });
-  it('should fetch refresh token successfully', async () => {
-    expect(tokens.refreshToken).not.toBeUndefined();
-    expect(tokens.refreshToken).not.toBeNull();
-    expect(tokens.refreshToken).not.toBe('');
-    expect(tokens.refreshToken).toBeDefined();
   });
 
   it('should be string', async () => {
     expect(typeof tokens.refreshToken).toBe('string');
   });
 });
+
+function testValidToken(token) {
+  expect(token).not.toBeUndefined();
+  expect(token).not.toBeNull();
+  expect(token).not.toBe('');
+  expect(token).toBeDefined();
+}
