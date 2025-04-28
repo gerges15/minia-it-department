@@ -39,10 +39,10 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
           className="px-4 py-2 border border-gray-300 rounded-lg"
         >
           <option value="All">All Years</option>
-          <option value="First">First Year</option>
-          <option value="Second">Second Year</option>
-          <option value="Third">Third Year</option>
-          <option value="Fourth">Fourth Year</option>
+          <option value="1">First Year</option>
+          <option value="2">Second Year</option>
+          <option value="3">Third Year</option>
+          <option value="4">Fourth Year</option>
         </select>
       </div>
 
@@ -53,8 +53,8 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
           className="px-4 py-2 border border-gray-300 rounded-lg"
         >
           <option value="All">All Semesters</option>
-          <option value="First">First Semester</option>
-          <option value="Second">Second Semester</option>
+          <option value="1">First Semester</option>
+          <option value="2">Second Semester</option>
         </select>
       </div>
     </div>
