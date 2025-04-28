@@ -31,7 +31,7 @@ const StudentForm = ({ initialData, onSubmit, onCancel, isEditing = false }) => 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
       <div className="bg-white p-6 rounded-lg w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4">
           {isEditing ? 'Edit Student' : 'Add Student'}
