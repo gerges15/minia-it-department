@@ -23,4 +23,14 @@ describe('Token Class and its methods', () => {
   it('should be string', async () => {
     expect(typeof tokens.accessToken()).toBe('string');
   });
+  it('should fetch refresh token successfully', async () => {
+    expect(tokens.refreshToken()).not.toBeUndefined();
+    expect(tokens.refreshToken()).not.toBeNull();
+    expect(tokens.refreshToken()).not.toBe('');
+    expect(tokens.refreshToken()).toBeDefined();
+  });
+
+  it('should be string', async () => {
+    expect(typeof tokens.refreshToken()).toBe('string');
+  });
 });
