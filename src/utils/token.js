@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import api from '../../api/apiClint';
 
 class Token {
@@ -16,6 +17,9 @@ class Token {
   }
   get refreshTokenExpTime() {
     return this._refreshTokenExpTime;
+  }
+  get decodeAccessToken() {
+    return jwtDecode(this.accessToken);
   }
 
   async resetRefreshToken() {
