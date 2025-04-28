@@ -1,3 +1,5 @@
+import api from '../../api/apiClint';
+
 class Token {
   constructor(data) {
     this._data = data;
@@ -14,6 +16,10 @@ class Token {
   }
   get refreshTokenExpTime() {
     return this._refreshTokenExpTime;
+  }
+
+  async resetRefreshToken() {
+    this._refreshToken = 'new token';
   }
 }
 
