@@ -31,6 +31,11 @@ describe('Token Class and its methods', () => {
     const newRefreshToken = tokens.refreshToken;
     assert(oldRefreshToken != newRefreshToken);
   });
+
+  it('should return decoded object', () => {
+    expect(tokens.dataOfAccessToken).toBeDefined();
+    expect(tokens.dataOfAccessToken).toBeTypeOf('object');
+  });
 });
 
 function testValidToken(token) {
