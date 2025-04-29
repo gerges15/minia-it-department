@@ -17,6 +17,11 @@ export class Inventory {
     this.setCookie('refreshTokenExpTime', refreshTokenExpTime);
   }
 
+  storeUserRole() {
+    const { role } = this._data.decodeAccessToken;
+    this.setCookie('role', role);
+  }
+
   setCookie(name, cookie) {
     Cookies.set(name, cookie, this._data.refreshTokenExpireTime);
   }
