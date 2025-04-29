@@ -64,7 +64,7 @@ const ManageTeachingStaff = () => {
   };
 
   // Staff CRUD operations
-  const handleSubmitStaff = async (formData) => {
+  const handleSubmitStaff = async formData => {
     try {
       if (isEditing && editStaffId) {
         // TODO: Replace with real API call
@@ -78,7 +78,11 @@ const ManageTeachingStaff = () => {
           id: editStaffId,
           role: 1, // Always set role to 1 for staff
         };
-        setStaff((prev) => prev.map((member) => (member.id === editStaffId ? updatedStaff : member)));
+        setStaff(prev =>
+          prev.map(member =>
+            member.id === editStaffId ? updatedStaff : member
+          )
+        );
         toast.success('Staff member updated successfully');
       } else {
         // TODO: Replace with real API call
@@ -93,30 +97,32 @@ const ManageTeachingStaff = () => {
           id: String(staff.length + 1),
           fullId: `STAFF${String(staff.length + 1).padStart(3, '0')}`,
           role: 1, // Always set role to 1 for staff
-          userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`
+          userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
         };
-        setStaff((prev) => [...prev, newStaff]);
+        setStaff(prev => [...prev, newStaff]);
         toast.success('Staff member created successfully');
       }
       handleCloseModal();
     } catch (err) {
-      setError(`Failed to ${isEditing ? 'update' : 'create'} staff member. Please try again later.`);
+      setError(
+        `Failed to ${isEditing ? 'update' : 'create'} staff member. Please try again later.`
+      );
       console.error('Error saving staff member:', err);
     }
   };
 
-  const handleEditStaff = (member) => {
+  const handleEditStaff = member => {
     setEditStaffId(member.id);
     setIsEditing(true);
     setIsModalOpen(true);
   };
 
-  const handleDeleteStaff = async (member) => {
+  const handleDeleteStaff = async member => {
     if (window.confirm('Are you sure you want to delete this staff member?')) {
       try {
         // TODO: Replace with real API call
         // await fetch(`/api/Users/${member.id}`, { method: 'DELETE' });
-        setStaff((prev) => prev.filter((s) => s.id !== member.id));
+        setStaff(prev => prev.filter(s => s.id !== member.id));
         toast.success('Staff member deleted successfully');
       } catch (err) {
         setError('Failed to delete staff member. Please try again later.');
@@ -125,13 +131,13 @@ const ManageTeachingStaff = () => {
     }
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = event => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     Papa.parse(file, {
       header: true,
-      complete: async (results) => {
+      complete: async results => {
         try {
           // TODO: Replace with real API call
           // await fetch('/api/Users/bulk', {
@@ -148,31 +154,35 @@ const ManageTeachingStaff = () => {
             role: 1, // Always set role to 1 for staff
             level: parseInt(member.level),
             dateOfBirth: member.dateOfBirth,
-            userName: `${member.firstName.toLowerCase()}.${member.lastName.toLowerCase()}`
+            userName: `${member.firstName.toLowerCase()}.${member.lastName.toLowerCase()}`,
           }));
 
-          setStaff((prev) => [...prev, ...newStaff]);
+          setStaff(prev => [...prev, ...newStaff]);
           toast.success('Staff members uploaded successfully');
         } catch (err) {
           setError('Failed to upload staff members. Please try again later.');
           console.error('Error uploading staff members:', err);
         }
       },
-      error: (err) => {
-        setError('Error parsing CSV file. Please check the format and try again.');
+      error: err => {
+        setError(
+          'Error parsing CSV file. Please check the format and try again.'
+        );
         console.error('Error parsing CSV:', err);
       },
     });
   };
 
   // Filter staff based on search and filters
-  const filteredStaff = staff.filter((member) => {
+  const filteredStaff = staff.filter(member => {
     const matchesSearch =
       member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       member.fullId.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLevel = selectedLevel === '' || member.level === parseInt(selectedLevel);
-    const matchesGender = selectedGender === '' || member.gender === parseInt(selectedGender);
+    const matchesLevel =
+      selectedLevel === '' || member.level === parseInt(selectedLevel);
+    const matchesGender =
+      selectedGender === '' || member.gender === parseInt(selectedGender);
     return matchesSearch && matchesLevel && matchesGender;
   });
 
@@ -186,7 +196,10 @@ const ManageTeachingStaff = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <div
+        className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+        role="alert"
+      >
         <strong className="font-bold">Error!</strong>
         <span className="block sm:inline"> {error}</span>
         <button
@@ -194,8 +207,18 @@ const ManageTeachingStaff = () => {
           className="absolute top-0 bottom-0 right-0 px-4 py-3"
         >
           <span className="sr-only">Dismiss</span>
-          <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="h-6 w-6 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -205,13 +228,17 @@ const ManageTeachingStaff = () => {
   return (
     <div className="space-y-6">
       <ToastContainer position="top-right" autoClose={3000} />
-      
+
       {/* Header */}
       <div className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Manage Teaching Staff</h1>
-            <p className="text-gray-600 mt-1">View and manage all teaching staff in the department</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Manage Teaching Staff
+            </h1>
+            <p className="text-gray-600 mt-1">
+              View and manage all teaching staff in the department
+            </p>
           </div>
           <div className="flex space-x-4">
             <label className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
@@ -262,7 +289,7 @@ const ManageTeachingStaff = () => {
         onSubmit={handleSubmitStaff}
         initialData={
           isEditing && editStaffId
-            ? staff.find((s) => s.id === editStaffId)
+            ? staff.find(s => s.id === editStaffId)
             : undefined
         }
         isEditing={isEditing}
