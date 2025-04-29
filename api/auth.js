@@ -2,9 +2,8 @@ import { clearError, setError } from '../src/store/useErrorMessageStore';
 import { Inventory } from '../src/utils/inventory';
 import { openLoading, disableLoading } from '../src/store/useLoadingStore';
 import { setRole, resetRole } from '../src/store/useAuthStore';
+import { setInventory, getInventory } from '../src/store/usInventoryStore';
 import { Token } from '../src/utils/token';
-
-let inventory;
 
 export const login = async () => {
   try {
@@ -23,12 +22,13 @@ export const login = async () => {
 const storeCommonData = async () => {
   const tk = await Token.Create();
   const data = await tk.fetchTokensObj();
-  inventory = new Inventory(tk);
+  const inventory = new Inventory(tk);
   const { role } = tk.decodeAccessToken;
   if (isValidTokens(data)) {
     inventory.storeAllTokens();
     inventory.storeUserId();
     setRole(role);
+    setInventory(data);
   } else throw new Error('Invalid authentication response');
 };
 
@@ -38,6 +38,9 @@ const isValidTokens = function (data) {
 
 export const logout = async () => {
   try {
+    const raw = getInventory();
+    const inventory = new Inventory(raw);
+
     inventory.removeAllTokens();
     inventory.removeUserId();
     inventory.removeUserRole();
