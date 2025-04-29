@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-
+import { Token } from '../src/utils/token';
 const URL = import.meta.env.VITE_API_URL;
 const KEY = import.meta.env.VITE_API_KEY;
 
@@ -105,6 +105,24 @@ class ApiClint {
 
   delete(endpoint) {
     return this.request(endpoint, 'DELETE');
+  }
+
+  async zPost(endpoint, body) {
+    try {
+      const response = await fetch(`${this.url}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': KEY,
+        },
+        body: JSON.stringify(body),
+      });
+
+      return await response.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
   }
 }
 
