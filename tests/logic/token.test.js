@@ -1,4 +1,12 @@
-import { describe, it, expect, beforeAll, assert, beforeEach } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  assert,
+  beforeEach,
+  vi,
+} from 'vitest';
 import { Token, tk } from '../../src/utils/token';
 import api from '../../api/apiClint';
 
@@ -6,7 +14,7 @@ describe('Token Class and its methods', () => {
   let tokens;
   let tokensData;
   beforeAll(async () => {
-    tokensData = await api.post('/api/Authentications', {
+    tokensData = await api.zPost('/api/Authentications', {
       userName: 'admin-admin-wHGa8',
       password: '123',
     });
@@ -25,11 +33,12 @@ describe('Token Class and its methods', () => {
     testTypeIsString(tokens.refreshTokenExpTime);
   });
 
-  it('should reset refreshToken', () => {
+  it('should reset refreshToken', async () => {
     const oldRefreshToken = tokens.refreshToken;
-    tokens.resetRefreshToken();
+    await tokens.resetRefreshToken();
     const newRefreshToken = tokens.refreshToken;
-    assert(oldRefreshToken != newRefreshToken);
+
+    expect(oldRefreshToken).not.toEqual(newRefreshToken);
   });
 
   it('should return decoded object', () => {
