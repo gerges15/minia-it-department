@@ -5,17 +5,15 @@ export class Inventory {
   }
 
   storeAccessToken() {
-    Cookies.set(
-      'accessToken',
-      this._data.accessToken,
-      this._data.refreshTokenExpireTime
-    );
+    const accessToken = this._data.accessToken;
+    this.setCookie('accessToken', accessToken);
   }
   storeRefreshToken() {
-    Cookies.set(
-      'refreshToken',
-      this._data.refreshToken,
-      this._data.refreshTokenExpireTime
-    );
+    const refreshToken = this._data.refreshToken;
+    this.setCookie('refreshToken', refreshToken);
+  }
+
+  setCookie(name, cookie) {
+    Cookies.set(name, cookie, this._data.refreshTokenExpireTime);
   }
 }
