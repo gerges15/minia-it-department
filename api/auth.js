@@ -11,8 +11,7 @@ export const login = async () => {
     clearError();
     await storeCommonData();
   } catch (err) {
-    const errorMessage = err.response?.data?.detail || 'Authentication failed';
-    setError(errorMessage);
+    setError(err.response?.data?.detail || 'Authentication failed');
     console.error('Login error:', err);
   } finally {
     disableLoading();
@@ -24,6 +23,7 @@ const storeCommonData = async () => {
   const data = await tk.fetchTokensObj();
   const inventory = new Inventory(tk);
   const { role } = tk.decodeAccessToken;
+
   if (isValidTokens(data)) {
     inventory.storeAllTokens();
     inventory.storeUserId();
@@ -42,7 +42,6 @@ export const logout = async () => {
     resetRole();
   } catch (error) {
     console.error('Logout error:', error);
-    throw error;
   }
 };
 
