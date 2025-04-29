@@ -15,7 +15,7 @@ import Cookies from 'js-cookie';
 
 dotenv.config({ path: '.env' });
 
-describe('Test Inventor Class', async () => {
+describe('Test Store functionality in Inventory class', async () => {
   let inventory;
   let tk;
 
