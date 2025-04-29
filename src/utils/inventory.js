@@ -35,4 +35,8 @@ export class Inventory {
   setCookie(name, cookie) {
     Cookies.set(name, cookie, this._data.refreshTokenExpireTime);
   }
+
+  removeCookie(name) {
+    Cookies.remove(name);
+  }
 }
