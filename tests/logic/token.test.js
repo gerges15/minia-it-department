@@ -63,7 +63,7 @@ describe('Token Class and its methods', () => {
     setUserName(usrName);
     setUserPassword(usrPassword);
 
-    const tokensObject = await tokens.fetchTokens();
+    const tokensObject = await tokens.fetchTokensObj();
 
     console.log(tokensObject);
     assert(Object.hasOwn(tokensObject, 'token'));
