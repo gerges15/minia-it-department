@@ -84,4 +84,10 @@ describe('Test remove functionality in Inventory class', async () => {
 
     expect(storedToken).toBeUndefined();
   });
+  it('should remove  userId', async () => {
+    inventory.removeUserId();
+    const storedToken = Cookies.get('id');
+
+    expect(storedToken).toBeUndefined();
+  });
 });
