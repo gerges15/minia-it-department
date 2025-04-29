@@ -63,7 +63,7 @@ describe('Test remove functionality in Inventory class', async () => {
   beforeAll(() => {
     inventory.removeAllTokens();
   });
-  it('should store correct access token', async () => {
+  it('should remove  accessToken', async () => {
     const storedToken = Cookies.get('accessToken');
 
     expect(storedToken).toBeUndefined();
