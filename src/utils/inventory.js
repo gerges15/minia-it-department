@@ -21,6 +21,10 @@ export class Inventory {
     const { role } = this._data.decodeAccessToken;
     this.setCookie('role', role);
   }
+  storeUserId() {
+    const { nameid: id } = this._data.decodeAccessToken;
+    this.setCookie('id', id);
+  }
 
   setCookie(name, cookie) {
     Cookies.set(name, cookie, this._data.refreshTokenExpireTime);
