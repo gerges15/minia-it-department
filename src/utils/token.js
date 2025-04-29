@@ -9,26 +9,14 @@ class Token {
     this._refreshTokenExpTime = this._data.refreshTokenExpireTime;
   }
 
-  get accessToken() {
-    return this._accessToken;
-  }
-  get refreshToken() {
-    return this._refreshToken;
-  }
-  get refreshTokenExpTime() {
-    return this._refreshTokenExpTime;
-  }
-  get decodeAccessToken() {
-    return jwtDecode(this.accessToken);
-  }
-
-  async fetchTokensObj() {
+  static async Create() {
     const theCredentials = {
       userName: userName(),
       password: userPassword(),
     };
 
-    return await api.zPost('/api/Authentications', theCredentials);
+    const data = await api.zPost('/api/Authentications', theCredentials);
+    return new Token(data);
   }
 
   async resetRefreshToken() {
@@ -74,14 +62,27 @@ class Token {
       console.error('Error in resetRefreshToken:', e);
     }
   }
-  static async Create() {
+
+  async fetchTokensObj() {
     const theCredentials = {
       userName: userName(),
       password: userPassword(),
     };
 
-    const data = await api.zPost('/api/Authentications', theCredentials);
-    return new Token(data);
+    return await api.zPost('/api/Authentications', theCredentials);
+  }
+
+  get decodeAccessToken() {
+    return jwtDecode(this.accessToken);
+  }
+  get accessToken() {
+    return this._accessToken;
+  }
+  get refreshToken() {
+    return this._refreshToken;
+  }
+  get refreshTokenExpTime() {
+    return this._refreshTokenExpTime;
   }
 }
 
