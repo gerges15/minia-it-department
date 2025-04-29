@@ -6,14 +6,14 @@ import { setRole, resetRole } from '../src/store/useAuthStore';
 import { Inventory } from '../src/utils/inventory';
 
 export const login = async () => {
+  openLoading();
+  clearError();
   try {
-    openLoading();
-    clearError();
-
     const tk = await Token.Create();
     const inventory = new Inventory(tk);
     const data = await tk.fetchTokensObj();
     const { role, nameid: id } = tk.decodeAccessToken;
+
     if (isValidTokens(data)) {
       inventory.storeAllTokens();
       inventory.storeUserId();
@@ -35,16 +35,6 @@ export const login = async () => {
 
 const isValidTokens = function (data) {
   return data.accessToken || data.refreshToken || data.refreshTokenExpireTime;
-};
-
-const setAccessToken = function (data) {
-  Cookies.set('accessToken', data.token, data.refreshTokenExpireTime);
-};
-const setRefreshToken = function (data) {
-  Cookies.set('refreshToken', data.refreshToken, data.refreshTokenExpireTime);
-};
-const setUserIdToken = function (id, data) {
-  Cookies.set('id', id, data.refreshTokenExpireTime);
 };
 
 export const logout = async () => {
