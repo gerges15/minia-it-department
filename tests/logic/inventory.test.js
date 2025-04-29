@@ -55,4 +55,11 @@ describe('Test Inventor Class', async () => {
 
     expect(storedRole).toBe(role);
   });
+  it('should store the correct id of user', async () => {
+    inventory.storeUserId();
+    const storedId = Cookies.get('id');
+    const { nameid: id } = tk.decodeAccessToken;
+
+    expect(storedId).toBe(id);
+  });
 });
