@@ -74,6 +74,15 @@ class Token {
       console.error('Error in resetRefreshToken:', e);
     }
   }
+  static async Create() {
+    const theCredentials = {
+      userName: userName(),
+      password: userPassword(),
+    };
+
+    const data = await api.zPost('/api/Authentications', theCredentials);
+    return new Token(data);
+  }
 }
 
 export { Token };
