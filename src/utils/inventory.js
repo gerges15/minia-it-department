@@ -55,6 +55,9 @@ export class Inventory {
   removeUserRole() {
     this.removeCookie('role');
   }
+  removeUserId() {
+    this.removeCookie('id');
+  }
 
   removeCookie(name) {
     Cookies.remove(name);

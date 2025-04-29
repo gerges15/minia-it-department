@@ -1,13 +1,5 @@
 import dotenv from 'dotenv';
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  assert,
-  beforeEach,
-  vi,
-} from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { Token } from '../../src/utils/token';
 import { Inventory } from '../../src/utils/inventory';
 import { setUserName, setUserPassword } from '../../src/store/useUserStore';
