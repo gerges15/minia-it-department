@@ -15,7 +15,6 @@ export const login = async () => {
     const tk = await Token.Create();
     const data = await tk.fetchTokensObj();
     const { role, nameid: id } = tk.decodeAccessToken;
-
     if (isValidTokens(data)) {
       setAccessToken(data);
       setRefreshToken(data);
@@ -36,14 +35,6 @@ export const login = async () => {
   }
 };
 
-const fetchTokens = async () => {
-  const theCredentials = {
-    userName: userName(),
-    password: userPassword(),
-  };
-  return await api.post('/api/Authentications', theCredentials);
-};
-
 const isValidTokens = function (data) {
   return data.accessToken || data.refreshToken || data.refreshTokenExpireTime;
 };
@@ -56,10 +47,6 @@ const setRefreshToken = function (data) {
 };
 const setUserIdToken = function (id, data) {
   Cookies.set('id', id, data.refreshTokenExpireTime);
-};
-
-const decodeAccessToken = function (token) {
-  return jwtDecode(token);
 };
 
 export const logout = async () => {
