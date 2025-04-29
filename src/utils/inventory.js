@@ -12,6 +12,10 @@ export class Inventory {
     const refreshToken = this._data.refreshToken;
     this.setCookie('refreshToken', refreshToken);
   }
+  storeRefreshTokenExpTime() {
+    const refreshTokenExpTime = this._data.refreshTokenExpTime;
+    this.setCookie('refreshTokenExpTime', refreshTokenExpTime);
+  }
 
   setCookie(name, cookie) {
     Cookies.set(name, cookie, this._data.refreshTokenExpireTime);
