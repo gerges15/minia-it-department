@@ -5,12 +5,14 @@ import { clearError, setError } from '../src/store/useErrorMessageStore';
 import { setRole, resetRole } from '../src/store/useAuthStore';
 import { Inventory } from '../src/utils/inventory';
 
+let inventory;
+
 export const login = async () => {
   openLoading();
   clearError();
   try {
     const tk = await Token.Create();
-    const inventory = new Inventory(tk);
+    inventory = new Inventory(tk);
     const data = await tk.fetchTokensObj();
     const { role, nameid: id } = tk.decodeAccessToken;
 
