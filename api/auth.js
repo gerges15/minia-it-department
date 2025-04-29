@@ -16,7 +16,7 @@ export const login = async () => {
     const { role, nameid: id } = tk.decodeAccessToken;
     if (isValidTokens(data)) {
       inventory.storeAllTokens();
-      setUserIdToken(id, data);
+      inventory.storeUserId();
       setRole(role);
     } else {
       const message = 'Invalid authentication response';
