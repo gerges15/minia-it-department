@@ -70,6 +70,11 @@ describe('Token Class and its methods', () => {
     assert(Object.hasOwn(tokensObject, 'refreshToken'));
     assert(Object.hasOwn(tokensObject, 'refreshTokenExpireTime'));
   });
+
+  it('should return an instance of Token object', async () => {
+    const newTokenObj = await Token.Create();
+    expect(newTokenObj).toBeInstanceOf(Token);
+  });
 });
 
 function testValidToken(token) {
