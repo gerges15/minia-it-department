@@ -2,7 +2,7 @@ import { jwtDecode } from 'jwt-decode';
 import api from './apiClint';
 import Cookies from 'js-cookie';
 import { openLoading, disableLoading } from '../src/store/useLoadingStore';
-
+import { Token } from '../src/utils/token';
 import { clearError, setError } from '../src/store/useErrorMessageStore';
 import { userName, userPassword } from '../src/store/useUserStore';
 import { setRole, resetRole } from '../src/store/useAuthStore';
@@ -13,7 +13,9 @@ export const login = async () => {
     clearError();
 
     const data = await fetchTokens();
-    const { role, nameid: id } = decodeAccessToken(data.token);
+    const tk = await Token.Create();
+
+    const { role, nameid: id } = tk.decodeAccessToken;
     if (isValidTokens(data)) {
       setAccessToken(data);
       setRefreshToken(data);
