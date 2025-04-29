@@ -42,4 +42,10 @@ describe('Test Inventor Class', async () => {
 
     expect(storedToken).toBe(tk.refreshToken);
   });
+  it('should store correct refreshTokenExpireTime', async () => {
+    inventory.storeRefreshTokenExpTime();
+    const storedToken = Cookies.get('refreshTokenExpTime');
+
+    expect(storedToken).toBe(tk.refreshTokenExpTime);
+  });
 });
