@@ -4,6 +4,12 @@ export class Inventory {
     this._data = data;
   }
 
+  storeAllTokens() {
+    this.storeAccessToken();
+    this.storeRefreshToken();
+    this.storeRefreshTokenExpTime();
+  }
+
   storeAccessToken() {
     const accessToken = this._data.accessToken;
     this.setCookie('accessToken', accessToken);

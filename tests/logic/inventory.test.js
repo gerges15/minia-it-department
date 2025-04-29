@@ -28,22 +28,20 @@ describe('Test Inventor Class', async () => {
 
     tk = await Token.Create();
     inventory = new Inventory(tk);
+    inventory.storeAllTokens();
   });
 
   it('should store correct access token', async () => {
-    inventory.storeAccessToken();
     const storedToken = Cookies.get('accessToken');
 
     expect(storedToken).toBe(tk.accessToken);
   });
   it('should store correct refresh token', async () => {
-    inventory.storeRefreshToken();
     const storedToken = Cookies.get('refreshToken');
 
     expect(storedToken).toBe(tk.refreshToken);
   });
   it('should store correct refreshTokenExpireTime', async () => {
-    inventory.storeRefreshTokenExpTime();
     const storedToken = Cookies.get('refreshTokenExpTime');
 
     expect(storedToken).toBe(tk.refreshTokenExpTime);
