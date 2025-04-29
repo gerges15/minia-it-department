@@ -1,5 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
-
+import api from '../../api/apiClint';
+import { userName, userPassword } from '../../src/store/useUserStore';
 class Token {
   constructor(data) {
     this._data = data;
@@ -19,6 +20,15 @@ class Token {
   }
   get decodeAccessToken() {
     return jwtDecode(this.accessToken);
+  }
+
+  async fetchTokensObj() {
+    const theCredentials = {
+      userName: userName(),
+      password: userPassword(),
+    };
+
+    return await api.zPost('/api/Authentications', theCredentials);
   }
 
   async resetRefreshToken() {
