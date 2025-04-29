@@ -32,11 +32,17 @@ export class Inventory {
     this.setCookie('id', id);
   }
 
-  removeAllTokens() {
-    return undefined;
-  }
   setCookie(name, cookie) {
     Cookies.set(name, cookie, this._data.refreshTokenExpireTime);
+  }
+
+  removeAllTokens() {
+    this.removeAccessToken();
+    return undefined;
+  }
+
+  removeAccessToken() {
+    this.removeCookie('accessToken');
   }
 
   removeCookie(name) {
