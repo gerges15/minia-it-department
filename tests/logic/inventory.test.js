@@ -30,7 +30,6 @@ describe('Test Store functionality in Inventory class', async () => {
     inventory = new Inventory(tk);
     inventory.storeAllTokens();
   });
-
   it('should store correct access token', async () => {
     const storedToken = Cookies.get('accessToken');
 
@@ -59,5 +58,13 @@ describe('Test Store functionality in Inventory class', async () => {
     const { nameid: id } = tk.decodeAccessToken;
 
     expect(storedId).toBe(id);
+  });
+});
+
+describe('Test remove functionality in Inventory class', async () => {
+  it('should store correct access token', async () => {
+    const storedToken = Cookies.get('accessToken');
+
+    expect(storedToken).toBeUndefined();
   });
 });
