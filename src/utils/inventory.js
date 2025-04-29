@@ -11,4 +11,11 @@ export class Inventory {
       this._data.refreshTokenExpireTime
     );
   }
+  storeRefreshToken() {
+    Cookies.set(
+      'refreshToken',
+      this._data.refreshToken,
+      this._data.refreshTokenExpireTime
+    );
+  }
 }
