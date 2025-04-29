@@ -38,15 +38,19 @@ const isValidTokens = function (data) {
 
 export const logout = async () => {
   try {
-    const raw = getInventory();
-    const inventory = new Inventory(raw);
-
-    inventory.removeAllTokens();
-    inventory.removeUserId();
-    inventory.removeUserRole();
+    removeCommonData();
     resetRole();
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
   }
+};
+
+const removeCommonData = () => {
+  const raw = getInventory();
+  const inventory = new Inventory(raw);
+
+  inventory.removeAllTokens();
+  inventory.removeUserId();
+  inventory.removeUserRole();
 };
