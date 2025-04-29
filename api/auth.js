@@ -41,17 +41,13 @@ const isValidTokens = function (data) {
 
 export const logout = async () => {
   try {
-    removeAllTokens();
+    inventory.removeAllTokens();
+    inventory.removeUserId();
+    inventory.removeUserRole();
     resetRole();
     return true;
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
   }
-};
-
-const removeAllTokens = function () {
-  Cookies.remove('accessToken');
-  Cookies.remove('refreshToken');
-  Cookies.remove('id');
 };
