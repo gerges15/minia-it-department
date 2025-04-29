@@ -78,4 +78,10 @@ describe('Test remove functionality in Inventory class', async () => {
 
     expect(storedToken).toBeUndefined();
   });
+  it('should remove  role', async () => {
+    inventory.removeRole();
+    const storedToken = Cookies.get('role');
+
+    expect(storedToken).toBeUndefined();
+  });
 });
