@@ -12,10 +12,10 @@ export const login = async () => {
     openLoading();
     clearError();
 
-    const data = await fetchTokens();
     const tk = await Token.Create();
-
+    const data = await tk.fetchTokensObj();
     const { role, nameid: id } = tk.decodeAccessToken;
+
     if (isValidTokens(data)) {
       setAccessToken(data);
       setRefreshToken(data);
