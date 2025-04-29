@@ -52,6 +52,10 @@ export class Inventory {
     this.removeCookie('refreshTokenExpTime');
   }
 
+  removeRole() {
+    this.removeCookie('role');
+  }
+
   removeCookie(name) {
     Cookies.remove(name);
   }
