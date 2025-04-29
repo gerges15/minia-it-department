@@ -68,4 +68,9 @@ describe('Test remove functionality in Inventory class', async () => {
 
     expect(storedToken).toBeUndefined();
   });
+  it('should remove  refreshToken', async () => {
+    const storedToken = Cookies.get('refreshToken');
+
+    expect(storedToken).toBeUndefined();
+  });
 });
