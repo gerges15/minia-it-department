@@ -36,4 +36,10 @@ describe('Test Inventor Class', async () => {
 
     expect(storedToken).toBe(tk.accessToken);
   });
+  it('should store correct refresh token', async () => {
+    inventory.storeRefreshToken();
+    const storedToken = Cookies.get('refreshToken');
+
+    expect(storedToken).toBe(tk.refreshToken);
+  });
 });
