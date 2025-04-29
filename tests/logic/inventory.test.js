@@ -15,10 +15,9 @@ import Cookies from 'js-cookie';
 
 dotenv.config({ path: '.env' });
 
+let inventory;
+let tk;
 describe('Test Store functionality in Inventory class', async () => {
-  let inventory;
-  let tk;
-
   beforeAll(async () => {
     const usrPassword = process.env.VITE_TEST_PASSWORD;
     const usrName = process.env.VITE_TEST_USERNAME;
@@ -56,12 +55,14 @@ describe('Test Store functionality in Inventory class', async () => {
     inventory.storeUserId();
     const storedId = Cookies.get('id');
     const { nameid: id } = tk.decodeAccessToken;
-
     expect(storedId).toBe(id);
   });
 });
 
 describe('Test remove functionality in Inventory class', async () => {
+  beforeAll(() => {
+    inventory.removeAllTokens();
+  });
   it('should store correct access token', async () => {
     const storedToken = Cookies.get('accessToken');
 
