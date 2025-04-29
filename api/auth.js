@@ -1,9 +1,8 @@
-import Cookies from 'js-cookie';
-import { openLoading, disableLoading } from '../src/store/useLoadingStore';
-import { Token } from '../src/utils/token';
 import { clearError, setError } from '../src/store/useErrorMessageStore';
-import { setRole, resetRole } from '../src/store/useAuthStore';
 import { Inventory } from '../src/utils/inventory';
+import { openLoading, disableLoading } from '../src/store/useLoadingStore';
+import { setRole, resetRole } from '../src/store/useAuthStore';
+import { Token } from '../src/utils/token';
 
 let inventory;
 
@@ -12,24 +11,19 @@ export const login = async () => {
   clearError();
   try {
     const tk = await Token.Create();
-    inventory = new Inventory(tk);
     const data = await tk.fetchTokensObj();
-    const { role, nameid: id } = tk.decodeAccessToken;
+    inventory = new Inventory(tk);
+    const { role } = tk.decodeAccessToken;
 
     if (isValidTokens(data)) {
       inventory.storeAllTokens();
       inventory.storeUserId();
       setRole(role);
-    } else {
-      const message = 'Invalid authentication response';
-      setError(message);
-      throw new Error(message);
-    }
+    } else throw new Error('Invalid authentication response');
   } catch (err) {
     const errorMessage = err.response?.data?.detail || 'Authentication failed';
     setError(errorMessage);
     console.error('Login error:', err);
-    throw err;
   } finally {
     disableLoading();
   }
@@ -45,7 +39,6 @@ export const logout = async () => {
     inventory.removeUserId();
     inventory.removeUserRole();
     resetRole();
-    return true;
   } catch (error) {
     console.error('Logout error:', error);
     throw error;
