@@ -38,11 +38,15 @@ export class Inventory {
 
   removeAllTokens() {
     this.removeAccessToken();
+    this.removeRefreshToken();
     return undefined;
   }
 
   removeAccessToken() {
     this.removeCookie('accessToken');
+  }
+  removeRefreshToken() {
+    this.removeCookie('refreshToken');
   }
 
   removeCookie(name) {
