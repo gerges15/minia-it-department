@@ -39,7 +39,7 @@ export class Inventory {
   removeAllTokens() {
     this.removeAccessToken();
     this.removeRefreshToken();
-    return undefined;
+    this.removeRefreshTokenExpTime();
   }
 
   removeAccessToken() {
@@ -47,6 +47,9 @@ export class Inventory {
   }
   removeRefreshToken() {
     this.removeCookie('refreshToken');
+  }
+  removeRefreshTokenExpTime() {
+    this.removeCookie('refreshTokenExpTime');
   }
 
   removeCookie(name) {
