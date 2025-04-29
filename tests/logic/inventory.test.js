@@ -48,4 +48,11 @@ describe('Test Inventor Class', async () => {
 
     expect(storedToken).toBe(tk.refreshTokenExpTime);
   });
+  it('should store the correct role of user', async () => {
+    inventory.storeUserRole();
+    const storedRole = Cookies.get('role');
+    const { role } = tk.decodeAccessToken;
+
+    expect(storedRole).toBe(role);
+  });
 });
