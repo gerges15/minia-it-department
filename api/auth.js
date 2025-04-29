@@ -3,6 +3,7 @@ import { openLoading, disableLoading } from '../src/store/useLoadingStore';
 import { Token } from '../src/utils/token';
 import { clearError, setError } from '../src/store/useErrorMessageStore';
 import { setRole, resetRole } from '../src/store/useAuthStore';
+import { Inventory } from '../src/utils/inventory';
 
 export const login = async () => {
   try {
@@ -10,11 +11,11 @@ export const login = async () => {
     clearError();
 
     const tk = await Token.Create();
+    const inventory = new Inventory(tk);
     const data = await tk.fetchTokensObj();
     const { role, nameid: id } = tk.decodeAccessToken;
     if (isValidTokens(data)) {
-      setAccessToken(data);
-      setRefreshToken(data);
+      inventory.storeAllTokens();
       setUserIdToken(id, data);
       setRole(role);
     } else {
