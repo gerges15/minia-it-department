@@ -7,19 +7,10 @@ import { Token } from '../src/utils/token';
 let inventory;
 
 export const login = async () => {
-  openLoading();
-  clearError();
   try {
-    const tk = await Token.Create();
-    const data = await tk.fetchTokensObj();
-    inventory = new Inventory(tk);
-    const { role } = tk.decodeAccessToken;
-
-    if (isValidTokens(data)) {
-      inventory.storeAllTokens();
-      inventory.storeUserId();
-      setRole(role);
-    } else throw new Error('Invalid authentication response');
+    openLoading();
+    clearError();
+    await storeCommonData();
   } catch (err) {
     const errorMessage = err.response?.data?.detail || 'Authentication failed';
     setError(errorMessage);
@@ -27,6 +18,18 @@ export const login = async () => {
   } finally {
     disableLoading();
   }
+};
+
+const storeCommonData = async () => {
+  const tk = await Token.Create();
+  const data = await tk.fetchTokensObj();
+  inventory = new Inventory(tk);
+  const { role } = tk.decodeAccessToken;
+  if (isValidTokens(data)) {
+    inventory.storeAllTokens();
+    inventory.storeUserId();
+    setRole(role);
+  } else throw new Error('Invalid authentication response');
 };
 
 const isValidTokens = function (data) {
