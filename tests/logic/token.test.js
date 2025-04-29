@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import {
   describe,
   it,
@@ -9,7 +10,9 @@ import {
 } from 'vitest';
 import { Token, tk } from '../../src/utils/token';
 import api from '../../api/apiClint';
+import { setUserName, setUserPassword } from '../../src/store/useUserStore';
 
+dotenv.config({ path: '.env' });
 describe('Token Class and its methods', () => {
   let tokens;
   let tokensData;
@@ -51,6 +54,21 @@ describe('Token Class and its methods', () => {
     assert(Object.hasOwn(decodedTokenData, 'nameid'));
     assert(Object.hasOwn(decodedTokenData, 'role'));
     assert(Object.hasOwn(decodedTokenData, 'given_name'));
+  });
+
+  it('should fetch tokensObject that contains {token, refreshToken, refreshTokenExpireTime}', async () => {
+    const usrPassword = process.env.VITE_TEST_PASSWORD;
+    const usrName = process.env.VITE_TEST_USERNAME;
+
+    setUserName(usrName);
+    setUserPassword(usrPassword);
+
+    const tokensObject = await tokens.fetchTokens();
+
+    console.log(tokensObject);
+    assert(Object.hasOwn(tokensObject, 'token'));
+    assert(Object.hasOwn(tokensObject, 'refreshToken'));
+    assert(Object.hasOwn(tokensObject, 'refreshTokenExpireTime'));
   });
 });
 
