@@ -8,3 +8,7 @@ export const updateTeachingPlace = async (placeId, updatedData) =>
   await api.put(`/TeachingPlaces/${placeId}`, updatedData);
 export const deleteTeachingPlace = async id =>
   await api.delete('/TeachingPlaces', { data: [id] });
+
+// HomePage endpoints
+
+export const getStatistics = async () => await api.get('/api/Statistics');
