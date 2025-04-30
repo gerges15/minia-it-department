@@ -15,6 +15,7 @@ import {
 
 import { getStatistics } from '../../../api/endpoints';
 import HomeWelcomeSection from './HomeWelcomSection';
+import HomeStat from './HomeStat';
 
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
@@ -95,22 +96,13 @@ export default function HomePage() {
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map(stat => (
-              <div
+              <HomeStat
                 key={stat.name}
-                className="bg-white rounded-xl shadow-sm p-6"
-              >
-                <div className="flex items-center">
-                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">
-                      {stat.name}
-                    </p>
-                    <p className="text-2xl font-semibold text-gray-900">
-                      {stat.value}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                name={stat.name}
+                color={stat.color}
+                icon={stat.icon}
+                value={stat.value}
+              />
             ))}
           </div>
 
