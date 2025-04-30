@@ -3,7 +3,7 @@ import { FiPlus } from 'react-icons/fi';
 import CourseTable from '../components/courses/CourseTable';
 import CourseForm from '../components/courses/CourseForm';
 import SearchAndFilter from '../components/courses/SearchAndFilter';
-import { getCourses } from '../../api/endpoints';
+import { getCourses, editCourse } from '../../api/endpoints';
 
 export default function ManageCourses() {
   // State management
@@ -62,6 +62,18 @@ export default function ManageCourses() {
         //   headers: { 'Content-Type': 'application/json' },
         //   body: JSON.stringify(formData),
         // });
+
+        console.log(editCourseId, formData);
+        await editCourse(editCourseId, {
+          code: 'COMP201',
+          name: 'C#',
+          creditHours: 2,
+          level: 2, // enum
+          semester: 1, // enum
+          type: 0, // enum
+          lectureHours: 2,
+        });
+
         const updatedCourse = {
           ...formData,
           id: editCourseId,
