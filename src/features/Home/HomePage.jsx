@@ -12,6 +12,7 @@ import {
   FiBriefcase,
   FiPlusCircle,
   FiAlignJustify,
+  FiUser,
 } from 'react-icons/fi';
 
 import { getStatistics } from '../../../api/endpoints';
@@ -34,29 +35,6 @@ export default function HomePage() {
     };
     fetchStatistics();
   }, []);
-
-  // mock stats data (This will come from the `api/Statistic` endpoin)
-
-  const stats = [
-    {
-      name: 'Active Courses',
-      value: statistics.totalCourses,
-      icon: FiBook,
-      color: 'text-green-500',
-    },
-    {
-      name: 'Teaching Staff',
-      value: statistics.totalTeachingStaff,
-      icon: FiBriefcase,
-      color: 'text-purple-500',
-    },
-    {
-      name: 'Classrooms',
-      value: statistics.totalTeachingPlaces,
-      icon: FiCalendar,
-      color: 'text-orange-500',
-    },
-  ];
 
   // mokc recent courses added
   const recentCourses = [
@@ -96,15 +74,27 @@ export default function HomePage() {
               name="Total Students"
               value={statistics.totalStudents}
             />
-            {stats.map(stat => (
-              <HomeStat
-                key={stat.name}
-                name={stat.name}
-                color={stat.color}
-                icon={stat.icon}
-                value={stat.value}
-              />
-            ))}
+
+            <HomeStat
+              color="text-green-500"
+              icon={FiBook}
+              name="Active Courses"
+              value={statistics.totalCourses}
+            />
+
+            <HomeStat
+              color="text-purple-500"
+              icon={FiBriefcase}
+              name="Teaching Staff"
+              value={statistics.totalTeachingStaff}
+            />
+
+            <HomeStat
+              color="text-orange-500"
+              icon={FiCalendar}
+              name="Classrooms"
+              value={statistics.totalTeachingPlaces}
+            />
           </div>
 
           {/* Main Content Grid */}
