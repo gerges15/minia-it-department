@@ -5,6 +5,7 @@ import StudentFilter from '../components/students/StudentFilter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Papa from 'papaparse';
+import { addNewUser, getStudents, getUserById } from '../../api/endpoints';
 
 // todo: replace mock data with real API calls
 // API endpoints to implement:
@@ -14,56 +15,8 @@ import Papa from 'papaparse';
 // DELETE /api/students/:id - Delete student
 // POST /api/students/bulk - Bulk upload students from CSV
 
-// Mock data for testing
-const mockStudents = [
-  {
-    id: '1',
-    fullId: '2023001',
-    firstName: 'David',
-    lastName: 'Nady',
-    gender: 0,
-    role: 2,
-    level: 1,
-    dateOfBirth: '2003-09-22',
-    userName: 'david.nady'
-  },
-  {
-    id: '2',
-    fullId: '2023002',
-    firstName: 'Fatima',
-    lastName: 'Ahmed',
-    gender: 1,
-    role: 2,
-    level: 2,
-    dateOfBirth: '2003-02-15',
-    userName: 'fatima.ahmed'
-  },
-  {
-    id: '3',
-    fullId: '2023003',
-    firstName: 'Mohamed',
-    lastName: 'Ahmed',
-    gender: 0,
-    role: 2,
-    level: 3,
-    dateOfBirth: '2003-05-20',
-    userName: 'mohamed.ahmed'
-  },
-  {
-    id: '4',
-    fullId: '2023004',
-    firstName: 'Girgis',
-    lastName: 'Sami',
-    gender: 2,
-    role: 2,
-    level: 4,
-    dateOfBirth: '2004-03-09',
-    userName: 'girgis.sami'
-  }
-];
-
 const ManageStudents = () => {
-  const [students, setStudents] = useState(mockStudents);
+  const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -80,7 +33,8 @@ const ManageStudents = () => {
       setIsLoading(true);
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      setStudents(mockStudents);
+      const students = await getStudents();
+      setStudents(await students.results);
     } catch (error) {
       toast.error('Error fetching students');
       console.error('Error:', error);
@@ -95,29 +49,34 @@ const ManageStudents = () => {
 
   // Filter students based on search term, level, and gender
   const filteredStudents = students.filter(student => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch =
+      searchTerm === '' ||
       student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.fullId.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesLevel = selectedLevel === '' || student.level === parseInt(selectedLevel);
-    const matchesGender = selectedGender === '' || student.gender === parseInt(selectedGender);
-    
+
+    const matchesLevel =
+      selectedLevel === '' || student.level === parseInt(selectedLevel);
+    const matchesGender =
+      selectedGender === '' || student.gender === parseInt(selectedGender);
+
     return matchesSearch && matchesLevel && matchesGender;
   });
 
-  const handleEdit = (student) => {
+  const handleEdit = student => {
     setSelectedStudent(student);
     setIsEditing(true);
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (student) => {
+  const handleDelete = async student => {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
         // todo: Replace with real API call
         await new Promise(resolve => setTimeout(resolve, 500));
+
         setStudents(students.filter(s => s.id !== student.id));
+
         toast.success('Student deleted successfully');
       } catch (error) {
         toast.error('Error deleting student');
@@ -126,32 +85,33 @@ const ManageStudents = () => {
     }
   };
 
-  const handleViewSchedule = (student) => {
+  const handleViewSchedule = student => {
     // TODO: Implement schedule viewing logic
     console.log('View schedule for:', student);
   };
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async formData => {
     try {
       // TODO: Replace with real API call
+      await addNewUser(formData);
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       if (isEditing) {
         const updatedStudent = {
           ...selectedStudent,
           ...formData,
           fullId: selectedStudent.fullId,
-          userName: selectedStudent.userName
+          userName: selectedStudent.userName,
         };
-        setStudents(students.map(s => 
-          s.id === updatedStudent.id ? updatedStudent : s
-        ));
+        setStudents(
+          students.map(s => (s.id === updatedStudent.id ? updatedStudent : s))
+        );
       } else {
         const newStudent = {
           id: String(students.length + 1),
           fullId: `2023${String(students.length + 1).padStart(3, '0')}`,
           ...formData,
-          userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`
+          userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
         };
         setStudents([...students, newStudent]);
       }
@@ -159,7 +119,9 @@ const ManageStudents = () => {
       setIsFormOpen(false);
       setSelectedStudent(null);
       setIsEditing(false);
-      toast.success(`Student ${isEditing ? 'updated' : 'created'} successfully`);
+      toast.success(
+        `Student ${isEditing ? 'updated' : 'created'} successfully`
+      );
     } catch (error) {
       toast.error(`Error ${isEditing ? 'updating' : 'creating'} student`);
       console.error('Error:', error);
@@ -172,17 +134,17 @@ const ManageStudents = () => {
     setIsEditing(false);
   };
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = event => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     Papa.parse(file, {
       header: true,
-      complete: async (results) => {
+      complete: async results => {
         try {
           // TODO: Replace with real API call
           await new Promise(resolve => setTimeout(resolve, 1000));
-          
+
           const newStudents = results.data.map((student, index) => ({
             id: String(students.length + index + 1),
             fullId: `2023${String(students.length + index + 1).padStart(3, '0')}`,
@@ -192,7 +154,7 @@ const ManageStudents = () => {
             role: 2,
             level: parseInt(student.level),
             dateOfBirth: student.dateOfBirth,
-            userName: `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}`
+            userName: `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}`,
           }));
 
           setStudents([...students, ...newStudents]);
@@ -202,7 +164,7 @@ const ManageStudents = () => {
           console.error('Error:', error);
         }
       },
-      error: (error) => {
+      error: error => {
         toast.error('Error parsing CSV file');
         console.error('Error:', error);
       },
@@ -259,15 +221,19 @@ const ManageStudents = () => {
 
       {isFormOpen && (
         <StudentForm
-          initialData={selectedStudent ? {
-            firstName: selectedStudent.firstName,
-            lastName: selectedStudent.lastName,
-            gender: selectedStudent.gender,
-            role: selectedStudent.role,
-            level: selectedStudent.level,
-            dateOfBirth: selectedStudent.dateOfBirth,
-            password: '', // Password is not stored in the student object
-          } : undefined}
+          initialData={
+            selectedStudent
+              ? {
+                  firstName: selectedStudent.firstName,
+                  lastName: selectedStudent.lastName,
+                  gender: selectedStudent.gender,
+                  role: selectedStudent.role,
+                  level: selectedStudent.level,
+                  dateOfBirth: selectedStudent.dateOfBirth,
+                  password: '', // Password is not stored in the student object
+                }
+              : undefined
+          }
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isEditing={isEditing}
