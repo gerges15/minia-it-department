@@ -3,17 +3,17 @@ export enum CourseLevel {
   First = 1,
   Second = 2,
   Third = 3,
-  Fourth = 4
+  Fourth = 4,
 }
 
 export enum CourseSemester {
   First = 1,
-  Second = 2
+  Second = 2,
 }
 
 export enum CourseType {
   Lecture = 0,
-  Practical = 1
+  Practical = 1,
 }
 
 export interface Course {
@@ -38,29 +38,3 @@ export interface CourseFormData {
   lectureHours: number;
   dependencies?: string; // Comma-separated string of course codes for UI
 }
-
-// Mock data - Replace with API calls later
-export const mockCourses: Course[] = [
-  {
-    id: 1,
-    code: 'COMP401',
-    name: 'Data Structure',
-    creditHours: 3,
-    level: CourseLevel.First,
-    semester: CourseSemester.Second,
-    type: CourseType.Lecture,
-    lectureHours: 2,
-    dependencies: [101]
-  },
-  {
-    id: 2,
-    code: 'COMP402',
-    name: 'Database Systems',
-    creditHours: 3,
-    level: CourseLevel.Second,
-    semester: CourseSemester.First,
-    type: CourseType.Lecture,
-    lectureHours: 2,
-    dependencies: [201]
-  }
-]; 

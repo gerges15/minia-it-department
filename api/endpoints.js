@@ -12,3 +12,7 @@ export const deleteTeachingPlace = async id =>
 // HomePage endpoints
 
 export const getStatistics = async () => await api.get('/api/Statistics');
+
+// Courses endpoints
+
+export const getCourses = async () => await api.get('/api/Courses');
