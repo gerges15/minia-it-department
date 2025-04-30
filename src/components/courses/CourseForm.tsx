@@ -4,7 +4,7 @@ import { FiX } from 'react-icons/fi';
 // Course type enums
 enum CourseType {
   Lecture = 0,
-  Practical = 1
+  Practical = 1,
 }
 
 interface CourseFormData {
@@ -31,7 +31,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
   onClose,
   onSubmit,
   initialData,
-  isEditing
+  isEditing,
 }) => {
   const [formData, setFormData] = useState<CourseFormData>({
     code: '',
@@ -41,7 +41,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
     semester: 1,
     type: CourseType.Lecture,
     lectureHours: 2,
-    dependencies: ''
+    dependencies: '',
   });
 
   // Reset form when modal opens/closes or initialData changes
@@ -56,19 +56,27 @@ const CourseForm: React.FC<CourseFormProps> = ({
           semester: 1,
           type: CourseType.Lecture,
           lectureHours: 2,
-          dependencies: ''
+          dependencies: '',
         }
       );
     }
   }, [isOpen, initialData]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: ['creditHours', 'lectureHours', 'level', 'semester', 'type'].includes(name)
+      [name]: [
+        'creditHours',
+        'lectureHours',
+        'level',
+        'semester',
+        'type',
+      ].includes(name)
         ? Number(value)
-        : value
+        : value,
     }));
   };
 
@@ -134,7 +142,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
               required
             >
-              {[1, 2, 3].map((hours) => (
+              {[1, 2, 3].map(hours => (
                 <option key={hours} value={hours}>
                   {hours} Hours
                 </option>
@@ -153,7 +161,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
               required
             >
-              {[1, 2, 3, 4].map((level) => (
+              {[1, 2, 3, 4].map(level => (
                 <option key={level} value={level}>
                   Level {level}
                 </option>
@@ -172,7 +180,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
               required
             >
-              {[1, 2].map((semester) => (
+              {[1, 2].map(semester => (
                 <option key={semester} value={semester}>
                   Semester {semester}
                 </option>
@@ -207,7 +215,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
               required
             >
-              {[0, 1, 2].map((hours) => (
+              {[0, 1, 2].map(hours => (
                 <option key={hours} value={hours}>
                   {hours} Hours
                 </option>
@@ -250,4 +258,4 @@ const CourseForm: React.FC<CourseFormProps> = ({
   );
 };
 
-export default CourseForm; 
+export default CourseForm;

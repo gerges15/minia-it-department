@@ -3,7 +3,12 @@ import { FiPlus } from 'react-icons/fi';
 import CourseTable from '../components/courses/CourseTable';
 import CourseForm from '../components/courses/CourseForm';
 import SearchAndFilter from '../components/courses/SearchAndFilter';
-import { getCourses, editCourse, deleteCourse } from '../../api/endpoints';
+import {
+  getCourses,
+  editCourse,
+  deleteCourse,
+  addNewCourse,
+} from '../../api/endpoints';
 
 export default function ManageCourses() {
   // State management
@@ -94,6 +99,7 @@ export default function ManageCourses() {
         //   body: JSON.stringify(formData),
         // });
         // const newCourse = await response.json();
+        await addNewCourse(formData);
         const newCourse = {
           ...formData,
           id: Date.now(), // temp id until API real one
