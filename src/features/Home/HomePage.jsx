@@ -1,5 +1,6 @@
-import React from 'react';
+'use clint';
 import { Outlet, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import MobileNavToggle from './MobileNavToggle';
 import MobileSidebar from './Sidebar/MobileSidebar';
 import DesktopSidebar from './Sidebar/DesktopSidebar';
@@ -14,11 +15,23 @@ import {
 
 import { getStatistics } from '../../../api/endpoints';
 
-const statistics = await getStatistics();
-
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
+  const [statistics, setStatistics] = useState({});
   const currentPath = useLocation().pathname;
+
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        const data = await getStatistics();
+
+        setStatistics(data);
+      } catch (error) {
+        console.error('Failed to fetch statistics:', error);
+      }
+    };
+    fetchStatistics();
+  }, []);
 
   // mock stats data (This will come from the `api/Statistic` endpoin)
 
