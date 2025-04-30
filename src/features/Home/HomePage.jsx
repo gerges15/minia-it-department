@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fi';
 
 import { getStatistics } from '../../../api/endpoints';
+import HomeWelcomeSection from './HomeWelcomSection';
 
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
@@ -24,7 +25,6 @@ export default function HomePage() {
     const fetchStatistics = async () => {
       try {
         const data = await getStatistics();
-
         setStatistics(data);
       } catch (error) {
         console.error('Failed to fetch statistics:', error);
@@ -90,15 +90,7 @@ export default function HomePage() {
     if (currentPath === '/home')
       return (
         <div className="space-y-6">
-          {/* Welcome Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h1 className="text-2xl font-bold text-gray-800">
-              Welcome to Minia University IT Department
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Manage your academic activities efficiently
-            </p>
-          </div>
+          <HomeWelcomeSection />
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
