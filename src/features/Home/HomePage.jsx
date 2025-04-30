@@ -12,33 +12,38 @@ import {
   FiPlusCircle,
 } from 'react-icons/fi';
 
+import { getStatistics } from '../../../api/endpoints';
+
+const statistics = await getStatistics();
+
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
   const currentPath = useLocation().pathname;
 
   // mock stats data (This will come from the `api/Statistic` endpoin)
+
   const stats = [
     {
       name: 'Total Students',
-      value: '220',
+      value: statistics.totalStudents,
       icon: FiUsers,
       color: 'text-blue-500',
     },
     {
       name: 'Active Courses',
-      value: '45',
+      value: statistics.totalCourses,
       icon: FiBook,
       color: 'text-green-500',
     },
     {
       name: 'Teaching Staff',
-      value: '15',
+      value: statistics.totalTeachingStaff,
       icon: FiBriefcase,
       color: 'text-purple-500',
     },
     {
       name: 'Classrooms',
-      value: '15',
+      value: statistics.totalTeachingPlaces,
       icon: FiCalendar,
       color: 'text-orange-500',
     },
