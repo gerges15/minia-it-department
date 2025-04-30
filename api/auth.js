@@ -11,8 +11,7 @@ export const login = async () => {
     clearError();
     await storeCommonData();
   } catch (err) {
-    setError(err.response?.data?.detail || 'Authentication failed');
-    console.error('Login error:', err);
+    logErrorMessage(err);
   } finally {
     disableLoading();
   }
@@ -34,6 +33,11 @@ const storeCommonData = async () => {
 
 const isValidTokens = function (data) {
   return data.accessToken || data.refreshToken || data.refreshTokenExpireTime;
+};
+
+const logErrorMessage = error => {
+  setError(error.response?.data?.detail || 'Authentication failed');
+  console.error('Login error:', error);
 };
 
 export const logout = async () => {
