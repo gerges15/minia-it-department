@@ -18,3 +18,5 @@ export const getStatistics = async () => await api.get('/api/Statistics');
 export const getCourses = async () => await api.get('/api/Courses');
 export const editCourse = async (id, updatedCourseData) =>
   await api.put(`/api/Courses/${id}`, updatedCourseData);
+
+export const deleteCourse = async id => api.delete(`/api/Courses/`, id);

@@ -3,7 +3,7 @@ import { FiPlus } from 'react-icons/fi';
 import CourseTable from '../components/courses/CourseTable';
 import CourseForm from '../components/courses/CourseForm';
 import SearchAndFilter from '../components/courses/SearchAndFilter';
-import { getCourses, editCourse } from '../../api/endpoints';
+import { getCourses, editCourse, deleteCourse } from '../../api/endpoints';
 
 export default function ManageCourses() {
   // State management
@@ -124,6 +124,7 @@ export default function ManageCourses() {
       try {
         // todo: replace with the API call
         // await fetch(`/api/courses/${id}`, { method: 'DELETE' });
+        await deleteCourse([id]);
         setCourses(prev => prev.filter(course => course.id !== id));
       } catch (err) {
         setError('Failed to delete course. Please try again later.');
