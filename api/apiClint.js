@@ -103,8 +103,8 @@ class ApiClint {
     return this.request(endpoint, 'PUT', data);
   }
 
-  delete(endpoint) {
-    return this.request(endpoint, 'DELETE');
+  delete(endpoint, data) {
+    return this.request(endpoint, 'DELETE', data);
   }
 
   async zPost(endpoint, body) {
