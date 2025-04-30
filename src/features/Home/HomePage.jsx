@@ -11,6 +11,7 @@ import {
   FiBook,
   FiBriefcase,
   FiPlusCircle,
+  FiAlignJustify,
 } from 'react-icons/fi';
 
 import { getStatistics } from '../../../api/endpoints';
@@ -37,12 +38,6 @@ export default function HomePage() {
   // mock stats data (This will come from the `api/Statistic` endpoin)
 
   const stats = [
-    {
-      name: 'Total Students',
-      value: statistics.totalStudents,
-      icon: FiUsers,
-      color: 'text-blue-500',
-    },
     {
       name: 'Active Courses',
       value: statistics.totalCourses,
@@ -95,6 +90,12 @@ export default function HomePage() {
 
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <HomeStat
+              color="text-blue-500"
+              icon={FiUsers}
+              name="Total Students"
+              value={statistics.totalStudents}
+            />
             {stats.map(stat => (
               <HomeStat
                 key={stat.name}
