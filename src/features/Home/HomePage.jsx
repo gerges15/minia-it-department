@@ -1,40 +1,15 @@
-'use clint';
+import { FiPlusCircle } from 'react-icons/fi';
 import { Outlet, useLocation } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
+import DesktopSidebar from './Sidebar/DesktopSidebar';
+import HomeQuickStats from './HomeQuickStats';
+import HomeWelcomeSection from './HomeWelcomSection';
 import MobileNavToggle from './MobileNavToggle';
 import MobileSidebar from './Sidebar/MobileSidebar';
-import DesktopSidebar from './Sidebar/DesktopSidebar';
 import useSidebarStore from '../../store/useSidebarStore';
-import {
-  FiCalendar,
-  FiUsers,
-  FiBook,
-  FiBriefcase,
-  FiPlusCircle,
-  FiAlignJustify,
-  FiUser,
-} from 'react-icons/fi';
-
-import { getStatistics } from '../../../api/endpoints';
-import HomeWelcomeSection from './HomeWelcomSection';
-import HomeStat from './HomeStat';
 
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
-  const [statistics, setStatistics] = useState({});
   const currentPath = useLocation().pathname;
-
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        const data = await getStatistics();
-        setStatistics(data);
-      } catch (error) {
-        console.error('Failed to fetch statistics:', error);
-      }
-    };
-    fetchStatistics();
-  }, []);
 
   // mokc recent courses added
   const recentCourses = [
@@ -65,37 +40,7 @@ export default function HomePage() {
       return (
         <div className="space-y-6">
           <HomeWelcomeSection />
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <HomeStat
-              color="text-blue-500"
-              icon={FiUsers}
-              name="Total Students"
-              value={statistics.totalStudents}
-            />
-
-            <HomeStat
-              color="text-green-500"
-              icon={FiBook}
-              name="Active Courses"
-              value={statistics.totalCourses}
-            />
-
-            <HomeStat
-              color="text-purple-500"
-              icon={FiBriefcase}
-              name="Teaching Staff"
-              value={statistics.totalTeachingStaff}
-            />
-
-            <HomeStat
-              color="text-orange-500"
-              icon={FiCalendar}
-              name="Classrooms"
-              value={statistics.totalTeachingPlaces}
-            />
-          </div>
+          <HomeQuickStats />
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
