@@ -59,7 +59,7 @@ export const getTeachingPlaces = async () =>
 export const updateTeachingPlace = async (placeId, placeData) =>
   await api.put(`/api/TeachingPlaces/${placeId}`, placeData);
 export const deleteTeachingPlaces = async placeId =>
-  await api.delete('/api/TeachingPlaces', placeIds);
+  await api.delete('/api/TeachingPlaces', placeId);
 export const addTeachingPlaceSchedules = async (placeId, schedules) =>
   await api.post(`/api/TeachingPlaces/${placeId}/Schedules`, schedules);
 export const removeTeachingPlaceSchedules = async (placeId, scheduleIds) =>
