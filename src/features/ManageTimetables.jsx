@@ -19,8 +19,10 @@ import { getInventory } from '../store/usInventoryStore';
 import { toast } from 'react-toastify';
 
 export default function ManageTimetable() {
+  const isProduction = import.meta.env.PROD;
   const URL = import.meta.env.VITE_API_URL;
   const KEY = import.meta.env.VITE_API_KEY;
+  const BASE_URL = isProduction ? '/api/proxy' : `${URL}/api`;
   const [connectionId, setConnectionId] = useState(null);
   const [connection, setConnection] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +102,7 @@ export default function ManageTimetable() {
       };
 
       newConnection = new HubConnectionBuilder()
-        .withUrl(`${URL}/api/TimeTableHub`, {
+        .withUrl(`${BASE_URL}/TimeTableHub`, {
           headers: {
             'x-api-key': KEY,
             Authorization: `Bearer ${accessToken}`,
