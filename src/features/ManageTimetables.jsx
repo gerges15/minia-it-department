@@ -16,7 +16,7 @@ import { jsPDF } from 'jspdf';
 import Cookies from 'js-cookie';
 import html2canvas from 'html2canvas';
 import { getInventory } from '../store/usInventoryStore';
-import { toast } from 'react-toastify'; // For user feedback (install react-toastify)
+import { toast } from 'react-toastify';
 
 export default function ManageTimetable() {
   const URL = import.meta.env.VITE_API_URL;
@@ -27,7 +27,6 @@ export default function ManageTimetable() {
   const [selectedYear, setSelectedYear] = useState('First');
   const [zTimetableData, zSetTimetableData] = useState({});
 
-  // Map year to Levels enum (0:None, 1:First, 2:Second, 3:Third, 4:Fourth)
   const yearToLevel = {
     First: 1,
     Second: 2,
@@ -58,7 +57,6 @@ export default function ManageTimetable() {
     'Saturday',
   ];
 
-  // This will come from the API
   const [timetableData, setTimetableData] = useState({
     'Sunday-8:00 - 9:00': {
       course: 'COMP401',
@@ -101,7 +99,6 @@ export default function ManageTimetable() {
         StaffUserName: [],
       };
 
-      // Create SignalR connection
       newConnection = new HubConnectionBuilder()
         .withUrl(`${URL}/api/TimeTableHub`, {
           headers: {
@@ -122,7 +119,6 @@ export default function ManageTimetable() {
 
       newConnection.on('generateResult', result => {
         console.log('Received timetable result:', result);
-        // Transform result to timetableData format
         const transformedData = {};
         Object.entries(result.table || {}).forEach(([day, slots]) => {
           slots.forEach(slot => {
@@ -166,10 +162,9 @@ export default function ManageTimetable() {
       toast.error('Failed to generate timetable');
     } finally {
       setIsLoading(false);
-      // Keep connection open for further messages
     }
   };
-  // Save JSON to file (unchanged)
+
   function saveJsonToFile(jsonObject, filename = 'TimeTableData.json') {
     const blob = new Blob([JSON.stringify(jsonObject, null, 2)], {
       type: 'application/json',
@@ -181,9 +176,9 @@ export default function ManageTimetable() {
     link.click();
     document.body.removeChild(link);
   }
+
   const handleSaveTimetable = async () => {
     try {
-      // API call to the backend
       console.log('Saving timetable...');
     } catch (error) {
       console.error('Error saving timetable:', error);
@@ -192,31 +187,21 @@ export default function ManageTimetable() {
 
   const handleExportPDF = async () => {
     try {
-      // Create a simple table structure for PDF
       const doc = new jsPDF('l', 'mm', 'a4');
-
-      // Add title
       doc.setFontSize(20);
       doc.text('Timetable', 20, 20);
-
-      // Set up table parameters
       const startY = 30;
       const lineHeight = 7;
       const colWidth = 40;
       const headers = ['Day', 'Time', 'Course', 'Room', 'Instructor'];
       let currentY = startY;
-
-      // Add headers
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
       headers.forEach((header, i) => {
         doc.text(header, 20 + i * colWidth, currentY);
       });
-
-      // Add data rows
       doc.setFont(undefined, 'normal');
       currentY += lineHeight;
-
       Object.entries(timetableData).forEach(([key, value]) => {
         const [day, time] = key.split('-');
         const row = [
@@ -226,21 +211,15 @@ export default function ManageTimetable() {
           value.room || '',
           value.instructor || '',
         ];
-
-        // Check if we need a new page
         if (currentY > 270) {
           doc.addPage();
           currentY = 20;
         }
-
-        // Add row data
         row.forEach((cell, i) => {
           doc.text(cell, 20 + i * colWidth, currentY);
         });
-
         currentY += lineHeight;
       });
-
       doc.save('timetable.pdf');
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -249,50 +228,50 @@ export default function ManageTimetable() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
       {/* Header Section */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex justify-between items-center">
+      <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               Manage Timetables
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
               Generate and manage class schedules
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3">
             <button
               onClick={handleGenerateTimetable}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base"
             >
-              <FiRefreshCw className="h-5 w-5" />
+              <FiRefreshCw className="h-4 w-4 sm:h-5 sm:w-5" />
               Auto Generate
             </button>
             <button
               onClick={handleSaveTimetable}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base"
             >
-              <FiSave className="h-5 w-5" />
+              <FiSave className="h-4 w-4 sm:h-5 sm:w-5" />
               Save Changes
             </button>
             <button
               onClick={handleExportPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
             >
-              <FiDownload className="h-5 w-5" />
+              <FiDownload className="h-4 w-4 sm:h-5 sm:w-5" />
               Export PDF
             </button>
           </div>
         </div>
 
         {/* Year Selection */}
-        <div className="flex gap-2 mt-6">
+        <div className="flex flex-wrap gap-2 mt-4 sm:mt-6">
           {['First', 'Second', 'Third', 'Fourth'].map(year => (
             <button
               key={year}
               onClick={() => setSelectedYear(year)}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm sm:text-base ${
                 selectedYear === year
                   ? 'bg-purple-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -305,19 +284,25 @@ export default function ManageTimetable() {
       </div>
 
       {/* Timetable Section */}
-      <div className="bg-white rounded-2xl shadow-xl p-6 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6 overflow-x-auto relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-gray-100 bg-opacity-50 flex items-center justify-center z-20">
+            <div className="animate-spin h-8 w-8 border-4 border-purple-600 border-t-transparent rounded-full"></div>
+          </div>
+        )}
         <div
           className="timetable-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: `150px repeat(${timeSlots.length}, minmax(150px, 1fr))`,
-            minWidth: '1000px',
+            gridTemplateColumns: `100px repeat(${timeSlots.length}, minmax(100px, 1fr))`,
+            minWidth: '600px',
+            maxWidth: '100%',
           }}
           role="grid"
         >
           {/* Header Row */}
           <div
-            className="sticky top-0 z-10 bg-slate-100 border-b border-slate-300 p-4 font-semibold text-sm text-slate-700 flex items-center"
+            className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 p-3 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700 flex items-center"
             role="columnheader"
           >
             Day / Time
@@ -325,7 +310,7 @@ export default function ManageTimetable() {
           {timeSlots.map(slot => (
             <div
               key={slot}
-              className="sticky top-0 z-10 bg-slate-100 border-b border-slate-300 p-4 font-semibold text-sm text-slate-700 text-center flex items-center justify-center"
+              className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 p-3 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700 text-center flex items-center justify-center"
               role="columnheader"
             >
               {slot}
@@ -336,9 +321,9 @@ export default function ManageTimetable() {
           {days.map((day, rowIndex) => (
             <React.Fragment key={day}>
               <div
-                className={`p-4 font-semibold text-slate-800 border-b border-r border-slate-200 ${
-                  rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50'
-                } flex items-center`}
+                className={`p-3 sm:p-4 font-semibold text-gray-800 border-b border-r border-gray-200 ${
+                  rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                } flex items-center text-xs sm:text-sm`}
                 role="rowheader"
               >
                 {day}
@@ -349,11 +334,9 @@ export default function ManageTimetable() {
                 return (
                   <div
                     key={key}
-                    className={`p-4 border-b border-r border-slate-200 ${
-                      rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50'
-                    } transition-all hover:bg-indigo-50 ${
-                      cellData ? 'shadow-sm rounded-md' : ''
-                    }`}
+                    className={`p-3 sm:p-4 border-b border-r border-gray-200 ${
+                      rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    } transition-colors hover:bg-gray-100 ${cellData?.color || ''} text-xs sm:text-sm`}
                     role="cell"
                     title={
                       cellData
@@ -362,19 +345,19 @@ export default function ManageTimetable() {
                     }
                   >
                     {cellData ? (
-                      <div className="space-y-1.5">
-                        <span className="inline-block px-3 py-1 text-xs font-semibold text-indigo-900 bg-indigo-100 rounded-full">
+                      <div className="space-y-1">
+                        <span className="inline-block px-2 sm:px-3 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
                           {cellData.course}
                         </span>
-                        <div className="text-sm text-slate-700">
+                        <div className="text-xs sm:text-sm text-gray-600">
                           {cellData.instructor}
                         </div>
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-gray-500">
                           {cellData.room}
                         </div>
                       </div>
                     ) : (
-                      <div className="text-xs text-slate-400 italic">Free</div>
+                      <div className="text-xs text-gray-400 italic">Free</div>
                     )}
                   </div>
                 );
@@ -385,16 +368,22 @@ export default function ManageTimetable() {
       </div>
 
       {/* Legend Section */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Legend</h3>
-        <div className="flex gap-4">
+      <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
+          Legend
+        </h3>
+        <div className="flex flex-wrap gap-4 sm:gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-yellow-100 rounded"></div>
-            <span className="text-sm text-gray-600">Theory Classes</span>
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-yellow-100 rounded-full"></div>
+            <span className="text-xs sm:text-sm text-gray-600">
+              Theory Classes
+            </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-100 rounded"></div>
-            <span className="text-sm text-gray-600">Lab Sessions</span>
+            <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 rounded-full"></div>
+            <span className="text-xs sm:text-sm text-gray-600">
+              Lab Sessions
+            </span>
           </div>
         </div>
       </div>
