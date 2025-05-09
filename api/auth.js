@@ -24,6 +24,7 @@ const storeCommonData = async () => {
   const { role } = tk.decodeAccessToken;
 
   if (isValidTokens(data)) {
+    tk.resetRefreshToken();
     inventory.storeAllTokens();
     inventory.storeUserId();
     setRole(role);
