@@ -294,7 +294,7 @@ export default function ManageTimetable() {
           className="timetable-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: `100px repeat(${timeSlots.length}, minmax(100px, 1fr))`,
+            gridTemplateColumns: `120px repeat(${timeSlots.length}, minmax(100px, 1fr))`,
             minWidth: '600px',
             maxWidth: '100%',
           }}
@@ -302,7 +302,7 @@ export default function ManageTimetable() {
         >
           {/* Header Row */}
           <div
-            className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 p-3 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700 flex items-center"
+            className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-4 py-4 sm:px-5 sm:py-5 font-semibold text-xs text-gray-700 flex items-center justify-center whitespace-nowrap"
             role="columnheader"
           >
             Day / Time
@@ -310,7 +310,7 @@ export default function ManageTimetable() {
           {timeSlots.map(slot => (
             <div
               key={slot}
-              className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 p-3 sm:p-4 font-semibold text-xs sm:text-sm text-gray-700 text-center flex items-center justify-center"
+              className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 px-3 py-4 sm:px-4 sm:py-5 font-semibold text-xs text-gray-700 flex items-center justify-center whitespace-nowrap"
               role="columnheader"
             >
               {slot}
@@ -321,9 +321,9 @@ export default function ManageTimetable() {
           {days.map((day, rowIndex) => (
             <React.Fragment key={day}>
               <div
-                className={`p-3 sm:p-4 font-semibold text-gray-800 border-b border-r border-gray-200 ${
+                className={`px-4 py-4 sm:px-5 sm:py-5 font-semibold text-gray-800 border-b border-r border-gray-200 ${
                   rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                } flex items-center text-xs sm:text-sm`}
+                } flex items-center justify-start text-xs sm:text-sm whitespace-nowrap`}
                 role="rowheader"
               >
                 {day}
@@ -334,9 +334,9 @@ export default function ManageTimetable() {
                 return (
                   <div
                     key={key}
-                    className={`p-3 sm:p-4 border-b border-r border-gray-200 ${
+                    className={`px-3 py-4 sm:px-4 sm:py-5 border-b border-r border-gray-200 ${
                       rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                    } transition-colors hover:bg-gray-100 ${cellData?.color || ''} text-xs sm:text-sm`}
+                    } transition-colors hover:bg-gray-100 ${cellData?.color || ''} flex flex-col items-center justify-center text-xs sm:text-sm`}
                     role="cell"
                     title={
                       cellData
@@ -345,7 +345,7 @@ export default function ManageTimetable() {
                     }
                   >
                     {cellData ? (
-                      <div className="space-y-1">
+                      <div className="space-y-1 text-center">
                         <span className="inline-block px-2 sm:px-3 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
                           {cellData.course}
                         </span>
