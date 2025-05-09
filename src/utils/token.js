@@ -1,6 +1,7 @@
 import { jwtDecode } from 'jwt-decode';
 import api from '../../api/apiClint';
 import { userName, userPassword } from '../../src/store/useUserStore';
+
 class Token {
   constructor(data) {
     this._data = data;
@@ -18,7 +19,6 @@ class Token {
     const data = await api.zPost('/api/Authentications', theCredentials);
     return new Token(data);
   }
-
   async resetRefreshToken() {
     try {
       const KEY = import.meta.env.VITE_API_KEY;
@@ -26,10 +26,8 @@ class Token {
       const isProduction = import.meta.env.PROD;
       const { nameid: id } = this.decodeAccessToken;
       const refreshUrl = isProduction
-        ? `/api/proxy/Users/${id}/Authentications?refreshToken=${this.refreshToken}`
-        : `${URL}/Users/${id}/Authentications?refreshToken=${this.refreshToken}`;
-
-      console.log(`Requesting refresh token from: ${refreshUrl}`);
+        ? `/api/proxy/Users/${id}/Authentications?refreshToken=${this._refreshToken}`
+        : `${URL}/api/Users/${id}/Authentications?refreshToken=${this._refreshToken}`;
 
       const res = await fetch(refreshUrl, {
         method: 'GET',
@@ -39,27 +37,28 @@ class Token {
         },
       });
 
-      // Check if the response is OK (status code 2xx)
       if (!res.ok) {
         throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
       }
 
-      // Parse the response JSON
-      const newToken = await res.json();
-      console.log('API Response:', newToken); // Log the API response
+      // Parse the response as plain text (based on Postman collection)
+      const newAccessToken = await res.text();
+      console.log('API Response (new access token):', newAccessToken);
 
-      // If a refresh token is returned, update the _refreshToken
-      if (newToken && newToken.refreshToken) {
-        console.log('Old refresh token:', this._refreshToken);
-        this._refreshToken = newToken.refreshToken; // Update with new token
-        console.log('New refresh token:', this._refreshToken);
+      // Update the access token if the response is valid
+      if (newAccessToken) {
+        console.log('Old access token:', this._accessToken);
+        this._accessToken = newAccessToken;
+        console.log('New access token:', this._accessToken);
       } else {
-        console.error('No refresh token returned from API');
+        console.error('No access token returned from API');
+        return null;
       }
 
-      return this._refreshToken;
+      return this._accessToken;
     } catch (e) {
       console.error('Error in resetRefreshToken:', e);
+      return null;
     }
   }
 
@@ -75,12 +74,15 @@ class Token {
   get decodeAccessToken() {
     return jwtDecode(this.accessToken);
   }
+
   get accessToken() {
     return this._accessToken;
   }
+
   get refreshToken() {
     return this._refreshToken;
   }
+
   get refreshTokenExpTime() {
     return this._refreshTokenExpTime;
   }
