@@ -1,16 +1,16 @@
 import { createBrowserRouter } from 'react-router';
 import { Outlet } from 'react-router-dom';
-import NotFound from '../pages/NotFound';
-import ForgotPassword from '../pages/ForgotPassword';
-import Login from '../pages/Login';
-import HomePage from '../pages/HomePage';
+import ForgotPassword from '../../src/features/ForgotPassword';
+import HomePage from '../../src/features/Home/HomePage';
+import Login from '../../src/features/Login/Login';
+import ManageCourses from '../../src/features/ManageCourses';
+import ManageSchedule from '../../src/features/ManageSchedule';
+import ManageStudents from '../../src/features/ManageStudents';
+import ManageTeachingPlace from '../../src/features/ManageTeachingPlaces';
+import ManageTeachingStaff from '../../src/features/ManageTeachingStaff';
+import ManageTimetable from '../../src/features/ManageTimetables';
+import NotFound from '../../src/features/NotFound';
 import ProtectedRoute from '../utils/ProtectedRoute';
-import ManageTimetable from '../pages/ManageTimetables';
-import ManageCourses from '../pages/ManageCourses';
-import ManageStudents from '../pages/ManageStudents';
-import ManageTeachingStaff from '../pages/ManageTeachingStaff';
-import ManageTeachingPlace from '../pages/ManageTeachingPlaces';
-import ManageSchedule from '../pages/ManageSchedule';
 
 const RootLayout = () => <Outlet />;
 
