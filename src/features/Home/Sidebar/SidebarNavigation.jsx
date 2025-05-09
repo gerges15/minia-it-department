@@ -6,9 +6,10 @@ import {
   FiBook,
   FiUsers,
   FiBriefcase,
+  FiClock,
 } from 'react-icons/fi';
 
-import useSidebarStore from '../../../store/useSidebarStore';
+import useSidebarStore from '../store/useSidebarStore';
 import Cookies from 'js-cookie';
 
 export default function SidebarNavigation() {
@@ -50,6 +51,7 @@ export default function SidebarNavigation() {
       href: '/manage-places',
       icon: FiBriefcase,
     },
+    { name: 'Manage Schedules', href: '/manage-schedules', icon: FiClock },
   ];
 
   const teachingStaffNavigation = [
