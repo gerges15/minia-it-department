@@ -1,5 +1,5 @@
 import api from './apiClint';
-
+import Cookies from 'js-cookie';
 export const addTeachingPlace = async newPlaceData =>
   await api.post('/TeachingPlaces', newPlaceData);
 export const deleteTeachingPlace = async id =>
@@ -15,7 +15,7 @@ export const addNewCourse = async newCourse =>
 // student endpoints
 
 export const addNewUser = async data => api.post('/api/Users/', data);
-export const getStudents = async => api.get('/api/Users?page=0&role=2');
+export const getStudents = async => api.get('/api/Users?page=0&role=1');
 
 // Authentication
 export const login = async (userName, password) =>
@@ -74,6 +74,12 @@ export const getUsers = async (page = 0, role = null) =>
   await api.get(
     `/api/Users?page=${page}${role !== null ? `&role=${role}` : ''}`
   );
+export const removeUser = async userId =>
+  await api.delete(
+    `/api/Users/${userId}/Authentications`,
+    Cookies.get('refreshToken')
+  );
+
 export const getUserById = async id => api.get(`/api/Users/${id}`);
 export const updateUser = async (fullId, userData) =>
   await api.put(`/api/Users/${fullId}`, userData);

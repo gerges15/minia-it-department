@@ -9,7 +9,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
     gender: 0,
     level: 7,
     dateOfBirth: '',
-    password: ''
+    password: '',
   });
 
   useEffect(() => {
@@ -20,20 +20,20 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
         gender: initialData.gender,
         level: initialData.level,
         dateOfBirth: initialData.dateOfBirth,
-        password: ''
+        password: '',
       });
     }
   }, [initialData]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     onSubmit(formData);
   };
@@ -173,4 +173,4 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
   );
 };
 
-export default StaffForm; 
+export default StaffForm;

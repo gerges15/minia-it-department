@@ -7,12 +7,18 @@ import { mockStaff } from '../types/staff';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Papa from 'papaparse';
+import {
+  createUser,
+  getUsers,
+  removeUser,
+  updateUser,
+} from '../../api/endpoints';
 
 // TODO: Replace mock data with real API calls
 // API endpoints to implement:
 // GET /api/Users?role=1 - Fetch all staff members
 // POST /api/Users - Create new staff member
-// PUT /api/Users/:fullId - Update staff member
+// PUT /api/Users/:userName - Update staff member
 // DELETE /api/Users - Bulk delete staff members
 // POST /api/Users/bulk - Bulk upload staff from CSV
 
@@ -34,11 +40,9 @@ const ManageTeachingStaff = () => {
       try {
         setIsLoading(true);
         setError(null);
-        // TODO: Replace with real API call
-        // const response = await fetch('/api/Users?role=1');
-        // const data = await response.json();
-        // setStaff(data);
-        setStaff(mockStaff);
+        const data = await getUsers(0, 2);
+        setStaff(data.results);
+        console.log(data.results);
       } catch (err) {
         setError('Failed to fetch staff members. Please try again later.');
         console.error('Error fetching staff:', err);
@@ -67,17 +71,13 @@ const ManageTeachingStaff = () => {
   const handleSubmitStaff = async formData => {
     try {
       if (isEditing && editStaffId) {
-        // TODO: Replace with real API call
-        // await fetch(`/api/Users/${editStaffId}`, {
-        //   method: 'PUT',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData),
-        // });
         const updatedStaff = {
           ...formData,
-          id: editStaffId,
-          role: 1, // Always set role to 1 for staff
+          role: 2,
+          level: 7,
         };
+
+        await updateUser(editStaffId, updatedStaff);
         setStaff(prev =>
           prev.map(member =>
             member.id === editStaffId ? updatedStaff : member
@@ -85,20 +85,13 @@ const ManageTeachingStaff = () => {
         );
         toast.success('Staff member updated successfully');
       } else {
-        // TODO: Replace with real API call
-        // const response = await fetch('/api/Users', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData),
-        // });
-        // const newStaff = await response.json();
         const newStaff = {
           ...formData,
-          id: String(staff.length + 1),
-          fullId: `STAFF${String(staff.length + 1).padStart(3, '0')}`,
-          role: 1, // Always set role to 1 for staff
-          userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
+          role: 2,
+          level: 7,
         };
+
+        await createUser(newStaff);
         setStaff(prev => [...prev, newStaff]);
         toast.success('Staff member created successfully');
       }
@@ -122,6 +115,7 @@ const ManageTeachingStaff = () => {
       try {
         // TODO: Replace with real API call
         // await fetch(`/api/Users/${member.id}`, { method: 'DELETE' });
+        removeUser(member.userName);
         setStaff(prev => prev.filter(s => s.id !== member.id));
         toast.success('Staff member deleted successfully');
       } catch (err) {
@@ -145,9 +139,10 @@ const ManageTeachingStaff = () => {
           //   headers: { 'Content-Type': 'application/json' },
           //   body: JSON.stringify(results.data),
           // });
+
           const newStaff = results.data.map((member, index) => ({
             id: String(staff.length + index + 1),
-            fullId: `STAFF${String(staff.length + index + 1).padStart(3, '0')}`,
+            userName: `STAFF${String(staff.length + index + 1).padStart(3, '0')}`,
             firstName: member.firstName,
             lastName: member.lastName,
             gender: parseInt(member.gender),

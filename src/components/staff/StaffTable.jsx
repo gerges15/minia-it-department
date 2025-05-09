@@ -9,7 +9,7 @@ const StaffTable = ({ staff, onEdit, onDelete }) => {
         <thead className="bg-gray-50">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Full ID
+              User Name
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Name
@@ -29,10 +29,10 @@ const StaffTable = ({ staff, onEdit, onDelete }) => {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {staff.map((member) => (
+          {staff.map(member => (
             <tr key={member.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {member.fullId}
+                {member.userName}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {member.firstName} {member.lastName}
@@ -72,4 +72,4 @@ const StaffTable = ({ staff, onEdit, onDelete }) => {
   );
 };
 
-export default StaffTable; 
+export default StaffTable;

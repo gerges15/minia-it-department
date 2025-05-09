@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import * as signalR from '@microsoft/signalr';
 
@@ -17,6 +17,8 @@ import Cookies from 'js-cookie';
 import html2canvas from 'html2canvas';
 import { getInventory } from '../store/usInventoryStore';
 import { toast } from 'react-toastify';
+import api from '../../api/apiClint'; // Assuming this is the ApiClint import
+import { getTimetable } from '../../api/endpoints';
 
 export default function ManageTimetable() {
   const isProduction = import.meta.env.PROD;
@@ -85,6 +87,51 @@ export default function ManageTimetable() {
       color: 'bg-blue-100',
     },
   });
+
+  // Fetch timetable when component mounts or selectedYear changes
+  useEffect(() => {
+    const fetchTimetable = async () => {
+      setIsLoading(true);
+      try {
+        const accessToken = Cookies.get('accessToken');
+        if (!accessToken) {
+          throw new Error('No access token found. Please log in.');
+        }
+
+        const level = yearToLevel[selectedYear];
+
+        const response = await getTimetable(level);
+
+        if (response && response.table) {
+          const transformedData = {};
+          Object.entries(response.table).forEach(([day, slots]) => {
+            slots.forEach(slot => {
+              const key = `${day}-${slot.startFrom}:00 - ${slot.endTo}:00`;
+              transformedData[key] = {
+                course: slot.courseCode,
+                instructor: slot.teachingAssistant,
+                room: slot.teachingPlace,
+                color: slot.courseCode.includes('Lab')
+                  ? 'bg-blue-100'
+                  : 'bg-yellow-100',
+              };
+            });
+          });
+          setTimetableData(transformedData);
+          toast.success('Timetable fetched successfully');
+        } else {
+          toast.warn('No timetable data found for this level');
+        }
+      } catch (error) {
+        console.error('Error fetching timetable:', error);
+        toast.error('Failed to fetch timetable');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTimetable();
+  }, [selectedYear]);
 
   const handleGenerateTimetable = async () => {
     setIsLoading(true);
@@ -180,10 +227,51 @@ export default function ManageTimetable() {
   }
 
   const handleSaveTimetable = async () => {
+    setIsLoading(true);
     try {
-      console.log('Saving timetable...');
+      const accessToken = Cookies.get('accessToken');
+      if (!accessToken) {
+        throw new Error('No access token found. Please log in.');
+      }
+
+      const level = yearToLevel[selectedYear];
+      const table = days.reduce((acc, day) => {
+        acc[day] = [];
+        timeSlots.forEach(slot => {
+          const key = `${day}-${slot}`;
+          if (timetableData[key]) {
+            const [startFrom, endTo] = slot
+              .split(' - ')
+              .map(time => parseInt(time.split(':')[0]));
+            acc[day].push({
+              startFrom,
+              endTo,
+              courseCode: timetableData[key].course,
+              teachingPlace: timetableData[key].room,
+              teachingAssistant: timetableData[key].instructor,
+            });
+          }
+        });
+        return acc;
+      }, {});
+
+      await api.post(
+        '/TimeTables',
+        { level, table },
+        {
+          headers: {
+            'x-api-key': KEY,
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      toast.success('Timetable saved successfully');
     } catch (error) {
       console.error('Error saving timetable:', error);
+      toast.error('Failed to save timetable');
+    } finally {
+      setIsLoading(false);
     }
   };
 
