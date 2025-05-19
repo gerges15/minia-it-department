@@ -5,7 +5,7 @@ const StudentForm = ({ initialData, onSubmit, onCancel, isEditing = false }) => 
     firstName: '',
     lastName: '',
     gender: 0, // Male
-    role: 2, // Student
+    role: 1, // Student
     level: 1, // First Year
     dateOfBirth: '',
     password: '',

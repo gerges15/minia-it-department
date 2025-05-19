@@ -40,7 +40,7 @@ const ManageTeachingStaff = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await getUsers(0, 2);
+        const data = await getUsers(0, 1);
         setStaff(data.results);
         console.log(data.results);
       } catch (err) {
@@ -73,7 +73,7 @@ const ManageTeachingStaff = () => {
       if (isEditing && editStaffId) {
         const updatedStaff = {
           ...formData,
-          role: 2,
+          role: 1,
           level: 7,
         };
 
@@ -87,7 +87,7 @@ const ManageTeachingStaff = () => {
       } else {
         const newStaff = {
           ...formData,
-          role: 2,
+          role: 1,
           level: 7,
         };
 

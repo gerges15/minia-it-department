@@ -151,7 +151,7 @@ const ManageStudents = () => {
             firstName: student.firstName,
             lastName: student.lastName,
             gender: parseInt(student.gender),
-            role: 2,
+            role: 1,
             level: parseInt(student.level),
             dateOfBirth: student.dateOfBirth,
             userName: `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}`,
