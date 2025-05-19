@@ -5,7 +5,12 @@ import StudentFilter from '../components/students/StudentFilter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Papa from 'papaparse';
-import { addNewUser, getStudents, getUserById } from '../../api/endpoints';
+import {
+  addNewUser,
+  getStudents,
+  getUserById,
+  updateUser,
+} from '../../api/endpoints';
 
 // todo: replace mock data with real API calls
 // API endpoints to implement:
@@ -93,7 +98,11 @@ const ManageStudents = () => {
   const handleSubmit = async formData => {
     try {
       // TODO: Replace with real API call
+      console.log(formData);
+      formData.level = parseInt(formData.level);
+      formData.gender = parseInt(formData.gender);
       await addNewUser(formData);
+
       await new Promise(resolve => setTimeout(resolve, 500));
 
       if (isEditing) {

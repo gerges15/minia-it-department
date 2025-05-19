@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
-const StudentForm = ({ initialData, onSubmit, onCancel, isEditing = false }) => {
+const StudentForm = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  isEditing = false,
+}) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     gender: 0, // Male
-    role: 1, // Student
+    role: 2, // Student
     level: 1, // First Year
     dateOfBirth: '',
-    password: '',
   });
 
   useEffect(() => {
@@ -17,15 +21,15 @@ const StudentForm = ({ initialData, onSubmit, onCancel, isEditing = false }) => 
     }
   }, [initialData]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     onSubmit(formData);
   };
@@ -108,21 +112,7 @@ const StudentForm = ({ initialData, onSubmit, onCancel, isEditing = false }) => 
               required
             />
           </div>
-          {!isEditing && (
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded"
-                required
-              />
-            </div>
-          )}
+
           <div className="flex justify-end space-x-4">
             <button
               type="button"
@@ -144,4 +134,4 @@ const StudentForm = ({ initialData, onSubmit, onCancel, isEditing = false }) => 
   );
 };
 
-export default StudentForm; 
+export default StudentForm;
