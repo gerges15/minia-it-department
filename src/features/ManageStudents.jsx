@@ -98,7 +98,7 @@ const ManageStudents = () => {
   const handleSubmit = async formData => {
     try {
       // TODO: Replace with real API call
-      console.log(formData);
+
       formData.level = parseInt(formData.level);
       formData.gender = parseInt(formData.gender);
       await addNewUser(formData);
@@ -115,6 +115,8 @@ const ManageStudents = () => {
         setStudents(
           students.map(s => (s.id === updatedStudent.id ? updatedStudent : s))
         );
+        console.log(updatedStudent);
+        await updateUser(updatedStudent.userName, updatedStudent);
       } else {
         const newStudent = {
           id: String(students.length + 1),

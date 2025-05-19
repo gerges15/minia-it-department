@@ -46,7 +46,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
         <thead>
           <tr className="bg-gray-100">
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              ID
+              Username
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Name
@@ -66,10 +66,10 @@ const StudentTable: React.FC<StudentTableProps> = ({
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {students.map((student) => (
+          {students.map(student => (
             <tr key={student.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {student.fullId}
+                {student.userName}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {`${student.firstName} ${student.lastName}`}
@@ -113,4 +113,4 @@ const StudentTable: React.FC<StudentTableProps> = ({
   );
 };
 
-export default StudentTable; 
+export default StudentTable;

@@ -87,9 +87,9 @@ export default function ManageTimetable() {
 
   // Initialize SignalR connection
   const initializeSignalR = useCallback(async () => {
-      try {
-        const accessToken = Cookies.get('accessToken');
-        if (!accessToken) {
+    try {
+      const accessToken = Cookies.get('accessToken');
+      if (!accessToken) {
         throw new Error('No access token found');
       }
 
@@ -134,19 +134,19 @@ export default function ManageTimetable() {
 
   // Transform timetable data helper
   const transformTimetableData = (data) => {
-          const transformedData = {};
+    const transformedData = {};
     if (data && data.table) {
       Object.entries(data.table).forEach(([day, slots]) => {
-            slots.forEach(slot => {
-              const key = `${day}-${slot.startFrom}:00 - ${slot.endTo}:00`;
-              transformedData[key] = {
-                course: slot.courseCode,
-                instructor: slot.teachingAssistant,
-                room: slot.teachingPlace,
+        slots.forEach(slot => {
+          const key = `${day}-${slot.startFrom}:00 - ${slot.endTo}:00`;
+          transformedData[key] = {
+            course: slot.courseCode,
+            instructor: slot.teachingAssistant,
+            room: slot.teachingPlace,
             color: slot.courseCode.includes('Lab') ? 'bg-blue-100' : 'bg-yellow-100',
-              };
-            });
-          });
+          };
+        });
+      });
     }
     return transformedData;
   };
@@ -165,17 +165,17 @@ export default function ManageTimetable() {
       
       if (response && response.table) {
         const transformedData = transformTimetableData(response);
-          setTimetableData(transformedData);
-          toast.success('Timetable fetched successfully');
-        } else {
-          toast.warn('No timetable data found for this level');
-        }
-      } catch (error) {
-        console.error('Error fetching timetable:', error);
-        toast.error('Failed to fetch timetable');
-      } finally {
-        setIsLoading(false);
+        setTimetableData(transformedData);
+        toast.success('Timetable fetched successfully');
+      } else {
+        toast.warn('No timetable data found for this level');
       }
+    } catch (error) {
+      console.error('Error fetching timetable:', error);
+      toast.error('Failed to fetch timetable');
+    } finally {
+      setIsLoading(false);
+    }
   }, [selectedYear]);
 
   // Initialize SignalR and fetch initial data
