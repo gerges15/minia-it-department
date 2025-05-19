@@ -15,7 +15,7 @@ export const addNewCourse = async newCourse =>
 // student endpoints
 
 export const addNewUser = async data => api.post('/api/Users/', data);
-export const getStudents = async => api.get('/api/Users?page=0&role=1');
+export const getStudents = async => api.get('/api/Users?page=0&role=2');
 
 // Authentication
 export const login = async (userName, password) =>
