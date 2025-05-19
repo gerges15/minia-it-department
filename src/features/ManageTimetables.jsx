@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import * as signalR from '@microsoft/signalr';
 
@@ -11,6 +11,7 @@ import {
   FiPlus,
   FiEdit2,
   FiTrash2,
+  FiLoader,
 } from 'react-icons/fi';
 import { jsPDF } from 'jspdf';
 import Cookies from 'js-cookie';
@@ -18,18 +19,23 @@ import html2canvas from 'html2canvas';
 import { getInventory } from '../store/usInventoryStore';
 import { toast } from 'react-toastify';
 import api from '../../api/apiClint'; // Assuming this is the ApiClint import
-import { getTimetable } from '../../api/endpoints';
+import { getTimetable, getCourses, getTeachingPlaces } from '../../api/endpoints';
 
 export default function ManageTimetable() {
   const isProduction = import.meta.env.PROD;
   const URL = import.meta.env.VITE_API_URL;
   const KEY = import.meta.env.VITE_API_KEY;
   const BASE_URL = isProduction ? '/api/proxy' : `${URL}/api`;
-  const [connectionId, setConnectionId] = useState(null);
+  
   const [connection, setConnection] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedYear, setSelectedYear] = useState('First');
-  const [zTimetableData, zSetTimetableData] = useState({});
+  const [timetableData, setTimetableData] = useState({});
+  const [isConnected, setIsConnected] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [teachingPlaces, setTeachingPlaces] = useState([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const yearToLevel = {
     First: 1,
@@ -61,85 +67,136 @@ export default function ManageTimetable() {
     'Saturday',
   ];
 
-  const [timetableData, setTimetableData] = useState({
-    'Sunday-8:00 - 9:00': {
-      course: 'COMP401',
-      instructor: 'Mohamed Ahmed',
-      room: 'H103',
-      color: 'bg-yellow-100',
-    },
-    'Sunday-9:00 - 10:00': {
-      course: 'COMP405',
-      instructor: 'Moaz Ebrahim',
-      room: 'H202',
-      color: 'bg-yellow-100',
-    },
-    'Sunday-15:00 - 16:00': {
-      course: 'COMP434',
-      instructor: 'David Nady',
-      room: 'H103',
-      color: 'bg-yellow-100',
-    },
-    'Sunday-16:00 - 17:00': {
-      course: 'COMP404',
-      instructor: 'Girgis Samy',
-      room: 'Lap3',
-      color: 'bg-blue-100',
-    },
-  });
+  // Fetch initial data (courses and teaching places)
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const [coursesResponse, placesResponse] = await Promise.all([
+        getCourses(0, true),
+        getTeachingPlaces()
+      ]);
+      
+      setCourses(coursesResponse || []);
+      setTeachingPlaces(placesResponse || []);
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+      toast.error('Failed to fetch courses and teaching places');
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }, []);
 
-  // Fetch timetable when component mounts or selectedYear changes
-  useEffect(() => {
-    const fetchTimetable = async () => {
-      setIsLoading(true);
-      try {
-        const accessToken = Cookies.get('accessToken');
-        if (!accessToken) {
-          throw new Error('No access token found. Please log in.');
-        }
-
-        const level = yearToLevel[selectedYear];
-
-        const response = await getTimetable(level);
-
-        if (response && response.table) {
-          const transformedData = {};
-          Object.entries(response.table).forEach(([day, slots]) => {
-            slots.forEach(slot => {
-              const key = `${day}-${slot.startFrom}:00 - ${slot.endTo}:00`;
-              transformedData[key] = {
-                course: slot.courseCode,
-                instructor: slot.teachingAssistant,
-                room: slot.teachingPlace,
-                color: slot.courseCode.includes('Lab')
-                  ? 'bg-blue-100'
-                  : 'bg-yellow-100',
-              };
-            });
-          });
-          setTimetableData(transformedData);
-          toast.success('Timetable fetched successfully');
-        } else {
-          toast.warn('No timetable data found for this level');
-        }
-      } catch (error) {
-        console.error('Error fetching timetable:', error);
-        toast.error('Failed to fetch timetable');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTimetable();
-  }, [selectedYear]);
-
-  const handleGenerateTimetable = async () => {
-    setIsLoading(true);
-    let newConnection = null;
+  // Initialize SignalR connection
+  const initializeSignalR = useCallback(async () => {
     try {
       const accessToken = Cookies.get('accessToken');
       if (!accessToken) {
-        throw new Error('No access token found. Please log in.');
+        throw new Error('No access token found');
+      }
+
+      const newConnection = new HubConnectionBuilder()
+        .withUrl(`${BASE_URL}/TimeTableHub`, {
+          headers: {
+            'x-api-key': KEY,
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+          transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
+        })
+        .withAutomaticReconnect()
+        .build();
+
+      // Set up event handlers
+      newConnection.on('TimetableUpdated', (updatedData) => {
+        const transformedData = transformTimetableData(updatedData);
+        setTimetableData(transformedData);
+        toast.info('Timetable updated in real-time');
+      });
+
+      newConnection.on('GenerationProgress', (progress) => {
+        toast.info(`Generating timetable: ${progress}%`);
+      });
+
+      newConnection.onclose((error) => {
+        console.error('SignalR connection closed:', error);
+        setIsConnected(false);
+        toast.error('Connection lost. Attempting to reconnect...');
+      });
+
+      await newConnection.start();
+      setConnection(newConnection);
+      setIsConnected(true);
+      toast.success('Connected to real-time updates');
+    } catch (error) {
+      console.error('Error initializing SignalR:', error);
+      toast.error('Failed to connect to real-time updates');
+    }
+  }, [BASE_URL, KEY]);
+
+  // Transform timetable data helper
+  const transformTimetableData = (data) => {
+    const transformedData = {};
+    if (data && data.table) {
+      Object.entries(data.table).forEach(([day, slots]) => {
+        slots.forEach(slot => {
+          const key = `${day}-${slot.startFrom}:00 - ${slot.endTo}:00`;
+          transformedData[key] = {
+            course: slot.courseCode,
+            instructor: slot.teachingAssistant,
+            room: slot.teachingPlace,
+            color: slot.courseCode.includes('Lab') ? 'bg-blue-100' : 'bg-yellow-100',
+          };
+        });
+      });
+    }
+    return transformedData;
+  };
+
+  // Fetch timetable data
+  const fetchTimetable = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const accessToken = Cookies.get('accessToken');
+      if (!accessToken) {
+        throw new Error('No access token found');
+      }
+
+      const level = yearToLevel[selectedYear];
+      const response = await getTimetable(level);
+      
+      if (response && response.table) {
+        const transformedData = transformTimetableData(response);
+        setTimetableData(transformedData);
+        toast.success('Timetable fetched successfully');
+      } else {
+        toast.warn('No timetable data found for this level');
+      }
+    } catch (error) {
+      console.error('Error fetching timetable:', error);
+      toast.error('Failed to fetch timetable');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedYear]);
+
+  // Initialize SignalR and fetch initial data
+  useEffect(() => {
+    fetchInitialData();
+    initializeSignalR();
+    fetchTimetable();
+
+    return () => {
+      if (connection) {
+        connection.stop();
+      }
+    };
+  }, [initializeSignalR, fetchTimetable, fetchInitialData]);
+
+  // Handle timetable generation
+  const handleGenerateTimetable = async () => {
+    setIsLoading(true);
+    try {
+      if (!connection || !isConnected) {
+        throw new Error('Not connected to real-time updates');
       }
 
       const excludeModel = {
@@ -148,64 +205,9 @@ export default function ManageTimetable() {
         StaffUserName: [],
       };
 
-      newConnection = new HubConnectionBuilder()
-        .withUrl(`${BASE_URL}/TimeTableHub`, {
-          headers: {
-            'x-api-key': KEY,
-            Authorization: `Bearer ${accessToken}`,
-          },
-          withCredentials: true,
-          transport:
-            HttpTransportType.WebSockets | HttpTransportType.LongPolling,
-        })
-        .withAutomaticReconnect()
-        .build();
-
-      newConnection.onclose(error => {
-        console.error('SignalR connection closed:', error);
-        toast.error('SignalR connection lost');
-      });
-
-      newConnection.on('generateResult', result => {
-        console.log('Received timetable result:', result);
-        const transformedData = {};
-        Object.entries(result.table || {}).forEach(([day, slots]) => {
-          slots.forEach(slot => {
-            const key = `${day}-${slot.startFrom}:00 - ${slot.endTo}:00`;
-            transformedData[key] = {
-              course: slot.courseCode,
-              instructor: slot.teachingAssistant,
-              room: slot.teachingPlace,
-              color: slot.courseCode.includes('Lab')
-                ? 'bg-blue-100'
-                : 'bg-yellow-100',
-            };
-          });
-        });
-        setTimetableData(transformedData);
-        saveJsonToFile(result, 'TimeTableData.json');
-        toast.success('Timetable generated successfully');
-      });
-
-      console.log('Attempting to connect to SignalR hub...');
-      await newConnection.start().catch(error => {
-        console.error('SignalR handshake error:', error);
-        throw error;
-      });
-      console.log('SignalR connected successfully!');
-      setConnection(newConnection);
-
       const level = yearToLevel[selectedYear];
-      console.log(
-        'Invoking generateTimeTableContext with:',
-        excludeModel,
-        level
-      );
-      await newConnection.invoke(
-        'generateTimeTableContext',
-        excludeModel,
-        level
-      );
+      await connection.invoke('generateTimeTableContext', excludeModel, level);
+      toast.info('Generating timetable...');
     } catch (error) {
       console.error('Error generating timetable:', error);
       toast.error('Failed to generate timetable');
@@ -214,24 +216,13 @@ export default function ManageTimetable() {
     }
   };
 
-  function saveJsonToFile(jsonObject, filename = 'TimeTableData.json') {
-    const blob = new Blob([JSON.stringify(jsonObject, null, 2)], {
-      type: 'application/json',
-    });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
+  // Handle saving timetable
   const handleSaveTimetable = async () => {
-    setIsLoading(true);
+    setIsSaving(true);
     try {
       const accessToken = Cookies.get('accessToken');
       if (!accessToken) {
-        throw new Error('No access token found. Please log in.');
+        throw new Error('No access token found');
       }
 
       const level = yearToLevel[selectedYear];
@@ -271,10 +262,11 @@ export default function ManageTimetable() {
       console.error('Error saving timetable:', error);
       toast.error('Failed to save timetable');
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
+  // Handle PDF export
   const handleExportPDF = async () => {
     try {
       const doc = new jsPDF('l', 'mm', 'a4');
@@ -311,11 +303,23 @@ export default function ManageTimetable() {
         currentY += lineHeight;
       });
       doc.save('timetable.pdf');
+      toast.success('PDF exported successfully');
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      toast.error('Failed to generate PDF');
     }
   };
+
+  if (isInitialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <FiLoader className="w-8 h-8 animate-spin text-purple-600" />
+          <p className="text-gray-600">Loading timetable data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
@@ -333,21 +337,36 @@ export default function ManageTimetable() {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={handleGenerateTimetable}
-              className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base"
+              disabled={!isConnected || isLoading}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                isConnected
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'bg-gray-400 text-white cursor-not-allowed'
+              }`}
             >
-              <FiRefreshCw className="h-4 w-4 sm:h-5 sm:w-5" />
+              <FiRefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 ${isLoading ? 'animate-spin' : ''}`} />
               Auto Generate
             </button>
             <button
               onClick={handleSaveTimetable}
-              className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base"
+              disabled={isSaving}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                isSaving
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
             >
-              <FiSave className="h-4 w-4 sm:h-5 sm:w-5" />
-              Save Changes
+              <FiSave className={`h-4 w-4 sm:h-5 sm:w-5 ${isSaving ? 'animate-spin' : ''}`} />
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
             <button
               onClick={handleExportPDF}
-              className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+              disabled={isLoading}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                isLoading
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
             >
               <FiDownload className="h-4 w-4 sm:h-5 sm:w-5" />
               Export PDF
@@ -361,11 +380,12 @@ export default function ManageTimetable() {
             <button
               key={year}
               onClick={() => setSelectedYear(year)}
+              disabled={isLoading}
               className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors text-sm sm:text-base ${
                 selectedYear === year
                   ? 'bg-purple-600 text-white'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {year}
             </button>
