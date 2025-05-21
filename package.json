@@ -18,8 +18,11 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@headlessui/react": "^2.2.2",
     "@microsoft/signalr": "^8.0.7",
+    "@mui/material": "^7.1.0",
     "@reduxjs/toolkit": "^2.7.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@tailwindcss/vite": "^4.1.4",
