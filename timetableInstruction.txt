@@ -1,0 +1,1464 @@
+
+________
+index.html
+---------------
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>SignalR Generate Button</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div id="intervalPopup"
+        style="display:none; position:fixed; top:20%; left:35%; width:30%; background:white; padding:20px; border:2px solid #8e44ad; border-radius:8px; z-index:1000;">
+        <h2>Insert Interval</h2>
+
+        <!-- Day input -->
+        <div class="form-group">
+            <label for="daySelect">Day:</label>
+            <select id="daySelect" class="form-control">
+                <option value="0">Sunday</option>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+                <option value="6">Saturday</option>
+            </select>
+        </div>
+
+        <!-- Start From input -->
+        <div class="form-group">
+            <label for="startFromInput">Start From (hour):</label>
+            <input type="number" id="startFromInput" class="form-control" min="8" max="17" required>
+        </div>
+
+        <!-- End To input -->
+        <div class="form-group">
+            <label for="endToInput">End To (hour):</label>
+            <input type="text" id="endToInput" class="form-control" readonly>
+        </div>
+
+        <!-- Course Code input -->
+        <div class="form-group">
+            <label for="courseCode">Course Code:</label>
+            <select id="courseCode" name="courseCode">
+                <!-- Course Code options will be populated here -->
+            </select>
+        </div>
+
+        <!-- Course Type input -->
+        <div class="form-group">
+            <label for="courseTypeSelect">Course Type:</label>
+            <select id="courseTypeSelect" class="form-control">
+                <option value="0">Lecture</option>
+                <option value="1">Practical</option>
+            </select>
+        </div>
+
+        <!-- Teaching Place input -->
+        <div class="form-group">
+            <label for="teachingPlace">Teaching Place:</label>
+            <select id="teachingPlace" name="teachingPlace">
+                <!-- Teaching Place options will be populated here -->
+            </select>
+        </div>
+
+        <!-- Teaching Assistant input -->
+        <div class="form-group">
+            <label for="teachingAssistant">Teaching Assistant:</label>
+            <select id="teachingAssistant" name="teachingAssistant">
+                <!-- Teaching Assistant options will be populated here -->
+            </select>
+        </div>
+
+        <!-- Buttons -->
+        <button id="submitIntervalBtn" class="btn btn-primary">Submit</button>
+        <button id="closeIntervalBtn" class="btn btn-secondary">Cancel</button>
+    </div>
+
+    <div class="button-toolbar">
+        <button id="generateBtn">Generate</button>
+        <button id="loadBtn" style="margin-left: 10px;">Load TimeTables</button>
+        <select id="timeTableSelect" style="display: none; margin-left: 10px; padding: 8px; font-size: 16px;">
+            <option value="" disabled selected>Select a TimeTable</option>
+        </select>
+
+        <input type="text" id="fileNameInput" placeholder="Enter file name..."
+            style="margin-left: 10px; padding: 8px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;">
+        <button id="saveBtn" style="margin-left: 10px; background-color: #f39c12;">Save Changes</button>
+
+        <button id="undoBtn" style="margin-left: 10px; background-color: #e74c3c;">Undo</button>
+
+        <button id="redoBtn" style="margin-left: 10px; background-color: #2ecc71;">Redo</button>
+
+        <button id="deleteBtn" style="margin-left: 10px; background-color: #e74c3c;">Delete Selected TimeTable</button>
+
+        <button id="setActiveBtn" style="margin-left: 10px; background-color: #1bc540;">Set Selected TimeTable As
+            Active</button>
+
+        <button id="loadctiveBtn" style="margin-left: 10px; background-color: #8edb9f;">Load Active TimeTable</button>
+
+        <button id="openIntervalFormBtn" style="margin-left: 10px; background-color: #8e44ad;">Insert Interval</button>
+    </div>
+
+    <!-- Container for showing result names -->
+    <div id="resultContainer" style="position: absolute; top: 100px; right: 20px; width: 350px;">
+        <h3>Search Results</h3>
+        <div id="scheduleSearchResults" style="max-height: 500px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Search controls will be here -->
+    <div class="search-group">
+        <select id="staffUsername">
+            <option value="" disabled selected>Select Staff Username</option>
+        </select>
+        <button id="searchStaffBtn">Search Common Free Hours For Staff</button>
+    </div>
+
+    <div class="search-group">
+        <select id="placeName">
+            <option value="" disabled selected>Select Place Name</option>
+        </select>
+        <button id="searchPlaceBtn">Search Common Free Hours For Place</button>
+    </div>
+
+    <!-- New Integer Input for Hours -->
+    <div class="search-group">
+        <input type="number" id="hours-input" min="0" placeholder="Enter hours required" step="1" />
+    </div>
+
+    <!-- Embed the Time Table page inside an iframe -->
+    <iframe src="TimeTable.html" id="timetableIframe"></iframe>
+
+    <script>
+        const tableStorageKey = "tableStorageKey";
+
+        localStorage.removeItem(tableStorageKey);
+
+        function getTableContextData() {
+            if (localStorage.key(tableStorageKey) == null)
+                return null;
+
+            return JSON.parse(localStorage.getItem(tableStorageKey))
+        }
+
+        function addStaffUserNameOptions() {
+            data = getTableContextData();
+            if (data == null)
+                return;
+
+            let staffList = data.teachingStaffName;
+            addOptionsToSelectList(staffList, "staffUsername")
+        }
+
+        function addTeachingPlacesNameOptions() {
+            data = getTableContextData();
+            if (data == null)
+                return;
+
+            let placeList = data.teachingPlacesName;
+            addOptionsToSelectList(placeList, "placeName")
+        }
+
+        function reloadTimeTable() {
+            if (localStorage.key(tableStorageKey) == null)
+                return;
+
+            console.log("Reloading");
+            addStaffUserNameOptions();
+            addTeachingPlacesNameOptions();
+            // Refresh the embedded timetable iframe
+            const iframe = document.getElementById("timetableIframe");
+            iframe.contentWindow.location.reload(); // This will reload the iframe content
+        }
+
+        function mapResultObject(result) {
+            return {
+                success: result.isSuccess,
+                error: result.errorMessage,
+                exception: result.exception,
+                data: result.data
+            };
+        }
+
+        function ShowScheduleByDayForSearchButtons(results, isStaff = true) {
+            let container = document.getElementById("scheduleSearchResults");
+            container.innerHTML = ""; // Clear previous results
+
+            if (!results || Object.keys(results).length === 0) {
+                container.innerHTML = "<p>No schedule results available.</p>";
+                return;
+            }
+
+            for (let day in results) {
+                let items = results[day];
+                if (!items || items.length === 0) {
+                    continue; // Skip empty days
+                }
+
+                // Create day button
+                let dayButton = document.createElement("button");
+                dayButton.textContent = day;
+                styleButton(dayButton, "#3498db");
+
+                let itemContainer = document.createElement("div");
+                itemContainer.style.display = "none";
+                itemContainer.style.marginLeft = "20px";
+                itemContainer.style.marginTop = "5px";
+
+                dayButton.addEventListener("click", () => {
+                    itemContainer.style.display = (itemContainer.style.display === "none") ? "block" : "none";
+                });
+
+                // Add staff or place under the day
+                items.forEach(item => {
+                    let itemButton = document.createElement("button");
+                    itemButton.textContent = isStaff
+                        ? `${item.fullName} (${item.userName})`
+                        : `${item.name} (Capacity: ${item.capacity})`;
+                    styleButton(itemButton, "#2ecc71", "90%");
+
+                    let hoursList = document.createElement("div");
+                    hoursList.style.display = "none";
+                    hoursList.style.marginLeft = "20px";
+                    hoursList.style.color = "#333";
+
+                    let freeHours = item.freeHours || [];
+
+                    if (freeHours.length > 0) {
+                        freeHours.forEach(interval => {
+                            let hour = document.createElement("div");
+                            hour.textContent = `${interval.startFrom}:00 - ${interval.endTo}:00`;
+                            hoursList.appendChild(hour);
+                        });
+                    } else {
+                        let noHours = document.createElement("div");
+                        noHours.textContent = "No free hours";
+                        hoursList.appendChild(noHours);
+                    }
+
+                    itemButton.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        hoursList.style.display = (hoursList.style.display === "none") ? "block" : "none";
+                    });
+
+                    itemContainer.appendChild(itemButton);
+                    itemContainer.appendChild(hoursList);
+                });
+
+                container.appendChild(dayButton);
+                container.appendChild(itemContainer);
+            }
+        }
+
+        function styleButton(button, backgroundColor, width = "100%") {
+            button.style.width = width;
+            button.style.textAlign = "left";
+            button.style.padding = "10px";
+            button.style.marginTop = "10px";
+            button.style.backgroundColor = backgroundColor;
+            button.style.color = "white";
+            button.style.border = "none";
+            button.style.borderRadius = "5px";
+            button.style.cursor = "pointer";
+        }
+
+        function addOptionsToSelectList(options, listId) {
+            let select = document.getElementById(listId);
+
+            // Clear previous options except the first
+            select.options.length = 1;
+
+            options.forEach(op => {
+                const option = document.createElement("option");
+                option.value = op;
+                option.textContent = op;
+                select.appendChild(option);
+            });
+
+            // Show the dropdown
+            select.style.display = "inline-block";
+        }
+
+        function storeTimeTable(josnResult) {
+            let res = mapResultObject(josnResult);
+            console.log(josnResult);
+
+            if (res.success) {
+                document.getElementById("fileNameInput").value = res.data.name;
+                localStorage.setItem(tableStorageKey, JSON.stringify(res.data));
+            }
+            else
+                alert(res.error);
+        }
+
+        function getCommmandModelFromInsertIntervalForm() {
+            selectedCourseCode = document.getElementById("courseCode").value;
+            selectedCourse = data.inMatchedCourses.find(course => course.code === selectedCourseCode);
+
+            return {
+                level: selectedCourse ? selectedCourse.level : 1,
+                day: parseInt(document.getElementById("daySelect").value),
+                interval: {
+                    startFrom: parseInt(document.getElementById("startFromInput").value),
+                    endTo: parseInt(document.getElementById("endToInput").value),
+                    info: {
+                        courseCode: selectedCourseCode,
+                        courseType: parseInt(document.getElementById("courseTypeSelect").value),
+                        courseLevel: selectedCourse ? selectedCourse.level : 1,  // Automatically set level based on the course
+                        teachingPlace: document.getElementById("teachingPlace").value,
+                        teachingAssistant: document.getElementById("teachingAssistant").value
+                    }
+                }
+            }
+        }
+
+        function clearSelectOptions(selectId) {
+            let selectElement = document.getElementById(selectId);
+            // Clear all existing options, making the dropdown list empty
+            selectElement.innerHTML = '';
+        }
+
+        function extractAvailableDataAndAddToInsertIntervalFrom() {
+            data = getTableContextData();
+            if (data == null)
+                return;
+
+            // Reset form fields manually
+            document.getElementById("daySelect").value = "0";  // Reset to default value (Sunday)
+            document.getElementById("startFromInput").value = "";  // Clear the input
+            document.getElementById("endToInput").value = "";  // Clear the input
+            document.getElementById("courseCode").value = "";  // Clear the course code selection
+            document.getElementById("courseTypeSelect").value = "1";  // Reset to default (Lecture)
+            document.getElementById("teachingPlace").value = "";  // Clear the teaching place
+            document.getElementById("teachingAssistant").value = "";  // Clear the teaching assistant
+
+            // Optionally, reset dropdown text to a blank option
+            clearSelectOptions("courseCode");
+            clearSelectOptions("teachingPlace");
+            clearSelectOptions("teachingAssistant");
+
+            // Extract the available teaching places and staff
+            teachingPlaces = data.teachingPlacesName;
+            teachingAssistants = data.teachingStaffName;
+
+            // Extract available course codes
+            courseCodes = Array.isArray(data.inMatchedCourses) && data.inMatchedCourses.length > 0
+                ? data.inMatchedCourses.map(course => course.code)
+                : [];
+
+            // Populate Teaching Places
+            addOptionsToSelectList(teachingPlaces, "teachingPlace");
+
+            // Populate Teaching Assistants
+            addOptionsToSelectList(teachingAssistants, "teachingAssistant");
+
+            // Populate Course Codes
+            addOptionsToSelectList(courseCodes, "courseCode");
+        }
+
+        function selectProperEndHourForCourse(courseCode, courseType) {
+            data = getTableContextData();
+            if (data == null)
+                return;
+
+            // Find the matching course
+            return data.inMatchedCourses.find(c => c.code === courseCode && c.type == courseType);
+        }
+
+        function parseDayToEquivalentEnum(dayAsString) {
+            const dayToNumber = {
+                "Sunday": 0,
+                "Monday": 1,
+                "Tuesday": 2,
+                "Wednesday": 3,
+                "Thursday": 4,
+                "Friday": 5,
+                "Saturday": 6
+            };
+
+            return parseInt(dayToNumber[dayAsString])
+        }
+
+        function getCommandModelFromEventPayload(payLoad) {
+            let commandInterval = {
+                level: parseInt(payLoad.interval.info.courseLevel),
+                day: parseDayToEquivalentEnum(payLoad.day),
+                interval: {
+                    startFrom: parseInt(payLoad.interval.startFrom),
+                    endTo: parseInt(payLoad.interval.endTo),
+                    info: {
+                        courseCode: payLoad.interval.info.courseCode,
+                        courseType: parseInt(payLoad.interval.info.courseType),
+                        courseLevel: parseInt(payLoad.interval.info.courseLevel),
+                        teachingPlace: payLoad.interval.info.teachingPlace,
+                        teachingAssistant: payLoad.interval.info.teachingAssistant
+                    }
+                }
+            };
+
+            return commandInterval;
+        }
+
+        function createMoveForm(payload) {
+            interval = payload.interval;
+            lectureHours = parseInt(interval.endTo) - parseInt(interval.startFrom);
+
+            // Create a simple form popup
+            form = document.createElement("div");
+            form.style.position = "fixed";
+            form.style.top = "50%";
+            form.style.left = "50%";
+            form.style.transform = "translate(-50%, -50%)";
+            form.style.backgroundColor = "white";
+            form.style.border = "2px solid #8e44ad";
+            form.style.padding = "20px";
+            form.style.zIndex = 1000;
+            form.style.borderRadius = "10px";
+            form.style.boxShadow = "0 5px 15px rgba(0, 0, 0, 0.2)";
+            form.style.maxWidth = "400px";
+            form.style.width = "100%";
+
+            form.innerHTML = `
+            <h3 style="text-align: center; color: #8e44ad;">Edit Course Interval</h3>
+            <label for="day-select" style="display: block; font-weight: bold; margin-bottom: 5px;">Select Day:</label>
+            <select id="day-select" name="day" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="0">Sunday</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+            </select><br><br>
+
+            <label style="font-weight: bold; margin-bottom: 5px;">Start From:</label>
+            <input id="edit-start" type="number" value="${interval.startFrom}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;" /><br><br>
+
+            <label style="font-weight: bold; margin-bottom: 5px;">End To:</label>
+            <input id="edit-end" type="number" readonly value="${interval.endTo}" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;" /><br><br>
+
+            <button id="submit-edit" style="background-color: #8e44ad; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s;">
+            Save
+            </button>
+            <button id="cancel-edit" style="margin-left: 10px; padding: 10px 15px; background-color: #bdc3c7; color: black; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s;">
+            Cancel
+            </button>`;
+
+            document.body.appendChild(form);
+
+            // Update 'End To' automatically when 'Start From' changes
+            document.getElementById("edit-start").oninput = function () {
+                let startValue = parseInt(document.getElementById("edit-start").value);
+                if (isNaN(startValue)) startValue = 0;
+
+                document.getElementById("edit-end").value = startValue == 0 ? null : startValue + lectureHours;
+            };
+
+            // Handle Save
+            document.getElementById("submit-edit").onclick = function () {
+                updatedDay = document.getElementById("day-select").value; 
+                updatedStart = parseInt(document.getElementById("edit-start").value);
+                updatedEnd = parseInt(document.getElementById("edit-end").value);
+
+                movePayload = {
+                    interval: getCommandModelFromEventPayload(payload),
+                    day: parseInt(updatedDay),
+                    requiredInterval: {
+                        startFrom: updatedStart,
+                        endTo: updatedEnd
+                    }
+                };
+
+                // 🔥 Dispatch custom event carrying the updated payload
+                event = new CustomEvent("movePayloadSubmitted", { detail: movePayload });
+                window.dispatchEvent(event);
+
+                document.body.removeChild(form); // Close form
+            };
+
+            // Handle Cancel
+            document.getElementById("cancel-edit").onclick = function () {
+                document.body.removeChild(form); // Just close form
+            };
+        }            
+    </script>
+
+    <script>
+        function replaceEndHour() {
+            let courseCode = document.getElementById("courseCode").value;
+            let courseType = document.getElementById("courseTypeSelect").value;
+            matchedCourse = selectProperEndHourForCourse(courseCode, courseType);
+
+            if (matchedCourse) {
+                document.getElementById("endToInput").value = parseInt(document.getElementById("startFromInput").value) + parseInt(matchedCourse.lectureHours);
+            }
+            else {
+                document.getElementById("endToInput").value = 'Course type is not exist'
+            }
+        }
+
+        document.getElementById("courseTypeSelect").addEventListener("change", () => {
+            replaceEndHour();
+        })
+
+        document.getElementById("startFromInput").addEventListener("input", () => {
+            replaceEndHour();
+        });  
+    </script>
+
+    <script>
+        const excludeModel = {
+            PlacesId: [],  // Example places
+            CoursesId: [],  // Example courses
+            StaffUserName: []  // Example staff usernames
+        };
+
+        const localUrl = "https://localhost:7262/api";
+        const proUrl = "http://graduationprojecthost.runasp.net/api";
+        const localToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIwMTk1QjNFQkRGN0U3OTA2QUE5Njg5MkQ0QUQ4QzEyQiIsImdpdmVuX25hbWUiOiJhZG1pbiBhZG1pbiIsInJvbGUiOiJBZG1pbiIsIm5iZiI6MTc0NTQyOTUwOCwiZXhwIjoxNzQ2NjI5NTA4LCJpYXQiOjE3NDU0Mjk1MDgsImlzcyI6IkdyYWR1YXRpb24gVGVhbSIsImF1ZCI6IklUIERlcGFydG1lbnQifQ.OZ4jdpLEGu0gfi6sGiu5GmoAalzf8_MKsobdRpjk1Rc";
+        const proToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIwMTk2MTMxQkNCRjI3NEFBQTlCNTQ5MzgxMENCRDZFRSIsImdpdmVuX25hbWUiOiJhZG1pbiBhZG1pbiIsInJvbGUiOiJBZG1pbiIsIm5iZiI6MTc0NTk4ODE5MCwiZXhwIjoxNzQ2MTA4MTkwLCJpYXQiOjE3NDU5ODgxOTAsImlzcyI6IkdyYWR1YXRpb24gVGVhbSIsImF1ZCI6IklUIERlcGFydG1lbnQifQ.PUtjs1F4r_w8iF0SnbmiYWFtIioRn3K6jZ1ZxMgSs0k";
+        // Create connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl(localUrl + "/TimeTableHub", {
+                accessTokenFactory: () => localToken,
+                headers: {
+                    "x-api-key": "hiL56ugahSWEoYuaQT3Bg_1R-Ggz7rrxlfRxch5O9tQ"
+                }
+            })
+            .build();
+
+        connection.on("generateTimeTableContextResult", (result) => {
+            storeTimeTable(result);
+            reloadTimeTable();
+        });
+        connection.on("getTimeTablesContextResult", (names) => addOptionsToSelectList(names, "timeTableSelect"));
+        connection.on("findValidStaffResult", (result) => ShowScheduleByDayForSearchButtons(result, true));
+        connection.on("findValidPlacesResult", (result) => ShowScheduleByDayForSearchButtons(result, false));
+        connection.on("loadTimeTableContextResult", (result) => {
+            storeTimeTable(result);
+            reloadTimeTable();
+        });
+        connection.on("deleteTimeTableContextResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                localStorage.removeItem(tableStorageKey)
+                reloadTimeTable();
+            }
+        });
+        connection.on("setActiveTimeTableContextResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success)
+                alert(res.error)
+            else
+                alert("Success")
+        });
+        connection.on("undoResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        connection.on("redoResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        connection.on("loadActiveTimeTableContextResult", (result) => {
+            res = mapResultObject(result);
+            console.log(res)
+            if (res.success) {
+                storeTimeTable(result)
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        connection.on("addIntervalResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        connection.on("removeIntervalResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        connection.on("moveIntervalResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+
+        // Start connection 
+        connection.start()
+            .then(() => {
+                console.log("SignalR connected!");
+
+                document.getElementById("generateBtn").addEventListener("click", async () => {
+                    try {
+                        await connection.invoke("generateTimeTableContext", excludeModel, 1);
+
+                    } catch (err) {
+                        console.error("Error invoking method:", err);
+                    }
+                });
+
+                // Search by staff username
+                document.getElementById("searchStaffBtn").addEventListener("click", async () => {
+                    var staffUsername = document.getElementById("staffUsername").value.trim();
+                    var hoursInput = document.getElementById('hours-input').value.trim();
+
+                    // Validate if the hours input is a valid integer
+                    var hours = parseInt(hoursInput);
+                    if (staffUsername && !isNaN(hours)) {
+                        try {
+                            // Invoke the SignalR method with both staffUsername and hours
+                            await connection.invoke("findValidPlaces", staffUsername, hours);
+                        } catch (err) {
+                            console.error("Error invoking method:", err);
+                        }
+                    } else {
+                        alert("Please enter a valid staff username and hours.");
+                    }
+                })
+
+                // Search by place name
+                document.getElementById("searchPlaceBtn").addEventListener("click", async () => {
+                    var placeName = document.getElementById("placeName").value.trim();
+                    var hoursInput = document.getElementById('hours-input').value.trim();
+
+                    // Validate if the hours input is a valid integer
+                    var hours = parseInt(hoursInput);
+                    if (staffUsername && !isNaN(hours)) {
+                        try {
+                            // Invoke the SignalR method with both staffUsername and hours
+                            await connection.invoke("findValidStaff", placeName, hours);
+                        } catch (err) {
+                            console.error("Error invoking method:", err);
+                        }
+                    } else {
+                        alert("Please enter a valid place name and hours.");
+                    }
+                });
+
+                // Handle Load Button Click
+                document.getElementById("loadBtn").addEventListener("click", async () => {
+                    try {
+                        await connection.invoke("getTimeTablesContext");
+                    } catch (err) {
+                        console.error("Error invoking getTimeTablesContext:", err);
+                    }
+                });
+
+                // Handle Select Change
+                document.getElementById("timeTableSelect").addEventListener("change", async (e) => {
+                    const selectedName = e.target.value;
+                    if (selectedName) {
+                        try {
+                            await connection.invoke("loadTimeTableContext", selectedName);
+
+                        } catch (err) {
+                            console.error("Error loading timetable:", err);
+                        }
+                    }
+                });
+
+                // Handle Save Changes Button
+                document.getElementById("saveBtn").addEventListener("click", async () => {
+                    try {
+                        let fileName = document.getElementById("fileNameInput").value.trim();
+                        await connection.invoke("saveCurrentTimeTableContext", fileName)
+                    } catch (err) {
+                        console.error("Error saving changes:", err);
+                    }
+                });
+
+                // Handle Delete Button Click
+                document.getElementById("deleteBtn").addEventListener("click", async () => {
+                    let selectedName = document.getElementById("timeTableSelect").value;
+                    if (selectedName) {
+                        if (confirm(`Are you sure you want to delete timetable: ${selectedName}?`)) {
+                            try {
+                                await connection.invoke("deleteTimeTableContext", selectedName);
+                                alert(`Timetable "${selectedName}" deleted successfully.`);
+                                localStorage.removeItem(tableStorageKey);
+                                await connection.invoke("getTimeTablesContext");
+                                reloadTimeTable();
+                            } catch (err) {
+                                console.error("Error deleting timetable:", err);
+                            }
+                        }
+                    } else {
+                        alert("Please select a timetable to delete.");
+                    }
+                });
+
+                // Handle Set Active Button Click
+                document.getElementById("setActiveBtn").addEventListener("click", async () => {
+                    let selectedName = document.getElementById("timeTableSelect").value;
+                    if (selectedName) {
+                        try {
+                            await connection.invoke("setActiveTimeTableContext", selectedName);
+                            alert(`Timetable "${selectedName}" has set successfully.`);
+                        } catch (err) {
+                            console.error("Error setting timetable:", err);
+                        }
+                    } else {
+                        alert("Please select a timetable.");
+                    }
+                })
+
+                // Handle Undo Button
+                document.getElementById("undoBtn").addEventListener("click", async () => {
+                    try {
+                        await connection.invoke("undo");
+                    } catch (err) {
+                        console.error("Error undoing:", err);
+                    }
+                });
+
+                // Handle Redo Button
+                document.getElementById("redoBtn").addEventListener("click", async () => {
+                    try {
+                        await connection.invoke("redo");
+                    } catch (err) {
+                        console.error("Error redoing:", err);
+                    }
+                });
+
+                document.getElementById("loadctiveBtn").addEventListener("click", async () => {
+                    await connection.invoke("loadActiveTimeTableContext");
+                })
+
+                // Open the popup when clicking the "Insert Interval" button
+                document.getElementById("openIntervalFormBtn").addEventListener("click", () => {
+                    extractAvailableDataAndAddToInsertIntervalFrom();
+                    document.getElementById("intervalPopup").style.display = "block";
+                });
+
+                // Close the popup when clicking the "Cancel" button
+                document.getElementById("closeIntervalBtn").addEventListener("click", () => {
+                    document.getElementById("intervalPopup").style.display = "none";
+                });
+
+                document.getElementById("submitIntervalBtn").addEventListener("click", async () => {
+                    let model = getCommmandModelFromInsertIntervalForm();
+                    await connection.invoke("addInterval", model);
+
+                    document.getElementById("intervalPopup").style.display = "none";
+                })
+
+                window.addEventListener("moveCourseFromCell", async function (event) {
+                    const payLoad = event.detail;
+
+                    createMoveForm(payLoad);
+                });
+
+                window.addEventListener("movePayloadSubmitted", async function (event) {
+                    const payLoad = event.detail;
+                    console.log(payLoad);
+                    await connection.invoke("moveInterval", payLoad.interval, payLoad.day, payLoad.requiredInterval);
+                })
+
+                window.addEventListener("deleteCourseFromTable", async function (event) {
+                    const payLoad = event.detail;
+
+                    await connection.invoke("removeInterval", getCommandModelFromEventPayload(payLoad),);
+                });
+            })
+            .catch(err => {
+                console.error("Connection failed:", err);
+            });
+    </script>
+
+</body>
+
+</html>
+______________
+timetable.html
+-------------------------
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Table</title>
+  <link rel="stylesheet" href="timetablestyle.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="main-content">
+      <div id="buttons"></div>
+      <table id="schedule"></table>
+    </div>
+  </div>
+
+  <div id="tooltip"></div>
+
+  <script>
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const hours = Array.from({ length: 10 }, (_, i) => i + 8);
+
+    const table = document.getElementById("schedule");
+    const buttonsDiv = document.getElementById("buttons");
+    const tooltip = document.getElementById("tooltip");
+
+    let selectedButton = null;
+    let currentData = null;
+
+    try {
+      const storedData = localStorage.getItem("tableStorageKey");
+      if (!storedData) throw new Error("No timetable data found.");
+
+      const json = JSON.parse(storedData);
+      console.log(json)
+      const levels = Object.keys(json.levelsTables);
+
+      levels.forEach(level => {
+        const btn = document.createElement("button");
+        btn.textContent = level;
+        btn.onclick = () => {
+          if (selectedButton) selectedButton.classList.remove("selected");
+          btn.classList.add("selected");
+          selectedButton = btn;
+          currentData = json.levelsTables[level].table;
+          renderTable(currentData);
+        };
+        buttonsDiv.appendChild(btn);
+      });
+
+      if (levels.length > 0) {
+        buttonsDiv.firstChild.click();
+      }
+    } catch (err) {
+      console.error(err.message);
+    }
+
+    function renderTable(data) {
+      table.innerHTML = "";
+      const header = document.createElement("tr");
+      header.appendChild(document.createElement("th"));
+      hours.forEach(h => {
+        const th = document.createElement("th");
+        th.textContent = `${h}:00 - ${h + 1}:00`;
+        header.appendChild(th);
+      });
+      table.appendChild(header);
+
+      days.forEach(day => {
+        const row = document.createElement("tr");
+        const dayCell = document.createElement("th");
+        dayCell.textContent = day;
+        row.appendChild(dayCell);
+
+        const intervals = data[day] || [];
+        let hourIdx = 0;
+
+        while (hourIdx < hours.length) {
+          const hour = hours[hourIdx];
+          const interval = intervals.find(i => hour >= i.startFrom && hour < i.endTo);
+
+          if (interval) {
+            const isLecture = interval.info.courseType === 0;
+            const td = document.createElement("td");
+            td.classList.add(isLecture ? "lecture" : "practical");
+
+            // Calculate colspan
+            const colspan = interval.endTo - interval.startFrom;
+            if (colspan > 1) td.colSpan = colspan;
+
+            td.innerHTML = `
+  <div class="course-cell">
+    <div class="course-content">
+      <strong>${interval.info.courseCode}</strong><br>
+      ${interval.info.teachingAssistant}<br>
+      ${interval.info.teachingPlace}<br>
+      ${isLecture ? "Lecture" : "Practical"}
+    </div>
+    <div class="options-menu">
+      <button class="edit-btn" onclick="sendMoveToEvent('${encodeURIComponent(JSON.stringify({ interval, day }))}')">Move</button>
+      <button class="delete-btn" onclick="sendDeleteEvent('${encodeURIComponent(JSON.stringify({ interval, day }))}')">Delete</button>
+    </div>
+  </div>
+`;
+
+            row.appendChild(td);
+            hourIdx += colspan;
+          } else {
+            const empty = document.createElement("td");
+            row.appendChild(empty);
+            hourIdx++;
+          }
+        }
+
+        table.appendChild(row);
+      });
+    }
+
+    document.addEventListener("click", e => {
+      document.querySelectorAll(".options-menu").forEach(m => m.style.display = "none");
+      const courseCell = e.target.closest(".course-cell");
+      if (courseCell) {
+        const menu = courseCell.querySelector(".options-menu");
+        if (menu) {
+          e.stopPropagation();
+          menu.style.display = "block";
+        }
+      }
+    });
+
+    function sendMoveToEvent(encodedPayload) {
+      const payload = JSON.parse(decodeURIComponent(encodedPayload));
+      window.parent.dispatchEvent(new CustomEvent("moveCourseFromCell", { detail: payload }));
+    }
+
+    function sendDeleteEvent(encodedPayload) {
+      const payload = JSON.parse(decodeURIComponent(encodedPayload));
+      window.parent.dispatchEvent(new CustomEvent("deleteCourseFromTable", { detail: payload }));
+    }
+
+    document.addEventListener("mousemove", e => {
+      const cell = e.target.closest(".course-cell");
+      if (cell) {
+        const lines = Array.from(cell.querySelector(".course-content").childNodes)
+          .map(n => n.textContent.trim())
+          .filter(Boolean);
+
+        tooltip.innerHTML = `
+  <div><strong>Course:</strong> ${lines[0]}</div>
+  <div><strong>Teacher:</strong> ${lines[1]}</div>
+  <div><strong>Place:</strong> ${lines[2]}</div>
+  <div><strong>Type:</strong> ${lines[3]}</div>
+`;
+
+        tooltip.style.display = "block";
+        tooltip.style.top = (e.pageY + 15) + "px";
+        tooltip.style.left = (e.pageX + 15) + "px";
+      } else {
+        tooltip.style.display = "none";
+      }
+    });
+  </script>
+</body>
+
+</html>
+_________
+styles.css
+---------------
+/* Global button styles */
+button {
+    padding: 8px 14px;
+    font-size: 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    margin-top: 8px;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+/* Container for the buttons and select options */
+.button-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Buttons Styling */
+#generateBtn,
+#loadBtn,
+#saveBtn,
+#undoBtn,
+#redoBtn,
+#deleteBtn,
+#setActiveBtn,
+#loadctiveBtn,
+#openIntervalFormBtn {
+    margin-left: 10px;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+/* Specific background colors for buttons */
+#generateBtn {
+    background-color: #3498db;
+    color: white;
+}
+
+#loadBtn {
+    background-color: #2980b9;
+    color: white;
+}
+
+#saveBtn {
+    background-color: #f39c12;
+    color: white;
+}
+
+#undoBtn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+#redoBtn {
+    background-color: #2ecc71;
+    color: white;
+}
+
+#deleteBtn {
+    background-color: #e74c3c;
+    color: white;
+}
+
+#setActiveBtn {
+    background-color: #1abc9c;
+    color: white;
+}
+
+#loadctiveBtn {
+    background-color: #8edb9f;
+    color: white;
+}
+
+#openIntervalFormBtn {
+    background-color: #8e44ad;
+    color: white;
+}
+
+/* Search Group Styles */
+.search-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+}
+
+/* Styling for input fields and buttons in the search group */
+.search-group input,
+.search-group button {
+    max-width: 250px;
+    /* Set a maximum width */
+    width: auto;
+    /* Allow it to shrink based on content */
+    padding: 8px 14px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.search-group input {
+    flex: 1 1 200px;
+    /* Allows the input to take up available space but not too much */
+}
+
+/* Styling for search buttons */
+.search-group button {
+    background-color: #9b59b6;
+    color: white;
+    cursor: pointer;
+}
+
+.search-group button:hover {
+    background-color: #8e44ad;
+}
+
+/* Ensure the layout is responsive */
+@media (max-width: 768px) {
+
+    /* On smaller screens, allow inputs and buttons to use more space */
+    .search-group {
+        justify-content: center;
+        /* Center-align the items */
+    }
+
+    .search-group input,
+    .search-group button {
+        max-width: 100%;
+        /* Full width on smaller screens */
+    }
+}
+
+/* Result Container for Search */
+#resultContainer {
+    position: fixed;
+    top: 100px;
+    /* Adjust top position */
+    right: 20px;
+    width: 350px;
+    max-height: 500px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+#resultContainer h3 {
+    font-size: 18px;
+    color: #34495e;
+    margin-top: 0;
+}
+
+/* TimeTable Form Popup */
+#intervalPopup {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 35%;
+    width: 30%;
+    background: white;
+    padding: 20px;
+    border: 2px solid #8e44ad;
+    border-radius: 8px;
+    z-index: 1000;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+#intervalPopup h2 {
+    text-align: center;
+    color: #8e44ad;
+    margin-bottom: 20px;
+}
+
+/* Form inputs inside the popup */
+#intervalPopup .form-group {
+    margin-bottom: 12px;
+}
+
+#intervalPopup label {
+    font-weight: bold;
+    color: #333;
+}
+
+#intervalPopup .form-control,
+#intervalPopup select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Input button styling for popup */
+#submitIntervalBtn {
+    background-color: #8e44ad;
+    color: white;
+    padding: 10px 20px;
+}
+
+#closeIntervalBtn {
+    background-color: #bdc3c7;
+    color: black;
+    padding: 10px 20px;
+}
+
+/* Make sure the iframe has proper styling */
+iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    margin-top: 20px;
+}
+
+/* Make the layout more responsive */
+@media (max-width: 768px) {
+
+    /* Adjust interval popup */
+    #intervalPopup {
+        width: 80%;
+        left: 10%;
+    }
+
+    /* Move search results to the top */
+    #resultContainer {
+        top: 10px;
+        width: 100%;
+        position: static;
+        margin-top: 10px;
+    }
+
+    /* Stack buttons vertically on small screens */
+    .button-toolbar {
+        flex-direction: column;
+    }
+
+    /* Adjust table select input and other inputs */
+    .form-control,
+    select {
+        font-size: 14px;
+    }
+}
+_________________
+timtable.css
+----------------------
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        margin: 0;
+    }
+
+    .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .main-content {
+        flex: 1;
+        max-width: 75%;
+    }
+
+    #buttons {
+        margin-bottom: 20px;
+    }
+
+    button {
+        padding: 10px 15px;
+        margin-right: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        background-color: #3498db;
+        color: white;
+        border-radius: 5px;
+    }
+
+    button:hover {
+        background-color: #2980b9;
+    }
+
+    button.selected {
+        background-color: #2ecc71;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    th,
+    td {
+        border: 1px solid #ccc;
+        text-align: center;
+        height: 70px;
+        vertical-align: middle;
+    }
+
+    th {
+        background-color: #f4f4f4;
+    }
+
+    .lecture {
+        background-color: #fff176;
+    }
+
+    .practical {
+        background-color: #81d4fa;
+    }
+
+    .course-cell {
+        position: relative;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        height: 100%;
+    }
+
+    .lecture .course-cell:hover {
+        background-color: #fff59d;
+    }
+
+    .practical .course-cell:hover {
+        background-color: #b3e5fc;
+    }
+
+    .options-menu {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 5px;
+        display: none;
+        min-width: 100px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 20;
+    }
+
+    .options-menu button {
+        display: block;
+        width: 100%;
+        border: none;
+        background: none;
+        padding: 5px 10px;
+        text-align: left;
+        cursor: pointer;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+
+    .options-menu button:hover {
+        opacity: 0.8;
+    }
+
+    .options-menu .edit-btn {
+        background-color: #f1c40f;
+        color: white;
+    }
+
+    .options-menu .delete-btn {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .options-menu .edit-btn:hover {
+        background-color: #f39c12;
+    }
+
+    .options-menu .delete-btn:hover {
+        background-color: #c0392b;
+    }
+
+    /* Tooltip Styles */
+    #tooltip {
+        position: absolute;
+        background: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+        display: none;
+        z-index: 1000;
+        pointer-events: none;
+        font-size: 14px;
+        max-width: 250px;
+        transition: opacity 0.2s ease;
+    }
+
+    /* Table styling */
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+        /* prevents overflow by restricting column width */
+    }
+
+    th,
+    td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+        vertical-align: top;
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+
+    /* Course cell content */
+    .course-cell {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    .course-content {
+        font-size: 14px;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Buttons inside cell */
+    .options-menu {
+        display: none;
+        margin-top: 5px;
+    }
+
+    .edit-btn,
+    .delete-btn {
+        margin: 2px;
+        padding: 3px 6px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    /* Tooltip styling */
+    #tooltip {
+        position: absolute;
+        background: #333;
+        color: white;
+        padding: 6px 10px;
+        border-radius: 5px;
+        font-size: 13px;
+        pointer-events: none;
+        display: none;
+        max-width: 200px;
+        z-index: 1000;
+    }
+
+    th {
+        padding: 8px;
+        white-space: nowrap;        /* Prevent line breaks */
+        font-size: 14px;
+        max-width: 100px;
+        text-align: center;
+      }
+
+      table {
+        table-layout: auto; /* or fixed if you use fixed widths */
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      table th:first-child {
+        width: 80px; /* the left-most column with day names */
+      }
+      
+      table th:not(:first-child) {
+        min-width: 100px;
+      }
+      

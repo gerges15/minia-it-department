@@ -8,7 +8,7 @@ import ManageSchedule from '../../src/features/ManageSchedule';
 import ManageStudents from '../../src/features/ManageStudents';
 import ManageTeachingPlace from '../../src/features/ManageTeachingPlaces';
 import ManageTeachingStaff from '../../src/features/ManageTeachingStaff';
-import ManageTimetable from '../../src/features/ManageTimetables';
+import ManageTimetable from '../../src/features/Table/ManageTimetables';
 import NotFound from '../../src/features/NotFound';
 import ProtectedRoute from '../utils/ProtectedRoute';
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { HubConnectionBuilder, HttpTransportType } from '@microsoft/signalr';
 import * as signalR from '@microsoft/signalr';
 
-import { Token } from '../utils/token';
+import { Token } from '../../src/utils/token';
 import {
   FiRefreshCw,
   FiSave,
@@ -16,7 +16,7 @@ import {
 import { jsPDF } from 'jspdf';
 import Cookies from 'js-cookie';
 import html2canvas from 'html2canvas';
-import { getInventory } from '../store/usInventoryStore';
+import { getInventory } from '../../src/store/usInventoryStore';
 import { toast } from 'react-toastify';
 import api from '../../api/apiClint'; // Assuming this is the ApiClint import
 import { getTimetable, getCourses, getTeachingPlaces } from '../../api/endpoints';
@@ -116,11 +116,100 @@ export default function ManageTimetable() {
         toast.info(`Generating timetable: ${progress}%`);
       });
 
+    newConnection.on("generateTimeTableContextResult", (result) => {
+            storeTimeTable(result);
+            reloadTimeTable();
+        });
+        newConnection.on("getTimeTablesContextResult", (names) => addOptionsToSelectList(names, "timeTableSelect"));
+        newConnection.on("findValidStaffResult", (result) => ShowScheduleByDayForSearchButtons(result, true));
+        newConnection.on("findValidPlacesResult", (result) => ShowScheduleByDayForSearchButtons(result, false));
+        newConnection.on("loadTimeTableContextResult", (result) => {
+            storeTimeTable(result);
+            reloadTimeTable();
+        });
+        newConnection.on("deleteTimeTableContextResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                localStorage.removeItem(tableStorageKey)
+                reloadTimeTable();
+            }
+        });
+        newConnection.on("setActiveTimeTableContextResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success)
+                alert(res.error)
+            else
+                alert("Success")
+        });
+        newConnection.on("undoResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        newConnection.on("redoResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        newConnection.on("loadActiveTimeTableContextResult", (result) => {
+            res = mapResultObject(result);
+            console.log(res)
+            if (res.success) {
+                storeTimeTable(result)
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        newConnection.on("addIntervalResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        newConnection.on("removeIntervalResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+        newConnection.on("moveIntervalResult", (result) => {
+            res = mapResultObject(result);
+
+            if (res.success) {
+                storeTimeTable(result);
+                reloadTimeTable();
+            }
+            else
+                alert(res.error)
+        });
+
       newConnection.onclose((error) => {
         console.error('SignalR connection closed:', error);
         setIsConnected(false);
         toast.error('Connection lost. Attempting to reconnect...');
       });
+
 
       await newConnection.start();
       setConnection(newConnection);
