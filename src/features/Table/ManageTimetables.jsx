@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { HubConnectionBuilder, HttpTransportType, LogLevel, HubConnectionState } from '@microsoft/signalr';
 import * as signalR from '@microsoft/signalr';
-import TimetableView from './TimetableView';
+import TimetableView from './TimetableView'; // Import the timetable component
 import { 
   Button, 
   Select, 
@@ -26,7 +26,9 @@ import {
   FormHelperText,
   IconButton,
   Tooltip as MuiTooltip,
-  Badge
+  Badge,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import './TimetableStyles.css';
 import Cookies from 'js-cookie';
@@ -48,24 +50,34 @@ import { styled } from '@mui/material/styles';
 // Styled components for better UI
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  boxShadow: theme.shadows[3],
-  borderRadius: theme.shape.borderRadius * 2,
+  boxShadow: 'var(--shadow-lg)',
+  borderRadius: 'var(--border-radius-md)',
   height: '100%',
-  transition: 'transform 0.2s, box-shadow 0.2s',
+  width: '100%',
+  transition: 'all var(--transition-normal)',
+  backgroundColor: theme.palette.background.paper,
+  border: '1px solid var(--gray-200)',
   '&:hover': {
-    boxShadow: theme.shadows[6],
-    transform: 'translateY(-2px)'
+    boxShadow: 'var(--shadow-xl)',
+    transform: 'translateY(-3px)'
   }
 }));
 
-const ControlButton = styled(Button)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius * 2,
+const ControlButton = styled(Button)(({ theme, fullWidth }) => ({
+  borderRadius: 'var(--border-radius-full)',
   textTransform: 'none',
   fontWeight: 'bold',
-  transition: 'all 0.2s',
+  padding: '0.5rem 1.25rem',
+  transition: 'all var(--transition-normal)',
+  boxShadow: 'var(--shadow-sm)',
+  width: fullWidth ? '100%' : 'auto',
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[2]
+    boxShadow: 'var(--shadow-md)'
+  },
+  '&:disabled': {
+    backgroundColor: 'var(--gray-300)',
+    color: 'var(--gray-600)'
   }
 }));
 
@@ -74,10 +86,75 @@ const ConnectionStatusBox = styled(Box)(({ theme, connected }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
   padding: theme.spacing(1.5),
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: connected ? theme.palette.success.light : theme.palette.error.light,
-  color: connected ? theme.palette.success.contrastText : theme.palette.error.contrastText,
-  marginBottom: theme.spacing(2)
+  borderRadius: 'var(--border-radius)',
+  backgroundColor: connected ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+  color: connected ? 'var(--success)' : 'var(--danger)',
+  borderLeft: `4px solid ${connected ? 'var(--success)' : 'var(--danger)'}`,
+  marginBottom: theme.spacing(2),
+  transition: 'all var(--transition-normal)'
+}));
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 'var(--border-radius)',
+    transition: 'all var(--transition-normal)',
+    '&:hover': {
+      boxShadow: 'var(--shadow-sm)'
+    },
+    '&.Mui-focused': {
+      boxShadow: 'var(--shadow-md)'
+    }
+  }
+}));
+
+const StyledSelect = styled(Select)(({ theme }) => ({
+  borderRadius: 'var(--border-radius)',
+  '& .MuiOutlinedInput-notchedOutline': {
+    transition: 'all var(--transition-normal)'
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'var(--primary)'
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'var(--primary)',
+    borderWidth: '2px',
+    boxShadow: 'var(--shadow-sm)'
+  }
+}));
+
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  borderRadius: 'var(--border-radius)',
+  transition: 'all var(--transition-normal)',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+    transform: 'translateY(-2px)',
+    boxShadow: 'var(--shadow-sm)'
+  }
+}));
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme, color = 'primary' }) => ({
+  backgroundColor: `var(--${color})`,
+  color: 'white',
+  fontWeight: 'bold',
+  padding: theme.spacing(2),
+  borderBottom: '1px solid var(--gray-200)'
+}));
+
+const ControlStack = styled(Stack)(({ theme }) => ({
+  width: '100%',
+  '& .MuiFormControl-root': {
+    width: '100%'
+  },
+  '& .MuiButton-root': {
+    width: '100%'
+  }
+}));
+
+const StyledFormControl = styled(FormControl)(({ theme }) => ({
+  width: '100%',
+  '& .MuiInputBase-root': {
+    width: '100%'
+  }
 }));
 
 const TimetablePage = () => {
@@ -125,6 +202,10 @@ const TimetablePage = () => {
   const apiKey = import.meta.env.VITE_API_KEY;
   const BASE_URL = isProduction ? '/api/proxy' : `${apiUrl}/api`;
 
+  // Add theme and mediaQuery hook for responsive design
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // Helper function for displaying notifications
   const showNotification = (message, severity = 'info') => {
     setSnackbar({ open: true, message, severity });
@@ -155,49 +236,83 @@ const TimetablePage = () => {
       setIsLoading(true);
 
       // Create connection with improved settings
-      const newConnection = new HubConnectionBuilder()
-        .withUrl(`${BASE_URL}/TimeTableHub`, {
-          headers: {
-            'x-api-key': apiKey,
-            Authorization: `Bearer ${accessToken}`
-          },
-          withCredentials: true,
-          // Support both WebSockets and LongPolling with WebSockets preferred
-          transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
-          // Add skip negotiation flag to improve connection speed
+        const newConnection = new HubConnectionBuilder()
+          .withUrl(`${BASE_URL}/TimeTableHub`, {
+            headers: {
+              'x-api-key': apiKey,
+              Authorization: `Bearer ${accessToken}`
+            },
+            withCredentials: true,
+          // Force Long Polling since WebSockets appear to be unstable in this environment
+          transport: HttpTransportType.LongPolling,
+          // Disable skip negotiation to ensure protocol compatibility
           skipNegotiation: false
         })
-        .configureLogging(LogLevel.Information)
+        .configureLogging(LogLevel.Debug) // Upgrade to Debug level for more detailed logs
         // Improve reconnection strategy with more frequent attempts
         .withAutomaticReconnect([0, 1000, 2000, 5000, 10000, 15000, 30000])
         // Add server timeout options for better stability
-        .withServerTimeout(60000) // 60 seconds server timeout
-        .withKeepAliveInterval(15000) // 15 seconds keep-alive
-        .build();
+        .withServerTimeout(120000) // 120 seconds server timeout (increase for long polling)
+        .withKeepAliveInterval(10000) // 10 seconds keep-alive
+          .build();
 
-      // Ping mechanism to keep connection alive
+      // Ping mechanism optimized for Long Polling
       let pingInterval;
       const startPingInterval = () => {
         // Clear any existing interval first
         if (pingInterval) clearInterval(pingInterval);
         
-        // Send a ping every 10 seconds to keep connection alive
+        // Send a ping every 20 seconds (longer interval for Long Polling)
         pingInterval = setInterval(async () => {
           try {
-            if (newConnection.state === signalR.HubConnectionState.Connected) {
-              // Use a lightweight ping method or invoke a dummy method
-              await newConnection.invoke("Ping").catch(error => {
-                // If Ping method doesn't exist, try a no-op invoke that is safe
-                console.log("Ping failed, using heartbeat:", error);
-                return newConnection.invoke("Heartbeat");
-              });
-              console.debug("Connection kept alive with ping");
+            if (newConnection && (newConnection.state === signalR.HubConnectionState.Connected)) {
+              console.debug(`Sending ping at ${new Date().toISOString()}`);
+              
+              // Try multiple ping methods in case server doesn't support one
+              try {
+                // For debugging, check connection state before ping
+                console.debug(`Connection state before ping: ${newConnection.state}`);
+                
+                // Simple ping method
+                await newConnection.invoke("Ping").catch(() => {
+                  // Try a simple invocation that's likely supported
+                  return newConnection.invoke("Heartbeat").catch(() => {
+                    // If that fails too, just make a simple call to keep connection alive
+                    return newConnection.invoke("getTimeTablesContext");
+                  });
+                });
+                
+                // Check connection state after successful ping
+                console.debug(`Connection state after ping: ${newConnection.state}`);
+              } catch (error) {
+                // If all invokes fail, try a simpler approach: just send a message
+                console.warn(`All ping methods failed, using basic message: ${error}`);
+                try {
+                  await newConnection.send("ClientPing");
+                } catch (sendError) {
+                  console.error(`Even basic messaging failed: ${sendError}`);
+                }
+              }
+            } else {
+              // Log connection state for debugging
+              console.warn(`Cannot ping - connection state: ${newConnection?.state || 'No connection'}`);
+              
+              // If connection is in a Disconnected state, try to reconnect
+              if (newConnection && newConnection.state === signalR.HubConnectionState.Disconnected) {
+                console.log("Connection appears disconnected during ping. Attempting reconnect...");
+                try {
+                  await newConnection.start();
+                  console.log("Reconnected successfully during ping cycle");
+                  showNotification("Connection restored", "success");
+                } catch (startError) {
+                  console.error(`Failed to reconnect during ping cycle: ${startError}`);
+                }
+              }
             }
           } catch (error) {
-            console.warn("Ping failed, connection may be unstable:", error);
-            // Don't try to reconnect here - let the built-in reconnection handle it
+            console.warn(`Ping failed: ${error}`);
           }
-        }, 10000);
+        }, 20000); // Increased from 10s to 20s for Long Polling
       };
 
       // State management with improved logging
@@ -238,7 +353,7 @@ const TimetablePage = () => {
       });
 
       // Set up event handlers with improved error handling
-      newConnection.on('generateTimeTableContextResult', (result) => {
+        newConnection.on('generateTimeTableContextResult', (result) => {
         try {
           storeTimeTable(result);
           reloadTimeTable();
@@ -247,9 +362,9 @@ const TimetablePage = () => {
           console.error('Error processing generated timetable:', error);
           showNotification('Failed to process generated timetable', 'error');
         }
-      });
-      
-      newConnection.on('getTimeTablesContextResult', (names) => {
+        });
+        
+        newConnection.on('getTimeTablesContextResult', (names) => {
         try {
           setTimeTables(names || []);
           if (names && names.length > 0) {
@@ -261,9 +376,9 @@ const TimetablePage = () => {
           console.error('Error processing timetable list:', error);
           showNotification('Failed to load timetable list', 'error');
         }
-      });
-      
-      newConnection.on('findValidStaffResult', (result) => {
+        });
+        
+        newConnection.on('findValidStaffResult', (result) => {
         try {
           setSearchResults(result || {});
           showNotification('Staff search completed', 'success');
@@ -271,9 +386,9 @@ const TimetablePage = () => {
           console.error('Error processing staff search results:', error);
           showNotification('Failed to process staff search results', 'error');
         }
-      });
-      
-      newConnection.on('findValidPlacesResult', (result) => {
+        });
+        
+        newConnection.on('findValidPlacesResult', (result) => {
         try {
           setSearchResults(result || {});
           showNotification('Places search completed', 'success');
@@ -281,9 +396,9 @@ const TimetablePage = () => {
           console.error('Error processing places search results:', error);
           showNotification('Failed to process places search results', 'error');
         }
-      });
-      
-      newConnection.on('loadTimeTableContextResult', (result) => {
+        });
+        
+        newConnection.on('loadTimeTableContextResult', (result) => {
         try {
           storeTimeTable(result);
           reloadTimeTable();
@@ -412,18 +527,35 @@ const TimetablePage = () => {
         }
       });
 
-      // Start the connection with improved retry logic
+      // Start the connection with improved retry logic for Long Polling
       const startConnection = async () => {
         try {
+          // Check if we're offline first
+          if (!navigator.onLine) {
+            console.error("Browser reports offline status - cannot connect");
+            showNotification("You appear to be offline. Please check your internet connection.", "error");
+            // Set a listener to try reconnecting when online
+            window.addEventListener('online', () => {
+              console.log("Browser reports online - attempting to reconnect");
+              showNotification("You're back online. Reconnecting...", "info");
+              initializeSignalR();
+            }, { once: true });
+            return;
+          }
+          
           // Add delay to avoid simultaneous connection attempts
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Start connection with enhanced logging
-          console.log("Starting SignalR connection...");
-          await newConnection.start();
+          console.log(`Starting SignalR connection (${new Date().toISOString()})...`);
           
-          console.log('SignalR connected successfully with state:', newConnection.state);
-          setIsConnected(true);
+          // Monitor connection attempt duration for debug purposes
+          const startTime = Date.now();
+        await newConnection.start();
+          const connectionTime = Date.now() - startTime;
+          
+          console.log(`SignalR connected successfully in ${connectionTime}ms with state: ${newConnection.state}`);
+        setIsConnected(true);
           reconnectAttempts.current = 0;
           initialConnectionEstablished.current = true;
           
@@ -433,27 +565,53 @@ const TimetablePage = () => {
           showNotification('Connected to server', 'success');
           setConnection(newConnection);
           
-          // Test connection with a simple invoke if available
+          // Connection health check
           try {
-            await newConnection.invoke("Heartbeat").catch(() => {
-              console.log("Heartbeat method not available, connection still valid");
+            // Use a safe method that should exist
+            const healthCheckStartTime = Date.now();
+            await newConnection.invoke("getTimeTablesContext").catch(() => {
+              console.log("Could not invoke getTimeTablesContext, but connection is established");
+              // Silently ignore - we're testing connection only
             });
-          } catch (error) {
-            console.warn("Connection test failed but connection appears to be established:", error);
+            console.log(`Health check completed in ${Date.now() - healthCheckStartTime}ms`);
+      } catch (error) {
+            console.warn(`Connection health check failed, but connection appears established: ${error}`);
           }
+          
+          // Return connection for cleanup purposes
+          return newConnection;
+          
         } catch (error) {
-          console.error('Error starting SignalR connection:', error);
+          console.error(`Error starting SignalR connection: ${error.message}`);
+          // Log detail about transport
+          if (error.transport) {
+            console.error(`Failed transport: ${error.transport}`);
+          }
           reconnectAttempts.current++;
           
-          // Check for specific error types
+          // Detailed error handling based on error type
           const errorMessage = error.toString().toLowerCase();
+          
+          // Handle specific error types
           if (errorMessage.includes('unauthorized') || errorMessage.includes('401')) {
-            // Token might be expired
-            setConnectionError('Authentication failed. Your session may have expired. Please refresh the page to login again.');
+            // Token expired or invalid
+            setConnectionError('Authentication failed. Your session may have expired.');
             showNotification('Authentication failed. Please refresh the page to login again.', 'error');
             return; // Don't retry on auth errors
           }
           
+          if (errorMessage.includes('cors') || errorMessage.includes('cross-origin')) {
+            setConnectionError('Cross-origin request blocked. This might be a server configuration issue.');
+            showNotification('Connection blocked by CORS policy. Please contact support.', 'error');
+            return; // Don't retry on CORS errors
+          }
+          
+          if (errorMessage.includes('aborted') || errorMessage.includes('timeout')) {
+            showNotification('Connection timed out. The server might be under heavy load.', 'warning');
+            // Will retry below
+          }
+          
+          // Generic error cases - retry with backoff
           if (reconnectAttempts.current <= MAX_RECONNECT_ATTEMPTS) {
             const retryDelay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
             console.log(`Retrying connection in ${retryDelay}ms (attempt ${reconnectAttempts.current}/${MAX_RECONNECT_ATTEMPTS})`);
@@ -462,7 +620,7 @@ const TimetablePage = () => {
             setTimeout(startConnection, retryDelay);
           } else {
             setConnectionError('Failed to connect after multiple attempts. Please refresh the page.');
-            showNotification('Connection failed. Please check your internet connection and refresh the page.', 'error');
+            showNotification('Connection failed. Please try refreshing the page.', 'error');
           }
         }
       };
@@ -673,8 +831,8 @@ const TimetablePage = () => {
       
       // Reset selection
       setSelectedTimeTable('');
-    } catch (error) {
-      console.error('Error deleting timetable:', error);
+      } catch (error) {
+        console.error('Error deleting timetable:', error);
       showNotification(`Failed to delete timetable: ${error.message}`, 'error');
     }
   };
@@ -689,8 +847,8 @@ const TimetablePage = () => {
       
       await makeSignalRCall("setActiveTimeTableContext", selectedTimeTable);
       showNotification(`Setting "${selectedTimeTable}" as active timetable`, 'info');
-    } catch (error) {
-      console.error('Error setting active timetable:', error);
+      } catch (error) {
+        console.error('Error setting active timetable:', error);
       showNotification(`Failed to set active timetable: ${error.message}`, 'error');
     }
   };
@@ -955,7 +1113,7 @@ const TimetablePage = () => {
   // Enhanced render function for the connection error
   const renderConnectionError = () => {
     if (connectionError) {
-      return (
+  return (
         <Alert 
           severity="error" 
           sx={{ 
@@ -964,13 +1122,13 @@ const TimetablePage = () => {
             borderRadius: 2
           }}
           action={
-            <Button 
+            <ControlButton 
               color="inherit" 
               size="small"
               onClick={initializeSignalR}
             >
               Retry
-            </Button>
+            </ControlButton>
           }
         >
           {connectionError}
@@ -981,11 +1139,11 @@ const TimetablePage = () => {
   };
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ width: '100%' }}>
       {/* Connection status indicator */}
       {renderConnectionError()}
       
-      <Box sx={{ my: 4 }}>
+      <Box sx={{ my: 4, width: '100%' }}>
         <Typography 
           variant="h4" 
           component="h1" 
@@ -1002,10 +1160,10 @@ const TimetablePage = () => {
           Timetable Management
         </Typography>
         
-        <Grid container spacing={3}>
-          {/* Control panel */}
-          <Grid item xs={12} md={4}>
-            <StyledPaper>
+        <Grid container spacing={3} sx={{ width: '100%' }}>
+          {/* Control panel - now fills full width on small screens */}
+          <Grid item xs={12} md={4} sx={{ width: '100%' }}>
+            <StyledPaper sx={{ width: '100%' }}>
               <Typography 
                 variant="h6" 
                 gutterBottom 
@@ -1021,7 +1179,7 @@ const TimetablePage = () => {
               </Typography>
               
               {/* Connection status with improved styling */}
-              <ConnectionStatusBox connected={isConnected}>
+              <ConnectionStatusBox connected={isConnected} sx={{ width: '100%' }}>
                 <Box
                   sx={{
                     width: 12,
@@ -1037,7 +1195,7 @@ const TimetablePage = () => {
                 </Typography>
                 
                 {!isConnected && (
-                  <Button 
+                  <ControlButton 
                     size="small"
                     variant="outlined"
                     color="inherit"
@@ -1046,38 +1204,38 @@ const TimetablePage = () => {
                     startIcon={isLoading ? <CircularProgress size={16} /> : <RefreshIcon fontSize="small" />}
                   >
                     Reconnect
-                  </Button>
+                  </ControlButton>
                 )}
               </ConnectionStatusBox>
               
-              <Stack spacing={2.5}>
+              <ControlStack spacing={2.5}>
                 <ControlButton
-                  variant="contained"
-                  color="primary"
-                  onClick={handleGenerateTimetable}
-                  disabled={!isConnected || isLoading}
+                variant="contained"
+                color="primary"
+                onClick={handleGenerateTimetable}
+                disabled={!isConnected || isLoading}
                   startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
                   fullWidth
                 >
                   Generate New Timetable
                 </ControlButton>
                 
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1, width: '100%' }} />
                 
-                <Box>
+                <Box sx={{ width: '100%' }}>
                   <Typography 
                     variant="subtitle2" 
                     gutterBottom
-                    sx={{ fontWeight: 'bold', color: 'text.secondary' }}
+                    sx={{ fontWeight: 'bold', color: 'text.secondary', width: '100%' }}
                   >
                     Manage Saved Timetables
                   </Typography>
                   
-                  <Grid container spacing={1}>
+                  <Grid container spacing={1} sx={{ width: '100%' }}>
                     <Grid item xs={6}>
                       <ControlButton
                         variant="outlined"
-                        onClick={handleLoadTimetables}
+                onClick={handleLoadTimetables}
                         disabled={!isConnected || isFetching}
                         startIcon={<CloudDownloadIcon />}
                         fullWidth
@@ -1101,20 +1259,21 @@ const TimetablePage = () => {
                   </Grid>
                 </Box>
                 
-                <Box>
+                <Box sx={{ width: '100%' }}>
                   <Typography 
                     variant="body2" 
                     gutterBottom
-                    sx={{ fontWeight: 'medium' }}
+                    sx={{ fontWeight: 'medium', width: '100%' }}
                   >
                     Select Timetable
                   </Typography>
-                  <FormControl fullWidth variant="outlined" size="small">
-                    <Select
-                      value={selectedTimeTable}
-                      onChange={(e) => handleSelectTimetable(e.target.value)}
+                  <StyledFormControl variant="outlined" size="small">
+                    <StyledSelect
+                value={selectedTimeTable}
+                onChange={(e) => handleSelectTimetable(e.target.value)}
                       disabled={!isConnected || timeTables.length === 0}
-                      displayEmpty
+                displayEmpty
+                      sx={{ width: '100%' }}
                     >
                       <MenuItem value="" disabled>
                         <Typography variant="body2" color="text.secondary">
@@ -1126,8 +1285,8 @@ const TimetablePage = () => {
                           {name}
                         </MenuItem>
                       ))}
-                    </Select>
-                  </FormControl>
+                    </StyledSelect>
+                  </StyledFormControl>
                   
                   <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
                     <MuiTooltip title="Delete selected timetable">
@@ -1158,81 +1317,84 @@ const TimetablePage = () => {
                   </Box>
                 </Box>
                 
-                <Divider sx={{ my: 1 }} />
+                <Divider sx={{ my: 1, width: '100%' }} />
                 
-                <Box>
+                <Box sx={{ width: '100%' }}>
                   <Typography 
                     variant="body2" 
                     gutterBottom
-                    sx={{ fontWeight: 'medium' }}
+                    sx={{ fontWeight: 'medium', width: '100%' }}
                   >
                     Save Current Timetable
                   </Typography>
-                  <TextField 
+                  <StyledTextField
                     fullWidth 
                     size="small" 
-                    value={fileName} 
-                    onChange={(e) => setFileName(e.target.value)}
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
                     placeholder="Enter timetable name"
                     disabled={!isConnected}
                     variant="outlined"
+                    sx={{ width: '100%' }}
                     InputProps={{
                       endAdornment: (
-                        <IconButton
+                        <StyledIconButton
                           color="primary"
-                          onClick={handleSaveChanges}
+                onClick={handleSaveChanges}
                           disabled={!isConnected || !fileName}
                           size="small"
                         >
                           <SaveIcon fontSize="small" />
-                        </IconButton>
-                      )
+                        </StyledIconButton>
+                      ),
+                      sx: { width: '100%' }
                     }}
                   />
                 </Box>
                 
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
                   <ControlButton
                     variant="outlined"
-                    onClick={handleUndo}
+                onClick={handleUndo}
                     disabled={!isConnected}
                     startIcon={<UndoIcon />}
-                    sx={{ flex: 1 }}
-                  >
-                    Undo
+                    sx={{ flex: 1, width: '50%' }}
+              >
+                Undo
                   </ControlButton>
-                  
+              
                   <ControlButton
                     variant="outlined"
-                    onClick={handleRedo}
+                onClick={handleRedo}
                     disabled={!isConnected}
                     startIcon={<RedoIcon />}
-                    sx={{ flex: 1 }}
-                  >
-                    Redo
+                    sx={{ flex: 1, width: '50%' }}
+              >
+                Redo
                   </ControlButton>
                 </Box>
                 
                 <ControlButton
-                  variant="contained"
-                  color="secondary"
-                  onClick={handleOpenIntervalPopup}
+                variant="contained"
+                color="secondary"
+                onClick={handleOpenIntervalPopup}
                   disabled={!isConnected || !timetableData}
                   startIcon={<AddIcon />}
                   fullWidth
                 >
                   Add Interval
                 </ControlButton>
-              </Stack>
+              </ControlStack>
             </StyledPaper>
           </Grid>
           
           {/* Timetable View - Enhanced with better styling */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={12} md={8} sx={{ width: '100%' }}>
             <StyledPaper sx={{ 
               position: 'relative',
               overflow: 'hidden',
-              p: 2
+              p: 2,
+              width: '100%'
             }}>
               {isLoading && (
                 <Box 
@@ -1265,16 +1427,16 @@ const TimetablePage = () => {
                     <Typography variant="body2" color="text.secondary">
                       {isFetching ? 'Fetching data...' : 'Generating timetable...'}
                     </Typography>
-                  </Paper>
+      </Paper>
                 </Box>
               )}
               
               {timetableData ? (
-                <TimetableView 
+            <TimetableView 
                   data={timetableData}
-                  onMoveCourse={handleMoveCourse}
-                  onDeleteCourse={handleDeleteCourse}
-                />
+              onMoveCourse={handleMoveCourse}
+              onDeleteCourse={handleDeleteCourse}
+            />
               ) : (
                 <Box sx={{ 
                   p: 6, 
@@ -1310,11 +1472,11 @@ const TimetablePage = () => {
                 </Box>
               )}
             </StyledPaper>
-          </Grid>
-          
+        </Grid>
+        
           {/* Search Options with enhanced UI */}
-          <Grid item xs={12}>
-            <StyledPaper sx={{ p: 3 }}>
+          <Grid item xs={12} sx={{ width: '100%' }}>
+            <StyledPaper sx={{ p: 3, width: '100%' }}>
               <Typography 
                 variant="h6" 
                 gutterBottom
@@ -1326,14 +1488,15 @@ const TimetablePage = () => {
                   pb: 1,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1
+                  gap: 1,
+                  width: '100%'
                 }}
               >
                 <SearchIcon />
                 Search Available Slots
               </Typography>
               
-              <Grid container spacing={3}>
+              <Grid container spacing={3} sx={{ width: '100%' }}>
                 <Grid item xs={12} md={6}>
                   <Paper 
                     elevation={1} 
@@ -1341,7 +1504,8 @@ const TimetablePage = () => {
                       p: 2, 
                       borderRadius: 2,
                       border: '1px solid',
-                      borderColor: 'divider'
+                      borderColor: 'divider',
+                      width: '100%'
                     }}
                   >
                     <Typography 
@@ -1363,11 +1527,11 @@ const TimetablePage = () => {
                     }}>
                       <FormControl sx={{ flexGrow: 1, minWidth: 120 }} size="small">
                         <InputLabel id="staff-select-label">Staff Member</InputLabel>
-                        <Select
+                        <StyledSelect
                           labelId="staff-select-label"
                           label="Staff Member"
-                          value={selectedStaff}
-                          onChange={(e) => setSelectedStaff(e.target.value)}
+                value={selectedStaff}
+                onChange={(e) => setSelectedStaff(e.target.value)}
                           disabled={!isConnected || teachingStaff.length === 0}
                         >
                           {teachingStaff.map((staff) => (
@@ -1375,10 +1539,10 @@ const TimetablePage = () => {
                               {staff}
                             </MenuItem>
                           ))}
-                        </Select>
+                        </StyledSelect>
                       </FormControl>
                       
-                      <TextField
+                      <StyledTextField
                         label="Hours"
                         size="small"
                         type="number"
@@ -1389,9 +1553,9 @@ const TimetablePage = () => {
                       />
                       
                       <ControlButton
-                        variant="contained"
+                variant="contained"
                         color="primary"
-                        onClick={handleSearchByStaff}
+                onClick={handleSearchByStaff}
                         disabled={!isConnected || !selectedStaff || !requiredHours}
                         size="small"
                         startIcon={<SearchIcon />}
@@ -1409,7 +1573,8 @@ const TimetablePage = () => {
                       p: 2, 
                       borderRadius: 2,
                       border: '1px solid',
-                      borderColor: 'divider'
+                      borderColor: 'divider',
+                      width: '100%'
                     }}
                   >
                     <Typography 
@@ -1431,11 +1596,11 @@ const TimetablePage = () => {
                     }}>
                       <FormControl sx={{ flexGrow: 1, minWidth: 120 }} size="small">
                         <InputLabel id="place-select-label">Teaching Place</InputLabel>
-                        <Select
+                        <StyledSelect
                           labelId="place-select-label"
                           label="Teaching Place"
-                          value={selectedPlace}
-                          onChange={(e) => setSelectedPlace(e.target.value)}
+                value={selectedPlace}
+                onChange={(e) => setSelectedPlace(e.target.value)}
                           disabled={!isConnected || teachingPlaces.length === 0}
                         >
                           {teachingPlaces.map((place) => (
@@ -1443,15 +1608,15 @@ const TimetablePage = () => {
                               {place}
                             </MenuItem>
                           ))}
-                        </Select>
+                        </StyledSelect>
                       </FormControl>
                       
-                      <TextField
+                      <StyledTextField
                         label="Hours"
                         size="small"
-                        type="number"
-                        value={requiredHours}
-                        onChange={(e) => setRequiredHours(e.target.value)}
+                type="number"
+                value={requiredHours}
+                onChange={(e) => setRequiredHours(e.target.value)}
                         sx={{ width: 80 }}
                         InputProps={{ inputProps: { min: 1, max: 10 } }}
                       />
@@ -1466,20 +1631,21 @@ const TimetablePage = () => {
                       >
                         Search
                       </ControlButton>
-                    </Box>
-                  </Paper>
+            </Box>
+          </Paper>
                 </Grid>
               </Grid>
               
               {/* Search Results with enhanced styling */}
               {Object.keys(searchResults).length > 0 && (
-                <Box sx={{ mt: 3 }}>
+                <Box sx={{ mt: 3, width: '100%' }}>
                   <Paper 
                     elevation={1} 
                     sx={{ 
                       p: 2, 
                       borderRadius: 2,
-                      backgroundColor: 'background.default'
+                      backgroundColor: 'background.default',
+                      width: '100%'
                     }}
                   >
                     <Typography 
@@ -1497,14 +1663,14 @@ const TimetablePage = () => {
                     </Typography>
                     
                     <Box className="search-results" sx={{ mt: 2 }}>
-                      {renderSearchResults()}
+            {renderSearchResults()}
                     </Box>
-                  </Paper>
+          </Paper>
                 </Box>
               )}
             </StyledPaper>
-          </Grid>
         </Grid>
+      </Grid>
       </Box>
       
       {/* Dialog styling remains the same, but we can enhance them if needed */}
@@ -1522,60 +1688,55 @@ const TimetablePage = () => {
           }
         }}
       >
-        <DialogTitle sx={{ 
-          bgcolor: 'primary.main', 
-          color: 'primary.contrastText',
-          fontWeight: 'bold',
-          py: 1.5
-        }}>
+        <StyledDialogTitle color="primary">
           Add New Interval
-        </DialogTitle>
+        </StyledDialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <FormControl fullWidth>
               <InputLabel id="day-select-label">Day</InputLabel>
-              <Select
+              <StyledSelect
                 labelId="day-select-label"
-                value={day}
-                onChange={(e) => setDay(e.target.value)}
-                label="Day"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              label="Day"
               >
                 {days.map((dayName, index) => (
                   <MenuItem key={dayName} value={index}>
                     {dayName}
                   </MenuItem>
                 ))}
-              </Select>
+              </StyledSelect>
             </FormControl>
             
             <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
+              <StyledTextField
                 label="Start Time"
-                type="number"
+              type="number"
                 fullWidth
-                value={startFrom}
-                onChange={(e) => setStartFrom(e.target.value)}
-                inputProps={{ min: 8, max: 17 }}
+              value={startFrom}
+              onChange={(e) => setStartFrom(e.target.value)}
+              inputProps={{ min: 8, max: 17 }}
                 helperText="Hour (8-17)"
               />
               
-              <TextField
+              <StyledTextField
                 label="End Time"
                 type="number"
-                fullWidth
+              fullWidth
                 value={endTo}
                 onChange={(e) => setEndTo(e.target.value)}
                 inputProps={{ min: 9, max: 18 }}
                 helperText="Hour (9-18)"
-              />
+            />
             </Box>
             
             <FormControl fullWidth>
               <InputLabel id="course-select-label">Course</InputLabel>
-              <Select
+              <StyledSelect
                 labelId="course-select-label"
-                value={courseCode}
-                onChange={(e) => setCourseCode(e.target.value)}
+              value={courseCode}
+              onChange={(e) => setCourseCode(e.target.value)}
                 label="Course"
               >
                 {courses.map((course) => (
@@ -1583,66 +1744,66 @@ const TimetablePage = () => {
                     {course.code} - {course.name}
                   </MenuItem>
                 ))}
-              </Select>
+              </StyledSelect>
             </FormControl>
             
             <FormControl fullWidth>
               <InputLabel id="course-type-label">Course Type</InputLabel>
-              <Select
+              <StyledSelect
                 labelId="course-type-label"
-                value={courseType}
-                onChange={(e) => setCourseType(e.target.value)}
-                label="Course Type"
+              value={courseType}
+              onChange={(e) => setCourseType(e.target.value)}
+              label="Course Type"
               >
                 <MenuItem value={0}>Theory</MenuItem>
                 <MenuItem value={1}>Lab</MenuItem>
-              </Select>
+              </StyledSelect>
             </FormControl>
             
             <FormControl fullWidth>
               <InputLabel id="place-select-label">Teaching Place</InputLabel>
-              <Select
+              <StyledSelect
                 labelId="place-select-label"
-                value={teachingPlace}
-                onChange={(e) => setTeachingPlace(e.target.value)}
-                label="Teaching Place"
+              value={teachingPlace}
+              onChange={(e) => setTeachingPlace(e.target.value)}
+              label="Teaching Place"
               >
                 {teachingPlaces.map((place) => (
                   <MenuItem key={place} value={place}>
                     {place}
                   </MenuItem>
                 ))}
-              </Select>
+              </StyledSelect>
             </FormControl>
             
             <FormControl fullWidth>
               <InputLabel id="staff-select-label">Teaching Assistant</InputLabel>
-              <Select
+              <StyledSelect
                 labelId="staff-select-label"
-                value={teachingAssistant}
-                onChange={(e) => setTeachingAssistant(e.target.value)}
-                label="Teaching Assistant"
+              value={teachingAssistant}
+              onChange={(e) => setTeachingAssistant(e.target.value)}
+              label="Teaching Assistant"
               >
                 {teachingStaff.map((staff) => (
                   <MenuItem key={staff} value={staff}>
                     {staff}
                   </MenuItem>
                 ))}
-              </Select>
+              </StyledSelect>
             </FormControl>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button 
-            onClick={() => setIntervalPopupOpen(false)}
-            variant="outlined"
-          >
-            Cancel
-          </Button>
+                      <ControlButton 
+                onClick={() => setIntervalPopupOpen(false)}
+              variant="outlined"
+              >
+                Cancel
+            </ControlButton>
           <ControlButton 
             onClick={handleSubmitInterval} 
-            variant="contained" 
-            color="primary"
+                variant="contained"
+                color="primary"
             startIcon={<AddIcon />}
           >
             Add Interval
@@ -1664,14 +1825,9 @@ const TimetablePage = () => {
             }
           }}
         >
-          <DialogTitle sx={{ 
-            bgcolor: 'secondary.main', 
-            color: 'secondary.contrastText',
-            fontWeight: 'bold',
-            py: 1.5
-          }}>
+          <StyledDialogTitle color="secondary">
             Move Course
-          </DialogTitle>
+          </StyledDialogTitle>
           <DialogContent sx={{ pt: 3 }}>
             <Box sx={{ 
               p: 1.5, 
@@ -1692,26 +1848,26 @@ const TimetablePage = () => {
             <Stack spacing={2}>
               <FormControl fullWidth>
                 <InputLabel id="move-day-label">Day</InputLabel>
-                <Select
+                <StyledSelect
                   labelId="move-day-label"
                   value={movePayload.requiredDay || days.indexOf(movePayload.day)}
                   onChange={(e) => setMovePayload({
-                    ...movePayload,
+                  ...movePayload,
                     requiredDay: e.target.value
                   })}
-                  label="Day"
+              label="Day"
                 >
                   {days.map((dayName, index) => (
                     <MenuItem key={dayName} value={index}>
                       {dayName}
                     </MenuItem>
                   ))}
-                </Select>
+                </StyledSelect>
               </FormControl>
               
-              <TextField
+              <StyledTextField
                 label="Start Time"
-                type="number"
+              type="number"
                 fullWidth
                 value={movePayload.requiredInterval?.startFrom || ''}
                 onChange={(e) => setMovePayload({
@@ -1727,15 +1883,15 @@ const TimetablePage = () => {
             </Stack>
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2 }}>
-            <Button 
-              onClick={() => setMovePayload(null)}
+            <ControlButton 
+                onClick={() => setMovePayload(null)}
               variant="outlined"
-            >
-              Cancel
-            </Button>
+              >
+                Cancel
+            </ControlButton>
             <ControlButton 
               onClick={() => handleMovePayloadSubmitted(movePayload)} 
-              variant="contained" 
+                variant="contained"
               color="secondary"
             >
               Move
