@@ -142,7 +142,6 @@ const ManageTeachingStaff = () => {
 
           const newStaff = results.data.map((member, index) => ({
             id: String(staff.length + index + 1),
-            userName: `STAFF${String(staff.length + index + 1).padStart(3, '0')}`,
             firstName: member.firstName,
             lastName: member.lastName,
             gender: parseInt(member.gender),
