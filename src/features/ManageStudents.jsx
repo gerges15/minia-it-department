@@ -29,16 +29,20 @@ const ManageStudents = () => {
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState('1');
   const [selectedGender, setSelectedGender] = useState('');
 
   // todo: Replace with real API call
   const fetchStudents = async () => {
     try {
       setIsLoading(true);
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const students = await getStudents();
+      // Pass filter parameters to the API
+      const students = await getStudents(
+        0, // page
+        selectedLevel,
+        selectedGender,
+        searchTerm
+      );
       setStudents(await students.results);
     } catch (error) {
       toast.error('Error fetching students');
@@ -50,23 +54,10 @@ const ManageStudents = () => {
 
   useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [searchTerm, selectedLevel, selectedGender]);
 
-  // Filter students based on search term, level, and gender
-  const filteredStudents = students.filter(student => {
-    const matchesSearch =
-      searchTerm === '' ||
-      student.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.fullId.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesLevel =
-      selectedLevel === '' || student.level === parseInt(selectedLevel);
-    const matchesGender =
-      selectedGender === '' || student.gender === parseInt(selectedGender);
-
-    return matchesSearch && matchesLevel && matchesGender;
-  });
+  // Filter students client-side for any additional filtering not handled by API
+  const filteredStudents = students;
 
   const handleEdit = student => {
     setSelectedStudent(student);

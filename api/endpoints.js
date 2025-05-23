@@ -15,7 +15,15 @@ export const addNewCourse = async newCourse =>
 // student endpoints
 
 export const addNewUser = async data => api.post('/api/Users/', data);
-export const getStudents = async => api.get('/api/Users?page=0&role=2');
+
+export const getStudents = async (page = 0, level = null, gender = null, name = '') => {
+  let query = `page=${page}&role=2`;  // Always include role=2 to get only students
+  if (level !== null && level !== '') query += `&level=${level}`;
+  if (gender !== null && gender !== '') query += `&gender=${gender}`;
+  if (name) query += `&name=${name}`;
+  
+  return await api.get(`/api/Users?${query}`);
+};
 
 // Authentication
 export const login = async (userName, password) =>
