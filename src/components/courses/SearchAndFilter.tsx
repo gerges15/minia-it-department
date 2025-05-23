@@ -38,7 +38,6 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
           onChange={e => onYearChange(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg"
         >
-          <option value="All">All Years</option>
           <option value="1">First Year</option>
           <option value="2">Second Year</option>
           <option value="3">Third Year</option>

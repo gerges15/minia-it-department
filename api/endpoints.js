@@ -32,6 +32,12 @@ export const createCourse = async courseData =>
   await api.post('/api/Courses', courseData);
 // get courses by level and semester
 export const getCourses = async (page = 0, level = null, semester = null, name = '') => {
+  // For "All" selection, use a simple request without specific filters
+  if (level === null && semester === null) {
+    return await api.get(`/api/Courses?page=${page}`);
+  }
+  
+  // Otherwise, build query with specific filters
   let query = `page=${page}`;
   if (level !== null) query += `&level=${level}`;
   if (semester !== null) query += `&semester=${semester}`;

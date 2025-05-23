@@ -16,7 +16,7 @@ export default function ManageCourses() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedYear, setSelectedYear] = useState('All');
+  const [selectedYear, setSelectedYear] = useState('1');
   const [selectedSemester, setSelectedSemester] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -28,8 +28,11 @@ export default function ManageCourses() {
       try {
         setIsLoading(true);
         setError(null);
-        const level = selectedYear !== 'All' ? parseInt(selectedYear) : null;
+        
+        // Always pass a level value since "All Years" is no longer an option
+        const level = parseInt(selectedYear);
         const semester = selectedSemester !== 'All' ? parseInt(selectedSemester) : null;
+        
         const theCourses = await getCourses(0, level, semester);
         const data = await theCourses.results;
 
@@ -149,14 +152,6 @@ export default function ManageCourses() {
     return matchesSearch;
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div
@@ -218,7 +213,12 @@ export default function ManageCourses() {
         />
       </div>
 
-      {filteredCourses.length === 0 ? (
+      {/* Table area */}
+      {isLoading ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+        </div>
+      ) : filteredCourses.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
           No courses found matching your criteria.
         </div>
