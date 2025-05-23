@@ -184,22 +184,22 @@ export default function ManageCourses() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-3 sm:px-6 md:px-0">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex justify-between items-center">
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Manage Courses</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Courses</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
               View and manage all courses in the department
             </p>
           </div>
           <button
             onClick={handleOpenModal}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white text-sm sm:text-base font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
           >
-            <FiPlus className="h-5 w-5" />
-            Add New Course
+            <FiPlus className="h-5 w-5 flex-shrink-0" />
+            <span>Add New Course</span>
           </button>
         </div>
 
@@ -215,19 +215,23 @@ export default function ManageCourses() {
 
       {/* Table area */}
       {isLoading ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-purple-600"></div>
         </div>
       ) : filteredCourses.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
-          No courses found matching your criteria.
+        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
+          <p className="text-sm sm:text-base">No courses found matching your criteria.</p>
         </div>
       ) : (
-        <CourseTable
-          courses={filteredCourses}
-          onEdit={handleEditCourse}
-          onDelete={handleDeleteCourse}
-        />
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <CourseTable
+              courses={filteredCourses}
+              onEdit={handleEditCourse}
+              onDelete={handleDeleteCourse}
+            />
+          </div>
+        </div>
       )}
 
       <CourseForm
