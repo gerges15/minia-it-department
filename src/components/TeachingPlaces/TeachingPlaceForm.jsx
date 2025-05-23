@@ -11,9 +11,9 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
   useEffect(() => {
     if (initialData) {
       setFormData({
-        name: initialData.name,
-        capacity: initialData.capacity,
-        type: String(initialData.type)
+        name: initialData.name || '',
+        capacity: initialData.capacity || '',
+        type: String(initialData.type) || '0'
       });
     } else {
       setFormData({
@@ -22,7 +22,7 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
         type: '0'
       });
     }
-  }, [initialData]);
+  }, [initialData, isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,82 +44,86 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-semibold text-gray-800">
-            {isEditing ? 'Edit Teaching Place' : 'Add New Teaching Place'}
+    <div 
+      className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white p-4 sm:p-6 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-800">
+            {isEditing ? 'Edit Teaching Place' : 'Add Teaching Place'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Close"
           >
-            <FiX className="h-6 w-6" />
+            <FiX className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+            <label className="block text-gray-700 text-sm font-medium mb-1">
               Name
             </label>
             <input
               type="text"
-              id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <label htmlFor="capacity" className="block text-sm font-medium text-gray-700">
+            <label className="block text-gray-700 text-sm font-medium mb-1">
               Capacity
             </label>
             <input
               type="number"
-              id="capacity"
               name="capacity"
               value={formData.capacity}
               onChange={handleChange}
               required
               min="1"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700">
+            <label className="block text-gray-700 text-sm font-medium mb-1">
               Type
             </label>
             <select
-              id="type"
               name="type"
               value={formData.type}
               onChange={handleChange}
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
             >
               <option value="0">Hall</option>
               <option value="1">Lab</option>
             </select>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {isEditing ? 'Update' : 'Create'}
+              {isEditing ? 'Update' : 'Add'}
             </button>
           </div>
         </form>

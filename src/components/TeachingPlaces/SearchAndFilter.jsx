@@ -1,34 +1,42 @@
 import React from 'react';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiFilter } from 'react-icons/fi';
+import { debounce } from 'lodash';
 
 const SearchAndFilter = ({ searchTerm, onSearchChange, selectedType, onTypeChange }) => {
+  // Create a debounced search handler to avoid too many API calls while typing
+  const handleSearchChange = debounce((value) => {
+    onSearchChange(value);
+  }, 500);
+  
   return (
-    <div className="mt-4 flex flex-col sm:flex-row gap-4">
-      <div className="flex-1">
-        <div className="relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FiSearch className="h-5 w-5 text-gray-400" />
-          </div>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by name..."
-            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-          />
+    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-4">
+      <div className="flex-1 relative">
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          <FiSearch className="h-5 w-5 text-gray-400" />
         </div>
+        <input
+          type="text"
+          defaultValue={searchTerm}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder="Search by name..."
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm sm:text-base"
+        />
       </div>
 
-      <div className="w-full sm:w-48">
-        <select
-          value={selectedType}
-          onChange={(e) => onTypeChange(e.target.value)}
-          className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
-        >
-          <option value="All">All Types</option>
-          <option value="0">Hall</option>
-          <option value="1">Lab</option>
-        </select>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <FiFilter className="text-gray-400 flex-shrink-0" />
+          <select
+            value={selectedType}
+            onChange={(e) => onTypeChange(e.target.value)}
+            className="w-full sm:w-auto px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+            aria-label="Select place type"
+          >
+            <option value="All">All Types</option>
+            <option value="0">Hall</option>
+            <option value="1">Lab</option>
+          </select>
+        </div>
       </div>
     </div>
   );

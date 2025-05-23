@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiCalendar } from 'react-icons/fi';
+import { FiPlus, FiUpload, FiCalendar } from 'react-icons/fi';
 import TeachingPlaceTable from '../components/TeachingPlaces/TeachingPlaceTable';
 import TeachingPlaceForm from '../components/TeachingPlaces/TeachingPlaceForm';
 import SearchAndFilter from '../components/TeachingPlaces/SearchAndFilter';
@@ -23,23 +23,25 @@ const ManageTeachingPlaces = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editPlaceId, setEditPlaceId] = useState(null);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+
+  const fetchTeachingPlaces = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await getTeachingPlaces();
+      const teachingPlaces = response.results;
+      setTeachingPlaces(teachingPlaces);
+    } catch (err) {
+      setError('Failed to fetch teaching places. Please try again later.');
+      console.error('Error fetching teaching places:', err);
+      toast.error('Failed to fetch teaching places');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTeachingPlaces = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await getTeachingPlaces();
-        const teachingPlaces = response.results;
-        setTeachingPlaces(teachingPlaces);
-      } catch (err) {
-        setError('Failed to fetch teaching places. Please try again later.');
-        console.error('Error fetching teaching places:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchTeachingPlaces();
   }, []);
 
@@ -48,12 +50,14 @@ const ManageTeachingPlaces = () => {
     setIsModalOpen(true);
     setIsEditing(false);
     setEditPlaceId(null);
+    setSelectedPlace(null);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setIsEditing(false);
     setEditPlaceId(null);
+    setSelectedPlace(null);
   };
 
   // Teaching Place CRUD operations
@@ -61,7 +65,6 @@ const ManageTeachingPlaces = () => {
     try {
       setError(null);
       if (isEditing && editPlaceId) {
-        // TODO: Replace with real API call
         const updatedPlace = await updateTeachingPlace(editPlaceId, formData);
         setTeachingPlaces(prev =>
           prev.map(place => (place.id === editPlaceId ? updatedPlace : place))
@@ -73,10 +76,10 @@ const ManageTeachingPlaces = () => {
         toast.success('Teaching place created successfully');
       }
       handleCloseModal();
+      fetchTeachingPlaces(); // Refresh the list to get the latest data
     } catch (err) {
-      setError('Failed to save teaching place. Please try again later.');
-      console.error('Error saving teaching place:', err);
       toast.error('Failed to save teaching place');
+      console.error('Error saving teaching place:', err);
     }
   };
 
@@ -84,6 +87,7 @@ const ManageTeachingPlaces = () => {
     const place = teachingPlaces.find(p => p.id === id);
     if (place) {
       setEditPlaceId(id);
+      setSelectedPlace(place);
       setIsEditing(true);
       setIsModalOpen(true);
     }
@@ -95,22 +99,25 @@ const ManageTeachingPlaces = () => {
     ) {
       try {
         await deleteTeachingPlaces([id]);
-
-        setTeachingPlaces(prev => prev.filter(place => place.id !== id));
         toast.success('Teaching place deleted successfully');
+        fetchTeachingPlaces(); // Refresh the list to get the latest data
       } catch (err) {
-        setError('Failed to delete teaching place. Please try again later.');
-        console.error('Error deleting teaching place:', err);
         toast.error('Failed to delete teaching place');
+        console.error('Error deleting teaching place:', err);
       }
     }
   };
 
   const handleViewSchedule = async place => {
-    // TODO: Implement schedule viewing logic
-
-    console.log(await getTeachingPlaceSchedules(place.id));
-    console.log('View schedule for:', place);
+    try {
+      const schedules = await getTeachingPlaceSchedules(place.id);
+      console.log('Schedules:', schedules);
+      // Here you could navigate to a schedule view or open a modal with schedules
+      toast.info(`Viewing schedules for ${place.name}`);
+    } catch (err) {
+      toast.error('Failed to fetch schedules');
+      console.error('Error fetching schedules:', err);
+    }
   };
 
   // Filter teaching places based on search and type
@@ -123,67 +130,30 @@ const ManageTeachingPlaces = () => {
     return matchesSearch && matchesType;
   });
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
-        role="alert"
-      >
-        <strong className="font-bold">Error!</strong>
-        <span className="block sm:inline"> {error}</span>
-        <button
-          onClick={() => setError(null)}
-          className="absolute top-0 bottom-0 right-0 px-4 py-3"
-        >
-          <span className="sr-only">Dismiss</span>
-          <svg
-            className="h-6 w-6 text-red-500"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 md:px-0">
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex justify-between items-center">
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
               Manage Teaching Places
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
               View and manage all teaching places in the department
             </p>
           </div>
-          <button
-            onClick={handleOpenModal}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            <FiPlus className="h-5 w-5" />
-            Add New Place
-          </button>
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+            <button
+              onClick={handleOpenModal}
+              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <FiPlus className="h-5 w-5" />
+              <span>Add Place</span>
+            </button>
+          </div>
         </div>
 
         <SearchAndFilter
@@ -194,28 +164,33 @@ const ManageTeachingPlaces = () => {
         />
       </div>
 
-      {filteredPlaces.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
-          No teaching places found matching your criteria.
+      {/* Table area */}
+      {isLoading ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-600"></div>
+        </div>
+      ) : filteredPlaces.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
+          <p className="text-sm sm:text-base">No teaching places found matching your criteria.</p>
         </div>
       ) : (
-        <TeachingPlaceTable
-          places={filteredPlaces}
-          onEdit={handleEditPlace}
-          onDelete={handleDeletePlace}
-          onViewSchedule={handleViewSchedule}
-        />
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <TeachingPlaceTable
+              places={filteredPlaces}
+              onEdit={handleEditPlace}
+              onDelete={handleDeletePlace}
+              onViewSchedule={handleViewSchedule}
+            />
+          </div>
+        </div>
       )}
 
       <TeachingPlaceForm
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleSubmitPlace}
-        initialData={
-          isEditing && editPlaceId
-            ? teachingPlaces.find(p => p.id === editPlaceId)
-            : undefined
-        }
+        initialData={selectedPlace}
         isEditing={isEditing}
       />
     </div>
