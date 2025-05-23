@@ -26,8 +26,9 @@ export const getStudents = async (page = 0, level = null, gender = null, name = 
 };
 
 // Function to delete a student by username
-export const deleteStudent = async username => 
-  await api.delete(`/api/Users/${username}`);
+
+export const deleteStudent = async (usernamesList) => 
+  await api.delete(`/api/Users?role=2`, usernamesList);
 
 // Authentication
 export const login = async (userName, password) =>

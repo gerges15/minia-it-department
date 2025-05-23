@@ -71,11 +71,11 @@ const ManageStudents = () => {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
         setIsLoading(true);
-        // Use the proper API call to delete the student
-        await deleteStudent(student.userName);
+        // Use the proper API call to delete the student - pass username as part of an array
+        await deleteStudent([student.userName]);
         
-        // Update the UI to remove the deleted student
-        setStudents(students.filter(s => s.id !== student.id));
+        // Update the UI to remove the deleted student - filter by userName instead of id
+        setStudents(students.filter(s => s.userName !== student.userName));
         toast.success('Student deleted successfully');
       } catch (error) {
         toast.error('Error deleting student');
