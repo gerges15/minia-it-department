@@ -100,15 +100,23 @@ const ManageStudents = () => {
           ...formData,
         };
         
-        // Call the API to update the student - use userName, not fullId
-        await updateUser(selectedStudent.userName, {
+        // Create update payload - only include password if provided
+        const updatePayload = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           gender: formData.gender,
           level: formData.level,
           dateOfBirth: formData.dateOfBirth,
           role: 2 // Always a student
-        });
+        };
+
+        // Add password to the payload only if it's provided
+        if (formData.password) {
+          updatePayload.password = formData.password;
+        }
+        
+        // Call the API to update the student - use userName, not fullId
+        await updateUser(selectedStudent.userName, updatePayload);
         
         // Update the UI
         setStudents(
@@ -117,11 +125,18 @@ const ManageStudents = () => {
         
         toast.success('Student updated successfully');
       } else {
+        // For new students, password is required
+        if (!formData.password) {
+          toast.error('Password is required for new students');
+          return;
+        }
+
         // Handle creating new student
         const newUserData = {
           ...formData,
           userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
-          role: 2 // Student role
+          role: 2, // Student role
+          password: formData.password // Ensure password is included
         };
         
         await addNewUser(newUserData);
@@ -178,6 +193,7 @@ const ManageStudents = () => {
             role: 1,
             level: parseInt(student.level),
             dateOfBirth: student.dateOfBirth,
+            password: student.password || "123456", // Default password if not provided
             userName: `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}`,
           }));
 
