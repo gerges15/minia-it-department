@@ -88,8 +88,14 @@ const CourseForm: React.FC<CourseFormProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4">
-      <div className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto">
+    <div 
+      className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-md shadow-lg max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
             {isEditing ? 'Edit Course' : 'Add New Course'}
@@ -163,7 +169,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 py-2 px-3 text-sm sm:text-base"
                 required
               >
-                {[0, 1, 2].map(hours => (
+                {[0, 1, 2, 3].map(hours => (
                   <option key={hours} value={hours}>
                     {hours} Hours
                   </option>
