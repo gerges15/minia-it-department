@@ -24,18 +24,23 @@ const ManageTeachingPlaces = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editPlaceId, setEditPlaceId] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const fetchTeachingPlaces = async () => {
     try {
       setIsLoading(true);
       setError(null);
+      console.log("Fetching teaching places...");
       const response = await getTeachingPlaces();
+      console.log("Teaching places response:", response);
       const teachingPlaces = response.results;
       setTeachingPlaces(teachingPlaces);
+      console.log(`Loaded ${teachingPlaces.length} teaching places`);
     } catch (err) {
-      setError('Failed to fetch teaching places. Please try again later.');
+      const errorMsg = 'Failed to fetch teaching places. Please try again later.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       console.error('Error fetching teaching places:', err);
-      toast.error('Failed to fetch teaching places');
     } finally {
       setIsLoading(false);
     }
@@ -62,30 +67,60 @@ const ManageTeachingPlaces = () => {
 
   // Teaching Place CRUD operations
   const handleSubmitPlace = async formData => {
+    if (isSaving) return; // Prevent multiple submissions
+    
+    setIsSaving(true);
     try {
       setError(null);
       if (isEditing && editPlaceId) {
-        const updatedPlace = await updateTeachingPlace(editPlaceId, formData);
-        setTeachingPlaces(prev =>
-          prev.map(place => (place.id === editPlaceId ? updatedPlace : place))
-        );
+        console.log(`Updating teaching place with ID ${editPlaceId}:`, formData);
+        
+        // Create clean payload for update
+        const updatePayload = {
+          name: formData.name,
+          capacity: parseInt(formData.capacity),
+          type: parseInt(formData.type)
+        };
+        
+        console.log("Update payload:", updatePayload);
+        await updateTeachingPlace(editPlaceId, updatePayload);
+        
         toast.success('Teaching place updated successfully');
+        
+        // Close modal and refresh list
+        handleCloseModal();
+        await fetchTeachingPlaces();
       } else {
-        const newPlace = await createTeachingPlace(formData);
-        setTeachingPlaces(prev => [...prev, newPlace]);
+        console.log("Creating new teaching place:", formData);
+        
+        const newPlaceData = {
+          name: formData.name,
+          capacity: parseInt(formData.capacity),
+          type: parseInt(formData.type)
+        };
+        
+        console.log("Create payload:", newPlaceData);
+        await createTeachingPlace(newPlaceData);
+        
         toast.success('Teaching place created successfully');
+        
+        // Close modal and refresh list
+        handleCloseModal();
+        await fetchTeachingPlaces();
       }
-      handleCloseModal();
-      fetchTeachingPlaces(); // Refresh the list to get the latest data
     } catch (err) {
-      toast.error('Failed to save teaching place');
+      const errorMsg = `Failed to ${isEditing ? 'update' : 'create'} teaching place: ${err.message || 'Unknown error'}`;
+      toast.error(errorMsg);
       console.error('Error saving teaching place:', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleEditPlace = id => {
     const place = teachingPlaces.find(p => p.id === id);
     if (place) {
+      console.log("Editing teaching place:", place);
       setEditPlaceId(id);
       setSelectedPlace(place);
       setIsEditing(true);
@@ -98,11 +133,12 @@ const ManageTeachingPlaces = () => {
       window.confirm('Are you sure you want to delete this teaching place?')
     ) {
       try {
+        console.log(`Deleting teaching place with ID ${id}`);
         await deleteTeachingPlaces([id]);
         toast.success('Teaching place deleted successfully');
-        fetchTeachingPlaces(); // Refresh the list to get the latest data
+        await fetchTeachingPlaces(); // Refresh the list to get the latest data
       } catch (err) {
-        toast.error('Failed to delete teaching place');
+        toast.error(`Failed to delete teaching place: ${err.message || 'Unknown error'}`);
         console.error('Error deleting teaching place:', err);
       }
     }
@@ -110,12 +146,13 @@ const ManageTeachingPlaces = () => {
 
   const handleViewSchedule = async place => {
     try {
+      console.log(`Fetching schedules for place: ${place.name} (ID: ${place.id})`);
       const schedules = await getTeachingPlaceSchedules(place.id);
       console.log('Schedules:', schedules);
       // Here you could navigate to a schedule view or open a modal with schedules
       toast.info(`Viewing schedules for ${place.name}`);
     } catch (err) {
-      toast.error('Failed to fetch schedules');
+      toast.error(`Failed to fetch schedules: ${err.message || 'Unknown error'}`);
       console.error('Error fetching schedules:', err);
     }
   };
@@ -192,6 +229,7 @@ const ManageTeachingPlaces = () => {
         onSubmit={handleSubmitPlace}
         initialData={selectedPlace}
         isEditing={isEditing}
+        isSaving={isSaving}
       />
     </div>
   );

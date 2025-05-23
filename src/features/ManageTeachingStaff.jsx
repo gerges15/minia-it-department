@@ -36,6 +36,7 @@ const ManageTeachingStaff = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editStaffId, setEditStaffId] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Fetch staff with optional filters
   const fetchTeachingStaff = async () => {
@@ -50,15 +51,21 @@ const ManageTeachingStaff = () => {
       // Handle different response formats
       if (response && Array.isArray(response)) {
         setStaff(response);
+        console.log(`Loaded ${response.length} staff members`);
       } else if (response && response.results && Array.isArray(response.results)) {
         setStaff(response.results);
+        console.log(`Loaded ${response.results.length} staff members from results`);
       } else if (response && Array.isArray(response.data)) {
         setStaff(response.data);
+        console.log(`Loaded ${response.data.length} staff members from data`);
       } else {
+        console.log('No staff members found or unexpected response format:', response);
         setStaff([]);
       }
     } catch (err) {
-      setError('Failed to fetch staff members. Please try again later.');
+      const errorMsg = 'Failed to fetch staff members. Please try again later.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       console.error('Error fetching staff:', err);
     } finally {
       setIsLoading(false);
@@ -69,11 +76,6 @@ const ManageTeachingStaff = () => {
   useEffect(() => {
     fetchTeachingStaff();
   }, [selectedLevel, selectedGender, searchTerm]);
-
-  // Initial fetch with default settings
-  useEffect(() => {
-    fetchTeachingStaff();
-  }, []);
 
   // Modal handlers
   const handleOpenModal = () => {
@@ -92,26 +94,60 @@ const ManageTeachingStaff = () => {
 
   // Staff CRUD operations
   const handleSubmitStaff = async formData => {
+    if (isSaving) return; // Prevent multiple submissions
+    
+    setIsSaving(true);
     try {
       if (isEditing && selectedStaff) {
-        const updatedStaff = {
-          ...formData,
-          role: 1,
+        // Make sure we have a valid userName to update
+        if (!selectedStaff.userName) {
+          toast.error('Cannot update staff: Missing username');
+          console.error('Missing userName in selectedStaff:', selectedStaff);
+          setIsSaving(false);
+          return;
+        }
+
+        console.log('Updating staff member:', selectedStaff.userName);
+        
+        // Create update payload - exactly like in ManageStudents.jsx
+        const updatePayload = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
           gender: parseInt(formData.gender) || 1,
+          role: 1, // Always set to 1 for teaching staff
           level: parseInt(formData.level) || 7,
           dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0],
-          // Only include password if provided in the form
-          ...(formData.password ? { password: formData.password } : {})
+          // Important: Include userName in the update payload
+          userName: selectedStaff.userName
         };
 
-        await updateUser(selectedStaff.userName, updatedStaff);
+        // Add password to the payload only if it's provided
+        if (formData.password) {
+          updatePayload.password = formData.password;
+        }
+        
+        console.log('Update payload:', updatePayload);
+        
+        // Call the API to update the user with userName parameter - exactly like in ManageStudents.jsx
+        const response = await updateUser(selectedStaff.userName, updatePayload);
+        console.log('Update response:', response);
+        
         toast.success('Staff member updated successfully');
+        
+        // Close the form and refresh the list - like in ManageStudents.jsx
+        handleCloseModal();
+        await fetchTeachingStaff();
       } else {
         // For new staff members
         if (!formData.password) {
           toast.error('Password is required for new staff members');
+          setIsSaving(false);
           return;
         }
+
+        // Generate userName for new staff if not provided
+        const userName = `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`;
+        console.log('Generated userName for new staff:', userName);
 
         const newStaffData = {
           firstName: formData.firstName,
@@ -121,25 +157,30 @@ const ManageTeachingStaff = () => {
           level: parseInt(formData.level) || 7,
           dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0], 
           password: formData.password,
-          userName: formData.userName || `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`
+          userName: userName
         };
         
-        await addTeachingStaff(newStaffData);
+        console.log('Creating new staff with data:', newStaffData);
+        const response = await addTeachingStaff(newStaffData);
+        console.log('Create response:', response);
+        
         toast.success('Staff member created successfully');
+        
+        // Close the form and refresh the list - like in ManageStudents.jsx
+        handleCloseModal();
+        await fetchTeachingStaff();
       }
-      
-      // Refresh the staff list
-      fetchTeachingStaff();
-      handleCloseModal();
-      
     } catch (err) {
-      const errorMsg = `Failed to ${isEditing ? 'update' : 'create'} staff member. Please try again later.`;
+      const errorMsg = `Failed to ${isEditing ? 'update' : 'create'} staff member: ${err.message || 'Unknown error'}`;
       toast.error(errorMsg);
       console.error('Error saving staff member:', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleEditStaff = member => {
+    console.log('Editing staff member:', member);
     setEditStaffId(member.id);
     setSelectedStaff(member);
     setIsEditing(true);
@@ -149,6 +190,7 @@ const ManageTeachingStaff = () => {
   const handleDeleteStaff = async member => {
     if (window.confirm('Are you sure you want to delete this staff member?')) {
       try {
+        console.log('Deleting staff member:', member.userName);
         await deleteTeachingStaff([member.userName]);
         toast.success('Staff member deleted successfully');
         fetchTeachingStaff();
@@ -183,6 +225,8 @@ const ManageTeachingStaff = () => {
               password: member.password || "123456", 
               userName: member.userName || `${member.firstName.toLowerCase().trim()}.${member.lastName.toLowerCase().trim()}`
             }));
+          
+          console.log(`Processing ${staffMembers.length} staff members from CSV`);
           
           // Counter for successful additions
           let successCount = 0;
@@ -289,6 +333,7 @@ const ManageTeachingStaff = () => {
         onSubmit={handleSubmitStaff}
         initialData={selectedStaff}
         isEditing={isEditing}
+        isSaving={isSaving}
       />
     </div>
   );

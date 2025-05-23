@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiLoader } from 'react-icons/fi';
 
-const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
+const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving = false }) => {
   const [formData, setFormData] = useState({
     name: '',
     capacity: '',
@@ -34,11 +34,13 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({
-      ...formData,
-      capacity: parseInt(formData.capacity),
-      type: parseInt(formData.type)
-    });
+    if (!isSaving) {
+      onSubmit({
+        ...formData,
+        capacity: parseInt(formData.capacity),
+        type: parseInt(formData.type)
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -46,7 +48,7 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
   return (
     <div 
       className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4"
-      onClick={onClose}
+      onClick={isSaving ? null : onClose}
     >
       <div 
         className="bg-white p-4 sm:p-6 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto"
@@ -56,13 +58,15 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
           <h2 className="text-lg sm:text-2xl font-bold text-gray-800">
             {isEditing ? 'Edit Teaching Place' : 'Add Teaching Place'}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close"
-          >
-            <FiX className="h-5 w-5" />
-          </button>
+          {!isSaving && (
+            <button
+              onClick={onClose}
+              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close"
+            >
+              <FiX className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,6 +80,7 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
               value={formData.name}
               onChange={handleChange}
               required
+              disabled={isSaving}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
             />
           </div>
@@ -91,6 +96,7 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
               onChange={handleChange}
               required
               min="1"
+              disabled={isSaving}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
             />
           </div>
@@ -104,6 +110,7 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
               value={formData.type}
               onChange={handleChange}
               required
+              disabled={isSaving}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
             >
               <option value="0">Hall</option>
@@ -116,13 +123,16 @@ const TeachingPlaceForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+              disabled={isSaving}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center gap-2 ${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              disabled={isSaving}
             >
+              {isSaving && <FiLoader className="animate-spin h-4 w-4" />}
               {isEditing ? 'Update' : 'Add'}
             </button>
           </div>

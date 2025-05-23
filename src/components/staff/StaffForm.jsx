@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiLoader } from 'react-icons/fi';
 import { STAFF_LEVELS, GENDER_OPTIONS } from '../../types/staff';
 
-const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
+const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving = false }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -45,7 +45,9 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    onSubmit(formData);
+    if (!isSaving) {
+      onSubmit(formData);
+    }
   };
 
   if (!isOpen) return null;
@@ -53,7 +55,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
   return (
     <div 
       className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4"
-      onClick={onClose}
+      onClick={isSaving ? null : onClose}
     >
       <div 
         className="bg-white p-4 sm:p-6 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto"
@@ -63,13 +65,15 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
           <h2 className="text-lg sm:text-2xl font-bold text-gray-800">
             {isEditing ? 'Edit Staff Member' : 'Add Staff Member'}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close"
-          >
-            <FiX className="h-5 w-5" />
-          </button>
+          {!isSaving && (
+            <button
+              onClick={onClose}
+              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close"
+            >
+              <FiX className="h-5 w-5" />
+            </button>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,6 +88,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required
+              disabled={isSaving}
             />
           </div>
 
@@ -98,6 +103,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required
+              disabled={isSaving}
             />
           </div>
 
@@ -112,6 +118,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                 required
+                disabled={isSaving}
               >
                 {Object.entries(GENDER_OPTIONS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -131,6 +138,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                 required
+                disabled={isSaving}
               >
                 {Object.entries(STAFF_LEVELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -152,6 +160,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required
+              disabled={isSaving}
             />
           </div>
 
@@ -167,6 +176,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required={!isEditing}
               placeholder={isEditing ? "Leave empty to keep current password" : ""}
+              disabled={isSaving}
             />
           </div>
 
@@ -175,13 +185,16 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+              disabled={isSaving}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center gap-2 ${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              disabled={isSaving}
             >
+              {isSaving && <FiLoader className="animate-spin h-4 w-4" />}
               {isEditing ? 'Update' : 'Add'}
             </button>
           </div>
