@@ -50,7 +50,7 @@ const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete }) 
               </th>
               <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
-              </th>
+                  </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">

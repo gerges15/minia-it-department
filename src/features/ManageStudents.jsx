@@ -73,7 +73,7 @@ const ManageStudents = () => {
         setIsLoading(true);
         // Use the proper API call to delete the student - pass username as part of an array
         await deleteStudent([student.userName]);
-        
+
         // Update the UI to remove the deleted student - filter by userName instead of id
         setStudents(students.filter(s => s.userName !== student.userName));
         toast.success('Student deleted successfully');
@@ -92,7 +92,7 @@ const ManageStudents = () => {
       formData.level = parseInt(formData.level);
       formData.gender = parseInt(formData.gender);
       formData.role = 2; // Always ensure role is set to Student (2)
-      
+
       if (isEditing) {
         // Handle updating existing student
         const updatedStudent = {
@@ -212,35 +212,35 @@ const ManageStudents = () => {
             <label className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
               <FiUpload className="h-5 w-5" />
               <span>Upload CSV</span>
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
-            <button
-              onClick={() => {
-                setIsEditing(false);
-                setSelectedStudent(null);
-                setIsFormOpen(true);
-              }}
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </label>
+          <button
+            onClick={() => {
+              setIsEditing(false);
+              setSelectedStudent(null);
+              setIsFormOpen(true);
+            }}
               className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
+          >
               <FiPlus className="h-5 w-5" />
               <span>Add Student</span>
-            </button>
-          </div>
+          </button>
         </div>
+      </div>
 
-        <StudentFilter
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedLevel={selectedLevel}
-          setSelectedLevel={setSelectedLevel}
-          selectedGender={selectedGender}
-          setSelectedGender={setSelectedGender}
-        />
+      <StudentFilter
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedLevel={selectedLevel}
+        setSelectedLevel={setSelectedLevel}
+        selectedGender={selectedGender}
+        setSelectedGender={setSelectedGender}
+      />
       </div>
 
       {/* Table area */}
@@ -255,11 +255,11 @@ const ManageStudents = () => {
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <StudentTable
-              students={filteredStudents}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+        <StudentTable
+          students={filteredStudents}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
           </div>
         </div>
       )}

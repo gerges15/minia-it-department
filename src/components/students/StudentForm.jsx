@@ -46,8 +46,8 @@ const StudentForm = ({
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg sm:text-2xl font-bold text-gray-800">
-            {isEditing ? 'Edit Student' : 'Add Student'}
-          </h2>
+          {isEditing ? 'Edit Student' : 'Add Student'}
+        </h2>
           <button
             onClick={onCancel}
             className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
@@ -89,37 +89,37 @@ const StudentForm = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-1">
-                Gender
-              </label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
+              Gender
+            </label>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                required
-              >
-                <option value={0}>Male</option>
-                <option value={1}>Female</option>
-              </select>
-            </div>
+              required
+            >
+              <option value={0}>Male</option>
+              <option value={1}>Female</option>
+            </select>
+          </div>
             
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-1">
-                Level
-              </label>
-              <select
-                name="level"
-                value={formData.level}
-                onChange={handleChange}
+              Level
+            </label>
+            <select
+              name="level"
+              value={formData.level}
+              onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                required
-              >
-                <option value={1}>First Year</option>
-                <option value={2}>Second Year</option>
-                <option value={3}>Third Year</option>
-                <option value={4}>Fourth Year</option>
-              </select>
-            </div>
+              required
+            >
+              <option value={1}>First Year</option>
+              <option value={2}>Second Year</option>
+              <option value={3}>Third Year</option>
+              <option value={4}>Fourth Year</option>
+            </select>
+          </div>
           </div>
           
           <div>

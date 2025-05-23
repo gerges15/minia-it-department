@@ -36,9 +36,9 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <FiFilter className="text-gray-400 flex-shrink-0" />
-          <select
-            value={selectedYear}
-            onChange={e => onYearChange(e.target.value)}
+        <select
+          value={selectedYear}
+          onChange={e => onYearChange(e.target.value)}
             className="w-full sm:w-auto px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
             aria-label="Select year"
           >
@@ -46,20 +46,20 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
             <option value="2">2nd Year</option>
             <option value="3">3rd Year</option>
             <option value="4">4th Year</option>
-          </select>
-        </div>
+        </select>
+      </div>
 
         <div className="w-full sm:w-auto">
-          <select
-            value={selectedSemester}
-            onChange={e => onSemesterChange(e.target.value)}
+        <select
+          value={selectedSemester}
+          onChange={e => onSemesterChange(e.target.value)}
             className="w-full sm:w-auto px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 text-sm sm:text-base"
             aria-label="Select semester"
-          >
+        >
             <option value="All">All</option>
             <option value="1">1st Semester</option>
             <option value="2">2nd Semester</option>
-          </select>
+        </select>
         </div>
       </div>
     </div>

@@ -139,26 +139,26 @@ const CourseForm: React.FC<CourseFormProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+          <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Credit Hours
-              </label>
-              <select
-                name="creditHours"
-                value={formData.creditHours}
-                onChange={handleChange}
+              Credit Hours
+            </label>
+            <select
+              name="creditHours"
+              value={formData.creditHours}
+              onChange={handleChange}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 py-2 px-3 text-sm sm:text-base"
-                required
-              >
-                {[1, 2, 3].map(hours => (
-                  <option key={hours} value={hours}>
-                    {hours} Hours
-                  </option>
-                ))}
-              </select>
-            </div>
+              required
+            >
+              {[1, 2, 3].map(hours => (
+                <option key={hours} value={hours}>
+                  {hours} Hours
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div>
+          <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Lecture Hours
               </label>
@@ -181,40 +181,40 @@ const CourseForm: React.FC<CourseFormProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Level
-              </label>
-              <select
-                name="level"
-                value={formData.level}
-                onChange={handleChange}
+              Level
+            </label>
+            <select
+              name="level"
+              value={formData.level}
+              onChange={handleChange}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 py-2 px-3 text-sm sm:text-base"
-                required
-              >
-                {[1, 2, 3, 4].map(level => (
-                  <option key={level} value={level}>
-                    Level {level}
-                  </option>
-                ))}
-              </select>
-            </div>
+              required
+            >
+              {[1, 2, 3, 4].map(level => (
+                <option key={level} value={level}>
+                  Level {level}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div>
+          <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Semester
-              </label>
-              <select
-                name="semester"
-                value={formData.semester}
-                onChange={handleChange}
+              Semester
+            </label>
+            <select
+              name="semester"
+              value={formData.semester}
+              onChange={handleChange}
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 py-2 px-3 text-sm sm:text-base"
-                required
-              >
-                {[1, 2].map(semester => (
-                  <option key={semester} value={semester}>
-                    Semester {semester}
-                  </option>
-                ))}
-              </select>
+              required
+            >
+              {[1, 2].map(semester => (
+                <option key={semester} value={semester}>
+                  Semester {semester}
+                </option>
+              ))}
+            </select>
             </div>
           </div>
 

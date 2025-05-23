@@ -225,11 +225,11 @@ export default function ManageCourses() {
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <CourseTable
-              courses={filteredCourses}
-              onEdit={handleEditCourse}
-              onDelete={handleDeleteCourse}
-            />
+        <CourseTable
+          courses={filteredCourses}
+          onEdit={handleEditCourse}
+          onDelete={handleDeleteCourse}
+        />
           </div>
         </div>
       )}
