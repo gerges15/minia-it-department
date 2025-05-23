@@ -5,6 +5,7 @@ import StudentFilter from '../components/students/StudentFilter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Papa from 'papaparse';
+import { FiPlus, FiUpload } from 'react-icons/fi';
 import {
   addNewUser,
   getStudents,
@@ -174,51 +175,73 @@ const ManageStudents = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="space-y-6 px-4 sm:px-6 md:px-0">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Manage Students</h1>
-        <div className="flex space-x-4">
-          <label className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer">
-            Upload CSV
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </label>
-          <button
-            onClick={() => {
-              setIsEditing(false);
-              setSelectedStudent(null);
-              setIsFormOpen(true);
-            }}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-          >
-            Add Student
-          </button>
+      
+      {/* Header */}
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Students</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              View and manage all students in the department
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+            <label className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+              <FiUpload className="h-5 w-5" />
+              <span>Upload CSV</span>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={() => {
+                setIsEditing(false);
+                setSelectedStudent(null);
+                setIsFormOpen(true);
+              }}
+              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <FiPlus className="h-5 w-5" />
+              <span>Add Student</span>
+            </button>
+          </div>
         </div>
+
+        <StudentFilter
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedLevel={selectedLevel}
+          setSelectedLevel={setSelectedLevel}
+          selectedGender={selectedGender}
+          setSelectedGender={setSelectedGender}
+        />
       </div>
 
-      <StudentFilter
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedLevel={selectedLevel}
-        setSelectedLevel={setSelectedLevel}
-        selectedGender={selectedGender}
-        setSelectedGender={setSelectedGender}
-      />
-
+      {/* Table area */}
       {isLoading ? (
-        <div className="text-center py-8">Loading...</div>
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-600"></div>
+        </div>
+      ) : filteredStudents.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
+          <p className="text-sm sm:text-base">No students found matching your criteria.</p>
+        </div>
       ) : (
-        <StudentTable
-          students={filteredStudents}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onViewSchedule={handleViewSchedule}
-        />
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <StudentTable
+              students={filteredStudents}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onViewSchedule={handleViewSchedule}
+            />
+          </div>
+        </div>
       )}
 
       {isFormOpen && (
