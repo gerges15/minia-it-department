@@ -24,7 +24,9 @@ const ManageSchedule = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isTimeSlotForm, setIsTimeSlotForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [entities, setEntities] = useState([]);
   const [filter, setFilter] = useState({
     day: new Date().getDay(),
     entityId: '',
@@ -34,72 +36,144 @@ const ManageSchedule = () => {
     }
   });
 
-  // Fetch initial data
-  const fetchData = useCallback(async () => {
+  // Fetch entities (staff members or teaching places)
+  const fetchEntities = useCallback(async () => {
     setIsLoading(true);
     try {
+      console.log(`Fetching ${viewMode === 'staff' ? 'staff members' : 'teaching places'}...`);
       let response;
+      
       if (viewMode === 'staff') {
         response = await getUsers(0, 1); // Get staff members (role 1)
-        response = response.results; // Extract the results array
+        if (response && response.results) {
+          setEntities(response.results);
+          console.log(`Loaded ${response.results.length} staff members`);
+        } else {
+          console.error('Unexpected response format from getUsers:', response);
+          setEntities([]);
+        }
       } else {
         response = await getTeachingPlaces();
-        response = response.results; // Extract the results array
-      }
-      
-      if (response && Array.isArray(response)) {
-        const entitiesWithSchedules = await Promise.all(
-          response.map(async (entity) => {
-            try {
-              const schedulesResponse = viewMode === 'staff'
-                ? await getUserSchedules(entity.userName)
-                : await getTeachingPlaceSchedules(entity.id);
-              
-              return {
-                id: entity.id,
-                [viewMode === 'staff' ? 'userName' : 'placeId']: viewMode === 'staff' ? entity.userName : entity.placeId,
-                schedules: schedulesResponse || []
-              };
-            } catch (error) {
-              console.error(`Error fetching schedules for ${entity.userName || entity.placeId}:`, error);
-              return {
-                id: entity.id,
-                [viewMode === 'staff' ? 'userName' : 'placeId']: viewMode === 'staff' ? entity.userName : entity.placeId,
-                schedules: []
-              };
-            }
-          })
-        );
-        
-        setSchedules(entitiesWithSchedules);
+        if (response && response.results) {
+          setEntities(response.results);
+          console.log(`Loaded ${response.results.length} teaching places`);
+        } else {
+          console.error('Unexpected response format from getTeachingPlaces:', response);
+          setEntities([]);
+        }
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to fetch data');
+      console.error(`Error fetching ${viewMode === 'staff' ? 'staff members' : 'teaching places'}:`, error);
+      toast.error(`Failed to fetch ${viewMode === 'staff' ? 'staff members' : 'rooms'}. Please try again.`);
+      setEntities([]);
     } finally {
       setIsLoading(false);
     }
   }, [viewMode]);
 
+  // Fetch schedules for all entities
+  const fetchSchedules = useCallback(async () => {
+    if (entities.length === 0) return;
+    
+    setIsLoadingSchedules(true);
+    try {
+      console.log(`Fetching schedules for ${viewMode === 'staff' ? 'staff members' : 'teaching places'}...`);
+      const entitiesWithSchedules = await Promise.all(
+        entities.map(async (entity) => {
+          try {
+            let scheduleData = [];
+            if (viewMode === 'staff') {
+              const response = await getUserSchedules(entity.userName);
+              scheduleData = Array.isArray(response) ? response : [];
+              console.log(`Fetched ${scheduleData.length} schedules for staff ${entity.userName}`);
+            } else {
+              const response = await getTeachingPlaceSchedules(entity.id);
+              scheduleData = Array.isArray(response) ? response : [];
+              console.log(`Fetched ${scheduleData.length} schedules for room ${entity.name || entity.id}`);
+            }
+            
+            return {
+              id: entity.id,
+              name: entity.name || entity.firstName + ' ' + entity.lastName || '',
+              userName: entity.userName || '',
+              placeId: entity.id || '',
+              schedules: scheduleData.map(s => ({
+                ...s,
+                day: typeof s.day === 'number' ? s.day : parseInt(s.day, 10) || 0,
+                startFrom: typeof s.startFrom === 'number' ? s.startFrom : parseInt(s.startFrom, 10) || 8,
+                endTo: typeof s.endTo === 'number' ? s.endTo : parseInt(s.endTo, 10) || 10
+              }))
+            };
+          } catch (error) {
+            console.error(`Error fetching schedules for ${entity.userName || entity.name || entity.id}:`, error);
+            return {
+              id: entity.id,
+              name: entity.name || entity.firstName + ' ' + entity.lastName || '',
+              userName: entity.userName || '',
+              placeId: entity.id || '',
+              schedules: []
+            };
+          }
+        })
+      );
+      
+      setSchedules(entitiesWithSchedules);
+      console.log('Schedules loaded successfully:', entitiesWithSchedules);
+    } catch (error) {
+      console.error('Error fetching schedules:', error);
+      toast.error('Failed to fetch schedules. Please try again.');
+    } finally {
+      setIsLoadingSchedules(false);
+    }
+  }, [entities, viewMode]);
+
+  // Fetch initial data
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchEntities();
+  }, [fetchEntities]);
+
+  // Fetch schedules whenever entities change
+  useEffect(() => {
+    if (entities.length > 0) {
+      fetchSchedules();
+    }
+  }, [entities, fetchSchedules]);
 
   const handleAddEntity = async (formData) => {
     setIsSaving(true);
     try {
-      const newEntity = {
-        id: Date.now().toString(),
-        [viewMode === 'staff' ? 'userName' : 'placeId']: formData.identifier,
-        schedules: []
-      };
+      console.log(`Adding new ${viewMode} with identifier:`, formData.identifier);
       
-      setSchedules(prevSchedules => [...prevSchedules, newEntity]);
+      // In a real implementation, you would add the entity through an API
+      // For now, we'll just add it to the local state if it's not already there
+      const existingEntity = entities.find(e => 
+        viewMode === 'staff' ? e.userName === formData.identifier : e.id === formData.identifier
+      );
+      
+      if (existingEntity) {
+        toast.info(`${viewMode === 'staff' ? 'Staff member' : 'Room'} already exists`);
+      } else {
+        // This is a simplified approach - in a real app, you would call an API to create the entity
+        const newEntity = {
+          id: formData.identifier,
+          [viewMode === 'staff' ? 'userName' : 'id']: formData.identifier,
+          name: formData.identifier,
+          schedules: []
+        };
+        
+        setEntities(prev => [...prev, newEntity]);
+        setSchedules(prev => [...prev, {
+          ...newEntity,
+          schedules: []
+        }]);
+        
+        toast.success(`${viewMode === 'staff' ? 'Staff member' : 'Room'} added successfully`);
+      }
+      
       setIsFormOpen(false);
-      toast.success(`${viewMode === 'staff' ? 'Staff' : 'Room'} added successfully`);
     } catch (error) {
-      toast.error(`Error adding ${viewMode === 'staff' ? 'staff' : 'room'}`);
-      console.error('Error:', error);
+      console.error(`Error adding ${viewMode}:`, error);
+      toast.error(`Failed to add ${viewMode === 'staff' ? 'staff member' : 'room'}`);
     } finally {
       setIsSaving(false);
     }
@@ -108,49 +182,73 @@ const ManageSchedule = () => {
   const handleAddTimeSlot = async (entityId, formData) => {
     setIsSaving(true);
     try {
-      const newTimeSlot = {
-        id: formData.id || `${entityId}-${Date.now()}`,
-        ...formData
-      };
-
-      // Update local state
-      setSchedules(prevSchedules => {
-        return prevSchedules.map(entity => {
-          if (entity.id === entityId) {
-            const existingIndex = entity.schedules.findIndex(s => s.id === newTimeSlot.id);
-            if (existingIndex !== -1) {
-              const updatedSchedules = [...entity.schedules];
-              updatedSchedules[existingIndex] = newTimeSlot;
-              return { ...entity, schedules: updatedSchedules };
-            } else {
-              return { ...entity, schedules: [...entity.schedules, newTimeSlot] };
-            }
-          }
-          return entity;
-        });
-      });
-
-      // Update backend
-      const entity = schedules.find(e => e.id === entityId);
-      if (entity) {
-        if (viewMode === 'staff') {
-          await addUserSchedules(entity.userName, [newTimeSlot]);
-        } else {
-          await addTeachingPlaceSchedules(entity.id, [newTimeSlot]);
-        }
+      if (!entityId) {
+        toast.error('No entity selected');
+        setIsSaving(false);
+        return;
       }
       
+      console.log(`Adding time slot for ${viewMode} with ID ${entityId}:`, formData);
+      
+      const entity = schedules.find(e => e.id === entityId);
+      
+      if (!entity) {
+        toast.error(`${viewMode === 'staff' ? 'Staff member' : 'Room'} not found`);
+        setIsSaving(false);
+        return;
+      }
+      
+      const newTimeSlot = {
+        id: formData.id || `${entityId}-${Date.now()}`,
+        day: parseInt(formData.day, 10),
+        startFrom: parseInt(formData.startFrom, 10),
+        endTo: parseInt(formData.endTo, 10)
+      };
+      
+      console.log('New time slot data:', newTimeSlot);
+      
+      // Call the API to add the time slot
+      let response;
+      if (viewMode === 'staff') {
+        console.log(`Adding schedule for staff ${entity.userName}:`, newTimeSlot);
+        response = await addUserSchedules(entity.userName, [newTimeSlot]);
+      } else {
+        console.log(`Adding schedule for room ${entity.id}:`, newTimeSlot);
+        response = await addTeachingPlaceSchedules(entity.id, [newTimeSlot]);
+      }
+      
+      console.log('API response:', response);
+      
+      // Update the local state
+      setSchedules(prevSchedules => {
+        return prevSchedules.map(e => {
+          if (e.id === entityId) {
+            const existingIndex = e.schedules.findIndex(s => s.id === newTimeSlot.id);
+            if (existingIndex !== -1) {
+              const updatedSchedules = [...e.schedules];
+              updatedSchedules[existingIndex] = newTimeSlot;
+              return { ...e, schedules: updatedSchedules };
+            } else {
+              return { ...e, schedules: [...e.schedules, newTimeSlot] };
+            }
+          }
+          return e;
+        });
+      });
+      
+      toast.success('Time slot added successfully');
       setIsFormOpen(false);
-      toast.success('Time slot updated successfully');
+      
     } catch (error) {
-      toast.error('Error updating time slot');
-      console.error('Error:', error);
+      console.error('Error adding time slot:', error);
+      toast.error(`Failed to add time slot: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleEditTimeSlot = async (entityId, timeSlot) => {
+    console.log('Editing time slot:', timeSlot, 'for entity:', entityId);
     setSelectedSchedule({ id: entityId, ...timeSlot });
     setIsTimeSlotForm(true);
     setIsFormOpen(true);
@@ -160,30 +258,56 @@ const ManageSchedule = () => {
     if (window.confirm('Are you sure you want to delete this time slot?')) {
       setIsSaving(true);
       try {
-        // Update local state
-        setSchedules(prev => prev.map(entity => 
-          entity.id === entityId
-            ? { ...entity, schedules: entity.schedules.filter(s => s.id !== timeSlotId) }
-            : entity
-        ));
-
-        // Update backend
         const entity = schedules.find(e => e.id === entityId);
-        if (entity) {
-          if (viewMode === 'staff') {
-            await removeUserSchedules(entity.userName, [timeSlotId]);
-          } else {
-            await removeTeachingPlaceSchedules(entity.id, [timeSlotId]);
-          }
+        
+        if (!entity) {
+          toast.error(`${viewMode === 'staff' ? 'Staff member' : 'Room'} not found`);
+          setIsSaving(false);
+          return;
         }
-
+        
+        console.log(`Deleting time slot ${timeSlotId} for ${viewMode} ${entity.userName || entity.id}`);
+        
+        // Call the API to delete the time slot
+        let response;
+        if (viewMode === 'staff') {
+          response = await removeUserSchedules(entity.userName, [timeSlotId]);
+        } else {
+          response = await removeTeachingPlaceSchedules(entity.id, [timeSlotId]);
+        }
+        
+        console.log('API response:', response);
+        
+        // Update the local state
+        setSchedules(prev => prev.map(e => 
+          e.id === entityId
+            ? { ...e, schedules: e.schedules.filter(s => s.id !== timeSlotId) }
+            : e
+        ));
+        
         toast.success('Time slot deleted successfully');
       } catch (error) {
-        toast.error('Error deleting time slot');
-        console.error('Error:', error);
+        console.error('Error deleting time slot:', error);
+        toast.error(`Failed to delete time slot: ${error.message || 'Unknown error'}`);
       } finally {
         setIsSaving(false);
       }
+    }
+  };
+
+  // Handle view mode change
+  const handleViewModeChange = (mode) => {
+    if (mode !== viewMode) {
+      setViewMode(mode);
+      setFilter({
+        day: new Date().getDay(),
+        entityId: '',
+        timeRange: {
+          start: 8,
+          end: 18
+        }
+      });
+      // Entities and schedules will be fetched via useEffect when viewMode changes
     }
   };
 
@@ -192,6 +316,11 @@ const ManageSchedule = () => {
     // Filter by entity (staff/room)
     const matchesEntity = !filter.entityId || schedule.id === filter.entityId;
     
+    // If there are no schedules, only apply entity filter
+    if (schedule.schedules.length === 0) {
+      return matchesEntity;
+    }
+    
     // Filter by day
     const matchesDay = filter.day === '' || 
       schedule.schedules.some(s => s.day === filter.day);
@@ -199,14 +328,17 @@ const ManageSchedule = () => {
     // Filter by time range
     const matchesTimeRange = schedule.schedules.some(s => 
       (s.startFrom >= filter.timeRange.start && s.startFrom < filter.timeRange.end) ||
-      (s.endTo > filter.timeRange.start && s.endTo <= filter.timeRange.end)
+      (s.endTo > filter.timeRange.start && s.endTo <= filter.timeRange.end) ||
+      (s.startFrom <= filter.timeRange.start && s.endTo >= filter.timeRange.end)
     );
 
-    return matchesEntity && matchesDay && matchesTimeRange;
+    return matchesEntity && (filter.day === '' || matchesDay) && 
+           (matchesTimeRange || filter.timeRange.start === 8 && filter.timeRange.end === 18);
   });
 
   // Handle filter changes
   const handleFilterChange = (newFilter) => {
+    console.log('Filter changed:', newFilter);
     setFilter(prev => ({
       ...prev,
       ...newFilter
@@ -215,6 +347,7 @@ const ManageSchedule = () => {
 
   // Reset filters
   const handleResetFilters = () => {
+    console.log('Resetting filters');
     setFilter({
       day: new Date().getDay(),
       entityId: '',
@@ -225,152 +358,168 @@ const ManageSchedule = () => {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <FiLoader className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-gray-600">Loading schedule data...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="space-y-6 px-4 sm:px-6 md:px-0">
       <ToastContainer position="top-right" autoClose={3000} />
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Manage Schedules</h1>
-          <p className="text-gray-600 mt-1">View and manage staff and room schedules</p>
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+              Manage Schedules
+            </h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+              View and manage schedules for staff and teaching places
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+            <button
+              onClick={() => {
+                setSelectedSchedule(null);
+                setIsTimeSlotForm(true);
+                setIsFormOpen(true);
+              }}
+              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              disabled={isLoading || isLoadingSchedules}
+            >
+              <FiPlus className="h-5 w-5" />
+              <span>Add Schedule</span>
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => {
-              setViewMode('staff');
-              handleResetFilters();
-            }}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-              viewMode === 'staff' 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <FiUser className="mr-2" />
-            Staff Schedules
-          </button>
-          <button
-            onClick={() => {
-              setViewMode('room');
-              handleResetFilters();
-            }}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
-              viewMode === 'room' 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            <FiMapPin className="mr-2" />
-            Room Schedules
-          </button>
-        </div>
-      </div>
 
-      {/* Filter Section */}
-      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
-        <ScheduleFilter
-          filter={filter}
-          setFilter={handleFilterChange}
-          viewMode={viewMode}
-          entities={schedules}
-          onReset={handleResetFilters}
-        />
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-1 items-center gap-3 mb-4 sm:mb-0">
+            <button
+              onClick={() => handleViewModeChange('staff')}
+              className={`flex-1 sm:flex-none flex items-center justify-center px-4 py-2 rounded-lg transition-colors ${
+                viewMode === 'staff' 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              disabled={isLoading || isLoadingSchedules}
+            >
+              <FiUser className="mr-2" />
+              Staff Schedules
+            </button>
+            <button
+              onClick={() => handleViewModeChange('room')}
+              className={`flex-1 sm:flex-none flex items-center justify-center px-4 py-2 rounded-lg transition-colors ${
+                viewMode === 'room' 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              disabled={isLoading || isLoadingSchedules}
+            >
+              <FiMapPin className="mr-2" />
+              Room Schedules
+            </button>
+          </div>
+
+          {/* Filter Section */}
+          <div className="flex-1">
+            <ScheduleFilter
+              filter={filter}
+              setFilter={handleFilterChange}
+              viewMode={viewMode}
+              entities={schedules}
+              onReset={handleResetFilters}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Calendar View */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold flex items-center">
-              <FiCalendar className="mr-2" />
-              Calendar View
-            </h2>
-            <div className="flex gap-2">
-              <button
-                onClick={handleResetFilters}
-                className="flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-              >
-                Reset Filters
-              </button>
-              <button
-                onClick={() => {
+      {isLoading ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <p className="text-gray-500 text-sm">Loading {viewMode === 'staff' ? 'staff members' : 'rooms'}...</p>
+          </div>
+        </div>
+      ) : schedules.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
+          <p className="text-sm sm:text-base">No {viewMode === 'staff' ? 'staff members' : 'rooms'} found. Add one to get started.</p>
+        </div>
+      ) : isLoadingSchedules ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-600"></div>
+            <p className="text-gray-500 text-sm">Loading schedules...</p>
+          </div>
+        </div>
+      ) : filteredSchedules.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
+          <p className="text-sm sm:text-base">No schedules found matching your criteria.</p>
+        </div>
+      ) : (
+        <>
+          {/* Calendar View */}
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold flex items-center text-gray-800">
+                <FiCalendar className="mr-2 text-blue-600" />
+                Calendar View
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <ScheduleCalendar
+                schedules={filteredSchedules}
+                filter={filter}
+                onScheduleClick={setSelectedSchedule}
+                viewMode={viewMode}
+              />
+            </div>
+          </div>
+
+          {/* List View */}
+          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold flex items-center text-gray-800">
+                <FiClock className="mr-2 text-blue-600" />
+                Schedule List
+              </h2>
+              <span className="text-sm text-gray-500">
+                {filteredSchedules.length} {viewMode === 'staff' ? 'staff' : 'rooms'} found
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <ScheduleList
+                schedules={filteredSchedules}
+                viewMode={viewMode}
+                onAdd={() => {
                   setSelectedSchedule(null);
                   setIsTimeSlotForm(false);
                   setIsFormOpen(true);
                 }}
-                className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-              >
-                <FiPlus className="mr-1" />
-                Add New
-              </button>
+                onAddTimeSlot={(entityId) => {
+                  setSelectedSchedule({ id: entityId });
+                  setIsTimeSlotForm(true);
+                  setIsFormOpen(true);
+                }}
+                onEditTimeSlot={handleEditTimeSlot}
+                onDeleteTimeSlot={handleDeleteTimeSlot}
+              />
             </div>
           </div>
-          <ScheduleCalendar
-            schedules={filteredSchedules}
-            filter={filter}
-            onScheduleClick={setSelectedSchedule}
-            viewMode={viewMode}
-          />
-        </div>
-
-        {/* List View */}
-        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold flex items-center">
-              <FiClock className="mr-2" />
-              Schedule List
-            </h2>
-            <span className="text-sm text-gray-500">
-              {filteredSchedules.length} {viewMode === 'staff' ? 'staff' : 'rooms'} found
-            </span>
-          </div>
-          <ScheduleList
-            schedules={filteredSchedules}
-            viewMode={viewMode}
-            onAdd={() => {
-              setSelectedSchedule(null);
-              setIsTimeSlotForm(false);
-              setIsFormOpen(true);
-            }}
-            onAddTimeSlot={(entityId) => {
-              setSelectedSchedule({ id: entityId });
-              setIsTimeSlotForm(true);
-              setIsFormOpen(true);
-            }}
-            onEditTimeSlot={handleEditTimeSlot}
-            onDeleteTimeSlot={handleDeleteTimeSlot}
-          />
-        </div>
-      </div>
+        </>
+      )}
 
       {/* Form Modal */}
-      {isFormOpen && (
-        <ScheduleForm
-          viewMode={viewMode}
-          onSubmit={isTimeSlotForm ? handleAddTimeSlot : handleAddEntity}
-          onClose={() => {
-            setIsFormOpen(false);
-            setSelectedSchedule(null);
-            setIsTimeSlotForm(false);
-          }}
-          isTimeSlotForm={isTimeSlotForm}
-          initialData={selectedSchedule}
-          isSaving={isSaving}
-        />
-      )}
+      <ScheduleForm
+        isOpen={isFormOpen}
+        onClose={() => {
+          setIsFormOpen(false);
+          setSelectedSchedule(null);
+          setIsTimeSlotForm(false);
+        }}
+        onSubmit={isTimeSlotForm ? handleAddTimeSlot : handleAddEntity}
+        isTimeSlotForm={isTimeSlotForm}
+        initialData={selectedSchedule}
+        viewMode={viewMode}
+        isSaving={isSaving}
+      />
     </div>
   );
 };
