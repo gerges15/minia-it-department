@@ -7,7 +7,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
     firstName: '',
     lastName: '',
     gender: 0,
-    level: 7,
+    level: 7, // Default to Teaching Lecturer
     dateOfBirth: '',
     password: '',
   });
@@ -15,15 +15,25 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
   useEffect(() => {
     if (initialData) {
       setFormData({
-        firstName: initialData.firstName,
-        lastName: initialData.lastName,
-        gender: initialData.gender,
-        level: initialData.level,
-        dateOfBirth: initialData.dateOfBirth,
+        firstName: initialData.firstName || '',
+        lastName: initialData.lastName || '',
+        gender: initialData.gender || 0,
+        level: initialData.level || 7,
+        dateOfBirth: initialData.dateOfBirth || '',
+        password: '',
+      });
+    } else {
+      // Reset form to defaults for new staff
+      setFormData({
+        firstName: '',
+        lastName: '',
+        gender: 0,
+        level: 7,
+        dateOfBirth: '',
         password: '',
       });
     }
-  }, [initialData]);
+  }, [initialData, isOpen]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -41,15 +51,22 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md">
+    <div 
+      className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white p-4 sm:p-6 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
-            {isEditing ? 'Edit Staff Member' : 'Add New Staff Member'}
+          <h2 className="text-lg sm:text-2xl font-bold text-gray-800">
+            {isEditing ? 'Edit Staff Member' : 'Add Staff Member'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Close"
           >
             <FiX className="h-5 w-5" />
           </button>
@@ -57,7 +74,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-gray-700 text-sm font-medium mb-1">
               First Name
             </label>
             <input
@@ -65,13 +82,13 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-gray-700 text-sm font-medium mb-1">
               Last Name
             </label>
             <input
@@ -79,51 +96,53 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Gender
-            </label>
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-              required
-            >
-              {Object.entries(GENDER_OPTIONS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 text-sm font-medium mb-1">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                required
+              >
+                {Object.entries(GENDER_OPTIONS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 text-sm font-medium mb-1">
+                Level
+              </label>
+              <select
+                name="level"
+                value={formData.level}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                required
+              >
+                {Object.entries(STAFF_LEVELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Level
-            </label>
-            <select
-              name="level"
-              value={formData.level}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-              required
-            >
-              {Object.entries(STAFF_LEVELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-gray-700 text-sm font-medium mb-1">
               Date of Birth
             </label>
             <input
@@ -131,40 +150,39 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing }) => {
               name="dateOfBirth"
               value={formData.dateOfBirth}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required
             />
           </div>
 
-          {!isEditing && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                required={!isEditing}
-              />
-            </div>
-          )}
+          <div>
+            <label className="block text-gray-700 text-sm font-medium mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+              required={!isEditing}
+              placeholder={isEditing ? "Leave empty to keep current password" : ""}
+            />
+          </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {isEditing ? 'Update' : 'Create'}
+              {isEditing ? 'Update' : 'Add'}
             </button>
           </div>
         </form>
