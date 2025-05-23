@@ -28,7 +28,9 @@ export default function ManageCourses() {
       try {
         setIsLoading(true);
         setError(null);
-        const theCourses = await getCourses();
+        const level = selectedYear !== 'All' ? parseInt(selectedYear) : null;
+        const semester = selectedSemester !== 'All' ? parseInt(selectedSemester) : null;
+        const theCourses = await getCourses(0, level, semester);
         const data = await theCourses.results;
 
         setCourses(data);
@@ -41,7 +43,7 @@ export default function ManageCourses() {
     };
 
     fetchCourses();
-  }, []);
+  }, [selectedYear, selectedSemester]);
 
   // Modal handlers
   const handleOpenModal = () => {
@@ -144,12 +146,7 @@ export default function ManageCourses() {
     const matchesSearch =
       course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       course.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesYear =
-      selectedYear === 'All' || course.level === parseInt(selectedYear);
-    const matchesSemester =
-      selectedSemester === 'All' ||
-      course.semester === parseInt(selectedSemester);
-    return matchesSearch && matchesYear && matchesSemester;
+    return matchesSearch;
   });
 
   if (isLoading) {

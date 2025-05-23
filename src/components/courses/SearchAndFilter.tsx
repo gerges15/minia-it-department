@@ -26,7 +26,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
           type="text"
           placeholder="Search courses..."
           value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={e => onSearchChange(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600"
         />
       </div>
@@ -35,7 +35,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
         <FiFilter className="text-gray-400" />
         <select
           value={selectedYear}
-          onChange={(e) => onYearChange(e.target.value)}
+          onChange={e => onYearChange(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg"
         >
           <option value="All">All Years</option>
@@ -49,7 +49,7 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
       <div>
         <select
           value={selectedSemester}
-          onChange={(e) => onSemesterChange(e.target.value)}
+          onChange={e => onSemesterChange(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg"
         >
           <option value="All">All Semesters</option>
@@ -61,4 +61,4 @@ const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   );
 };
 
-export default SearchAndFilter; 
+export default SearchAndFilter;

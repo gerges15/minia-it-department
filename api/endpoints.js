@@ -30,13 +30,18 @@ export const logout = async (fullId, refreshToken) =>
 // Courses
 export const createCourse = async courseData =>
   await api.post('/api/Courses', courseData);
-export const getCourses = async (page = 0, sortByLevelAscending = true) =>
-  await api.get(
-    `/api/Courses?page=${page}&sortByLevelAscending=${sortByLevelAscending}`
-  );
+// get courses by level and semester
+export const getCourses = async (page = 0, level = null, semester = null, name = '') => {
+  let query = `page=${page}`;
+  if (level !== null) query += `&level=${level}`;
+  if (semester !== null) query += `&semester=${semester}`;
+  if (name) query += `&name=${name}`;
+  
+  return await api.get(`/api/Courses?${query}`);
+};
 //export const getCourses = async () => await api.get('/api/Courses');
 export const updateCourse = async (courseId, courseData) =>
-  await api.put(`/api/Courses/${courseId}`, courseData);
+  await api.put(`/api/Courses`, courseData);
 export const deleteCourses = async courseIds =>
   await api.delete('/api/Courses', courseIds);
 export const addCourseDependencies = async (courseId, coursesId) =>
