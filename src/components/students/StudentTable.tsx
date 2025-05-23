@@ -1,12 +1,11 @@
 import React from 'react';
 import { Student, Gender, Level } from '../../types/student';
-import { FiEdit2, FiTrash2, FiCalendar } from 'react-icons/fi';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 interface StudentTableProps {
   students: Student[];
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
-  onViewSchedule: (student: Student) => void;
 }
 
 const getGenderText = (gender: Gender): string => {
@@ -39,7 +38,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
   students,
   onEdit,
   onDelete,
-  onViewSchedule,
 }) => {
   return (
     <table className="min-w-full divide-y divide-gray-200">
@@ -91,13 +89,6 @@ const StudentTable: React.FC<StudentTableProps> = ({
                   aria-label="Edit student"
                 >
                   <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                </button>
-                <button
-                  onClick={() => onViewSchedule(student)}
-                  className="p-1.5 text-green-600 hover:text-green-900 hover:bg-green-100 rounded-full transition-colors"
-                  aria-label="View schedule"
-                >
-                  <FiCalendar className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
                 <button
                   onClick={() => onDelete(student)}

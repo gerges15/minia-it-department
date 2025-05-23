@@ -11,6 +11,7 @@ import {
   getStudents,
   getUserById,
   updateUser,
+  deleteStudent,
 } from '../../api/endpoints';
 
 // todo: replace mock data with real API calls
@@ -69,64 +70,84 @@ const ManageStudents = () => {
   const handleDelete = async student => {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
-        // todo: Replace with real API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-
+        setIsLoading(true);
+        // Use the proper API call to delete the student
+        await deleteStudent(student.userName);
+        
+        // Update the UI to remove the deleted student
         setStudents(students.filter(s => s.id !== student.id));
-
         toast.success('Student deleted successfully');
       } catch (error) {
         toast.error('Error deleting student');
         console.error('Error:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
 
-  const handleViewSchedule = student => {
-    // TODO: Implement schedule viewing logic
-    console.log('View schedule for:', student);
-  };
-
   const handleSubmit = async formData => {
     try {
-      // TODO: Replace with real API call
-
+      // Set the correct data types
       formData.level = parseInt(formData.level);
       formData.gender = parseInt(formData.gender);
-      await addNewUser(formData);
-
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      formData.role = 2; // Always ensure role is set to Student (2)
+      
       if (isEditing) {
+        // Handle updating existing student
         const updatedStudent = {
           ...selectedStudent,
           ...formData,
-          fullId: selectedStudent.fullId,
-          userName: selectedStudent.userName,
         };
+        
+        // Call the API to update the student - use userName, not fullId
+        await updateUser(selectedStudent.userName, {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          gender: formData.gender,
+          level: formData.level,
+          dateOfBirth: formData.dateOfBirth,
+          role: 2 // Always a student
+        });
+        
+        // Update the UI
         setStudents(
           students.map(s => (s.id === updatedStudent.id ? updatedStudent : s))
         );
-        console.log(updatedStudent);
-        await updateUser(updatedStudent.userName, updatedStudent);
+        
+        toast.success('Student updated successfully');
       } else {
-        const newStudent = {
-          id: String(students.length + 1),
-          fullId: `2023${String(students.length + 1).padStart(3, '0')}`,
+        // Handle creating new student
+        const newUserData = {
           ...formData,
           userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
+          role: 2 // Student role
         };
+        
+        await addNewUser(newUserData);
+        
+        // Create a new student object for the UI
+        const newStudent = {
+          id: String(Date.now()), // Use timestamp for temporary ID
+          fullId: `ST-${Date.now()}`, // Generate a temporary ID
+          userName: newUserData.userName,
+          ...formData,
+        };
+        
+        // Update the UI
         setStudents([...students, newStudent]);
+        toast.success('Student created successfully');
       }
 
+      // Close the form and reset state
       setIsFormOpen(false);
       setSelectedStudent(null);
       setIsEditing(false);
-      toast.success(
-        `Student ${isEditing ? 'updated' : 'created'} successfully`
-      );
+      
+      // Refresh the student list to get the latest data from the server
+      fetchStudents();
     } catch (error) {
-      toast.error(`Error ${isEditing ? 'updating' : 'creating'} student`);
+      toast.error(`Error ${isEditing ? 'updating' : 'creating'} student: ${error.message || 'Unknown error'}`);
       console.error('Error:', error);
     }
   };
@@ -238,7 +259,6 @@ const ManageStudents = () => {
               students={filteredStudents}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onViewSchedule={handleViewSchedule}
             />
           </div>
         </div>

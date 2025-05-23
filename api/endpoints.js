@@ -25,6 +25,10 @@ export const getStudents = async (page = 0, level = null, gender = null, name = 
   return await api.get(`/api/Users?${query}`);
 };
 
+// Function to delete a student by username
+export const deleteStudent = async username => 
+  await api.delete(`/api/Users/${username}`);
+
 // Authentication
 export const login = async (userName, password) =>
   await api.zPost('/api/Authentications', { userName, password });
@@ -100,8 +104,8 @@ export const removeUser = async userId =>
   );
 
 export const getUserById = async id => api.get(`/api/Users/${id}`);
-export const updateUser = async (fullId, userData) =>
-  await api.put(`/api/Users/${fullId}`, userData);
+export const updateUser = async (userName, userData) =>
+  await api.put(`/api/Users/${userName}`, userData);
 export const addUserSchedules = async (userName, schedules) =>
   await api.post(`/api/Users/${userName}/Schedules`, schedules);
 export const removeUserSchedules = async (userName, scheduleIds) =>
