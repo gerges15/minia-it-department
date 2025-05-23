@@ -131,3 +131,49 @@ export const getFileRegistrationData = async contentType =>
 
 // Statistics
 export const getStatistics = async () => await api.get('/api/Statistics');
+
+// teaching staff endpoints
+export const getTeachingStaff = async (page = 0, level = null, gender = null, name = '') => {
+  // Start with role=1 for teaching staff
+  let query = `page=${page}&role=1`;
+  
+  // Add level filter if provided
+  if (level !== null && level !== '') {
+    query += `&level=${level}`;
+  }
+  
+  // Add optional gender filter
+  if (gender !== null && gender !== '') {
+    query += `&gender=${gender}`;
+  }
+  
+  // Add name search if provided
+  if (name) {
+    query += `&name=${name}`;
+  }
+  
+  console.log(`Fetching teaching staff with query: ${query}`);
+  return await api.get(`/api/Users?${query}`);
+};
+
+export const addTeachingStaff = async (staffData) => {
+  // Ensure the role is set to 1 for teaching staff
+  const data = {
+    firstName: staffData.firstName,
+    lastName: staffData.lastName,
+    gender: staffData.gender,
+    role: 1, // Always set to 1 for teaching staff
+    level: staffData.level || 7,
+    dateOfBirth: staffData.dateOfBirth,
+    password: staffData.password, // Take password directly from the form
+    userName: staffData.userName || `${staffData.firstName.toLowerCase()}.${staffData.lastName.toLowerCase()}`
+  };
+  return await api.post('/api/Users', data);
+};
+
+// Delete teaching staff (by role=1)
+export const deleteTeachingStaff = async (usernamesList) => {
+  return await api.delete('/api/Users?role=1', usernamesList);
+};
+
+// Function to delete a student by username

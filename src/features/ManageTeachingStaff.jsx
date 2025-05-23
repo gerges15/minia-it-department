@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiRefreshCw } from 'react-icons/fi';
 import StaffTable from '../components/staff/StaffTable';
 import StaffForm from '../components/staff/StaffForm';
 import StaffFilter from '../components/staff/StaffFilter';
@@ -12,6 +12,9 @@ import {
   getUsers,
   removeUser,
   updateUser,
+  getTeachingStaff,
+  addTeachingStaff,
+  deleteTeachingStaff
 } from '../../api/endpoints';
 
 // TODO: Replace mock data with real API calls
@@ -34,24 +37,64 @@ const ManageTeachingStaff = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editStaffId, setEditStaffId] = useState(null);
 
-  // Fetch staff on component mount
-  useEffect(() => {
-    const fetchStaff = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getUsers(0, 1);
-        setStaff(data.results);
-        console.log(data.results);
-      } catch (err) {
-        setError('Failed to fetch staff members. Please try again later.');
-        console.error('Error fetching staff:', err);
-      } finally {
-        setIsLoading(false);
+  // Fetch staff with optional filters
+  const fetchTeachingStaff = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log(`Fetching teaching staff with filters - Level: ${selectedLevel}, Gender: ${selectedGender}, Search: ${searchTerm}`);
+      const response = await getTeachingStaff(0, selectedLevel, selectedGender, searchTerm);
+      console.log('Teaching staff API response:', response);
+      
+      // Handle different response formats
+      if (response && Array.isArray(response)) {
+        setStaff(response);
+        console.log(`Found ${response.length} staff members`);
+      } else if (response && response.results && Array.isArray(response.results)) {
+        setStaff(response.results);
+        console.log(`Found ${response.results.length} staff members`);
+      } else if (response && Array.isArray(response.data)) {
+        setStaff(response.data);
+        console.log(`Found ${response.data.length} staff members`);
+      } else {
+        console.log('No staff members found or unexpected response format');
+        setStaff([]);
       }
-    };
+    } catch (err) {
+      setError('Failed to fetch staff members. Please try again later.');
+      console.error('Error fetching staff:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Handle search term changes
+  const handleSearchChange = (term) => {
+    setSearchTerm(term);
+    fetchTeachingStaff();
+  };
 
-    fetchStaff();
+  // Handle level filter changes
+  const handleLevelChange = (level) => {
+    setSelectedLevel(level);
+    // fetchTeachingStaff will be triggered by the useEffect
+  };
+  
+  // Handle gender filter changes
+  const handleGenderChange = (gender) => {
+    setSelectedGender(gender);
+    // fetchTeachingStaff will be triggered by the useEffect
+  };
+  
+  // Update when filters change
+  useEffect(() => {
+    fetchTeachingStaff();
+  }, [selectedLevel, selectedGender]);
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    fetchTeachingStaff();
   }, []);
 
   // Modal handlers
@@ -74,7 +117,10 @@ const ManageTeachingStaff = () => {
         const updatedStaff = {
           ...formData,
           role: 1,
-          level: 7,
+          gender: parseInt(formData.gender) || 1,
+          dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0],
+          // Only include password if provided in the form
+          ...(formData.password ? { password: formData.password } : {})
         };
 
         await updateUser(editStaffId, updatedStaff);
@@ -85,21 +131,44 @@ const ManageTeachingStaff = () => {
         );
         toast.success('Staff member updated successfully');
       } else {
-        const newStaff = {
-          ...formData,
-          role: 1,
-          level: 7,
-        };
+        // For new staff members
+        if (!formData.password) {
+          toast.error('Password is required for new staff members');
+          return;
+        }
 
-        await createUser(newStaff);
-        setStaff(prev => [...prev, newStaff]);
-        toast.success('Staff member created successfully');
+        const newStaffData = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          gender: parseInt(formData.gender) || 1,
+          role: 1,
+          level: parseInt(formData.level) || 7,
+          dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0], 
+          password: formData.password, // Use password from form
+          userName: formData.userName || `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`
+        };
+        
+        console.log('Submitting staff data to API:', newStaffData);
+        
+        try {
+          // Use the specific endpoint for adding teaching staff
+          const response = await addTeachingStaff(newStaffData);
+          console.log('API response:', response);
+          
+          toast.success('Staff member created successfully');
+          
+          // Refresh the staff list to show the new member
+          fetchTeachingStaff();
+        } catch (error) {
+          console.error('Failed to add staff member:', error);
+          toast.error('Failed to create staff member');
+        }
       }
       handleCloseModal();
     } catch (err) {
-      setError(
-        `Failed to ${isEditing ? 'update' : 'create'} staff member. Please try again later.`
-      );
+      const errorMsg = `Failed to ${isEditing ? 'update' : 'create'} staff member. Please try again later.`;
+      toast.error(errorMsg);
+      setError(errorMsg);
       console.error('Error saving staff member:', err);
     }
   };
@@ -113,10 +182,13 @@ const ManageTeachingStaff = () => {
   const handleDeleteStaff = async member => {
     if (window.confirm('Are you sure you want to delete this staff member?')) {
       try {
-        // TODO: Replace with real API call
-        // await fetch(`/api/Users/${member.id}`, { method: 'DELETE' });
-        removeUser(member.userName);
-        setStaff(prev => prev.filter(s => s.id !== member.id));
+        // For deleting staff members, we need to use their userName
+        // The API expects an array of usernames
+        await deleteTeachingStaff([member.userName]);
+        
+        // Update the local state by removing the deleted staff member
+        setStaff(prev => prev.filter(s => s.userName !== member.userName));
+        
         toast.success('Staff member deleted successfully');
       } catch (err) {
         setError('Failed to delete staff member. Please try again later.');
@@ -129,54 +201,83 @@ const ManageTeachingStaff = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    toast.info('Processing file...');
+    
     Papa.parse(file, {
       header: true,
       complete: async results => {
         try {
-          // TODO: Replace with real API call
-          // await fetch('/api/Users/bulk', {
-          //   method: 'POST',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify(results.data),
-          // });
+          // Process CSV data and ensure role is set to 1 for teaching staff
+          const staffMembers = results.data
+            .filter(member => member.firstName && member.lastName) // Filter out empty rows
+            .map(member => ({
+              firstName: member.firstName.trim(),
+              lastName: member.lastName.trim(),
+              gender: parseInt(member.gender) || 1,
+              role: 1, // Always set role to 1 for staff
+              level: parseInt(member.level) || 7,
+              dateOfBirth: member.dateOfBirth || new Date().toISOString().split('T')[0],
+              // Use password from CSV if provided, otherwise use a default
+              password: member.password || "123456", 
+              userName: member.userName || `${member.firstName.toLowerCase().trim()}.${member.lastName.toLowerCase().trim()}`
+            }));
 
-          const newStaff = results.data.map((member, index) => ({
-            id: String(staff.length + index + 1),
-            firstName: member.firstName,
-            lastName: member.lastName,
-            gender: parseInt(member.gender),
-            role: 1, // Always set role to 1 for staff
-            level: parseInt(member.level),
-            dateOfBirth: member.dateOfBirth,
-            userName: `${member.firstName.toLowerCase()}.${member.lastName.toLowerCase()}`,
-          }));
-
-          setStaff(prev => [...prev, ...newStaff]);
-          toast.success('Staff members uploaded successfully');
+          console.log(`Processing ${staffMembers.length} staff members from CSV`);
+          
+          // Counter for successful additions
+          let successCount = 0;
+          
+          // For each staff member, call the add function
+          for (let i = 0; i < staffMembers.length; i++) {
+            try {
+              await addTeachingStaff(staffMembers[i]);
+              successCount++;
+            } catch (error) {
+              console.error(`Error adding staff member ${i + 1}:`, error);
+            }
+          }
+          
+          toast.success(`Added ${successCount} of ${staffMembers.length} staff members`);
+          
+          // Refresh the list to show the new members
+          fetchTeachingStaff();
+          
         } catch (err) {
-          setError('Failed to upload staff members. Please try again later.');
-          console.error('Error uploading staff members:', err);
+          toast.error('Failed to process file');
+          console.error('Error processing file:', err);
         }
       },
       error: err => {
-        setError(
-          'Error parsing CSV file. Please check the format and try again.'
-        );
+        toast.error('Error reading CSV file');
         console.error('Error parsing CSV:', err);
       },
     });
+    
+    // Clear the file input
+    event.target.value = "";
   };
 
   // Filter staff based on search and filters
   const filteredStaff = staff.filter(member => {
+    // Safely handle potentially missing fields
+    const firstName = member.firstName || '';
+    const lastName = member.lastName || '';
+    const fullId = member.fullId || member.userName || '';
+    const userName = member.userName || '';
+    const level = member.level !== undefined ? member.level : '';
+    const gender = member.gender !== undefined ? member.gender : '';
+
     const matchesSearch =
-      member.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.fullId.toLowerCase().includes(searchTerm.toLowerCase());
+      firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userName.toLowerCase().includes(searchTerm.toLowerCase());
+      
     const matchesLevel =
-      selectedLevel === '' || member.level === parseInt(selectedLevel);
+      selectedLevel === '' || level === parseInt(selectedLevel);
     const matchesGender =
-      selectedGender === '' || member.gender === parseInt(selectedGender);
+      selectedGender === '' || gender === parseInt(selectedGender);
+      
     return matchesSearch && matchesLevel && matchesGender;
   });
 
@@ -235,6 +336,14 @@ const ManageTeachingStaff = () => {
             </p>
           </div>
           <div className="flex space-x-4">
+            <button
+              onClick={fetchTeachingStaff}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              title="Refresh staff list"
+            >
+              <FiRefreshCw className="h-5 w-5" />
+              Refresh
+            </button>
             <label className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors cursor-pointer">
               <FiPlus className="h-5 w-5" />
               Upload CSV
@@ -257,11 +366,11 @@ const ManageTeachingStaff = () => {
 
         <StaffFilter
           searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+          onSearchChange={handleSearchChange}
           selectedLevel={selectedLevel}
-          onLevelChange={setSelectedLevel}
+          onLevelChange={handleLevelChange}
           selectedGender={selectedGender}
-          onGenderChange={setSelectedGender}
+          onGenderChange={handleGenderChange}
         />
       </div>
 
