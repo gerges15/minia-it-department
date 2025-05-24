@@ -28,13 +28,18 @@ const ManageSchedule = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [entities, setEntities] = useState([]);
   const [filter, setFilter] = useState({
-    day: new Date().getDay(),
+    day: '',  // Changed from new Date().getDay() to show all days initially
     entityId: '',
     timeRange: {
       start: 8,
       end: 18
     }
   });
+
+  // Debug filter changes
+  useEffect(() => {
+    console.log('Filter updated:', filter);
+  }, [filter]);
 
   // Fetch entities (staff members or teaching places)
   const fetchEntities = useCallback(async () => {
@@ -92,23 +97,31 @@ const ManageSchedule = () => {
               console.log(`Fetched ${scheduleData.length} schedules for room ${entity.name || entity.id}`);
             }
             
+            // Process schedule data to ensure all fields are in the correct format
+            const normalizedSchedules = scheduleData.map(s => ({
+              ...s,
+              id: s.id || `schedule-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+              day: typeof s.day === 'number' ? s.day : parseInt(s.day, 10) || 0,
+              startFrom: typeof s.startFrom === 'number' ? s.startFrom : parseInt(s.startFrom, 10) || 8,
+              endTo: typeof s.endTo === 'number' ? s.endTo : parseInt(s.endTo, 10) || 10
+            }));
+            
             return {
-              id: entity.id,
-              name: entity.name || entity.firstName + ' ' + entity.lastName || '',
+              id: viewMode === 'staff' ? entity.userName : entity.id,
+              name: viewMode === 'staff' 
+                ? `${entity.firstName || ''} ${entity.lastName || ''}`.trim() 
+                : entity.name || '',
               userName: entity.userName || '',
               placeId: entity.id || '',
-              schedules: scheduleData.map(s => ({
-                ...s,
-                day: typeof s.day === 'number' ? s.day : parseInt(s.day, 10) || 0,
-                startFrom: typeof s.startFrom === 'number' ? s.startFrom : parseInt(s.startFrom, 10) || 8,
-                endTo: typeof s.endTo === 'number' ? s.endTo : parseInt(s.endTo, 10) || 10
-              }))
+              schedules: normalizedSchedules
             };
           } catch (error) {
             console.error(`Error fetching schedules for ${entity.userName || entity.name || entity.id}:`, error);
             return {
-              id: entity.id,
-              name: entity.name || entity.firstName + ' ' + entity.lastName || '',
+              id: viewMode === 'staff' ? entity.userName : entity.id,
+              name: viewMode === 'staff' 
+                ? `${entity.firstName || ''} ${entity.lastName || ''}`.trim() 
+                : entity.name || '',
               userName: entity.userName || '',
               placeId: entity.id || '',
               schedules: []
@@ -117,8 +130,12 @@ const ManageSchedule = () => {
         })
       );
       
-      setSchedules(entitiesWithSchedules);
-      console.log('Schedules loaded successfully:', entitiesWithSchedules);
+      // Debug schedules data
+      console.log('Schedules loaded successfully, raw data:', entitiesWithSchedules);
+      
+      // Filter out entities with no ID
+      const validSchedules = entitiesWithSchedules.filter(e => e.id);
+      setSchedules(validSchedules);
     } catch (error) {
       console.error('Error fetching schedules:', error);
       toast.error('Failed to fetch schedules. Please try again.');
@@ -144,8 +161,7 @@ const ManageSchedule = () => {
     try {
       console.log(`Adding new ${viewMode} with identifier:`, formData.identifier);
       
-      // In a real implementation, you would add the entity through an API
-      // For now, we'll just add it to the local state if it's not already there
+      // Check if entity already exists
       const existingEntity = entities.find(e => 
         viewMode === 'staff' ? e.userName === formData.identifier : e.id === formData.identifier
       );
@@ -153,11 +169,12 @@ const ManageSchedule = () => {
       if (existingEntity) {
         toast.info(`${viewMode === 'staff' ? 'Staff member' : 'Room'} already exists`);
       } else {
-        // This is a simplified approach - in a real app, you would call an API to create the entity
+        // In a real implementation, you would call an API to create the entity
+        // For now, we'll just add it to the local state
         const newEntity = {
           id: formData.identifier,
           [viewMode === 'staff' ? 'userName' : 'id']: formData.identifier,
-          name: formData.identifier,
+          name: formData.name || formData.identifier,
           schedules: []
         };
         
@@ -173,7 +190,7 @@ const ManageSchedule = () => {
       setIsFormOpen(false);
     } catch (error) {
       console.error(`Error adding ${viewMode}:`, error);
-      toast.error(`Failed to add ${viewMode === 'staff' ? 'staff member' : 'room'}`);
+      toast.error(`Failed to add ${viewMode === 'staff' ? 'staff member' : 'room'}: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }
@@ -198,11 +215,36 @@ const ManageSchedule = () => {
         return;
       }
       
+      // Validate time slots
+      const startTime = parseInt(formData.startFrom, 10);
+      const endTime = parseInt(formData.endTo, 10);
+      const day = parseInt(formData.day, 10);
+      
+      if (startTime >= endTime) {
+        toast.error('End time must be after start time');
+        setIsSaving(false);
+        return;
+      }
+      
+      // Check for time slot conflicts
+      const conflictingSlot = entity.schedules.find(s => 
+        s.day === day && 
+        ((s.startFrom < endTime && s.endTo > startTime) || 
+         (s.startFrom === startTime && s.endTo === endTime)) &&
+        (formData.id ? s.id !== formData.id : true)
+      );
+      
+      if (conflictingSlot) {
+        toast.error('This time slot conflicts with an existing schedule');
+        setIsSaving(false);
+        return;
+      }
+      
       const newTimeSlot = {
-        id: formData.id || `${entityId}-${Date.now()}`,
-        day: parseInt(formData.day, 10),
-        startFrom: parseInt(formData.startFrom, 10),
-        endTo: parseInt(formData.endTo, 10)
+        id: formData.id || `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        day: day,
+        startFrom: startTime,
+        endTo: endTime
       };
       
       console.log('New time slot data:', newTimeSlot);
@@ -211,37 +253,42 @@ const ManageSchedule = () => {
       let response;
       if (viewMode === 'staff') {
         console.log(`Adding schedule for staff ${entity.userName}:`, newTimeSlot);
+        if (formData.id) {
+          // For existing slots, delete first then add (since there's no update endpoint)
+          await removeUserSchedules(entity.userName, [formData.id]);
+        }
         response = await addUserSchedules(entity.userName, [newTimeSlot]);
       } else {
-        console.log(`Adding schedule for room ${entity.id}:`, newTimeSlot);
-        response = await addTeachingPlaceSchedules(entity.id, [newTimeSlot]);
+        console.log(`Adding schedule for room ${entity.placeId}:`, newTimeSlot);
+        if (formData.id) {
+          // For existing slots, delete first then add
+          await removeTeachingPlaceSchedules(entity.placeId, [formData.id]);
+        }
+        response = await addTeachingPlaceSchedules(entity.placeId, [newTimeSlot]);
       }
       
       console.log('API response:', response);
       
-      // Update the local state
+      // Update the local state immediately for better UX
       setSchedules(prevSchedules => {
         return prevSchedules.map(e => {
           if (e.id === entityId) {
-            const existingIndex = e.schedules.findIndex(s => s.id === newTimeSlot.id);
-            if (existingIndex !== -1) {
-              const updatedSchedules = [...e.schedules];
-              updatedSchedules[existingIndex] = newTimeSlot;
-              return { ...e, schedules: updatedSchedules };
-            } else {
-              return { ...e, schedules: [...e.schedules, newTimeSlot] };
-            }
+            const updatedSchedules = [...e.schedules.filter(s => s.id !== formData.id), newTimeSlot];
+            return { ...e, schedules: updatedSchedules };
           }
           return e;
         });
       });
       
-      toast.success('Time slot added successfully');
+      // Also refresh the schedule data from the server to ensure it's up to date
+      fetchSchedules();
+      
+      toast.success(`Time slot ${formData.id ? 'updated' : 'added'} successfully`);
       setIsFormOpen(false);
       
     } catch (error) {
       console.error('Error adding time slot:', error);
-      toast.error(`Failed to add time slot: ${error.message || 'Unknown error'}`);
+      toast.error(`Failed to ${formData.id ? 'update' : 'add'} time slot: ${error.message || 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }
@@ -266,19 +313,19 @@ const ManageSchedule = () => {
           return;
         }
         
-        console.log(`Deleting time slot ${timeSlotId} for ${viewMode} ${entity.userName || entity.id}`);
+        console.log(`Deleting time slot ${timeSlotId} for ${viewMode} ${entity.userName || entity.placeId}`);
         
         // Call the API to delete the time slot
         let response;
         if (viewMode === 'staff') {
           response = await removeUserSchedules(entity.userName, [timeSlotId]);
         } else {
-          response = await removeTeachingPlaceSchedules(entity.id, [timeSlotId]);
+          response = await removeTeachingPlaceSchedules(entity.placeId, [timeSlotId]);
         }
         
         console.log('API response:', response);
         
-        // Update the local state
+        // Update the local state immediately
         setSchedules(prev => prev.map(e => 
           e.id === entityId
             ? { ...e, schedules: e.schedules.filter(s => s.id !== timeSlotId) }
@@ -299,46 +346,72 @@ const ManageSchedule = () => {
   const handleViewModeChange = (mode) => {
     if (mode !== viewMode) {
       setViewMode(mode);
+      // Reset filters when switching views
       setFilter({
-        day: new Date().getDay(),
+        day: '',
         entityId: '',
         timeRange: {
           start: 8,
           end: 18
         }
       });
+      setSchedules([]); // Clear schedules when changing view modes
       // Entities and schedules will be fetched via useEffect when viewMode changes
     }
   };
 
-  // Filter schedules based on selected day, entity, and time range
+  // When entity is selected in the filter, update the day filter to show relevant days
+  useEffect(() => {
+    if (filter.entityId) {
+      const selectedEntity = schedules.find(entity => entity.id === filter.entityId);
+      if (selectedEntity && selectedEntity.schedules.length > 0) {
+        // If we have an entity with schedules, but no day is selected, select the first available day
+        if (filter.day === '' && selectedEntity.schedules.length > 0) {
+          const availableDays = [...new Set(selectedEntity.schedules.map(s => s.day))].sort();
+          if (availableDays.length > 0) {
+            setFilter(prev => ({
+              ...prev,
+              day: availableDays[0]
+            }));
+          }
+        }
+      }
+    }
+  }, [filter.entityId, schedules]);
+
+  // Filter schedules based on selected criteria
   const filteredSchedules = schedules.filter(schedule => {
-    // Filter by entity (staff/room)
-    const matchesEntity = !filter.entityId || schedule.id === filter.entityId;
+    // If no entity matches, exclude it
+    if (filter.entityId && schedule.id !== filter.entityId) return false;
     
-    // If there are no schedules, only apply entity filter
-    if (schedule.schedules.length === 0) {
-      return matchesEntity;
+    // Keep the entity if it passes the entity filter
+    return true;
+  });
+
+  // Calculate all days that have schedules for the selected entity
+  const getAvailableDays = () => {
+    if (filter.entityId) {
+      const entity = schedules.find(e => e.id === filter.entityId);
+      if (entity && entity.schedules.length > 0) {
+        return [...new Set(entity.schedules.map(s => s.day))].sort();
+      }
     }
     
-    // Filter by day
-    const matchesDay = filter.day === '' || 
-      schedule.schedules.some(s => s.day === filter.day);
-    
-    // Filter by time range
-    const matchesTimeRange = schedule.schedules.some(s => 
-      (s.startFrom >= filter.timeRange.start && s.startFrom < filter.timeRange.end) ||
-      (s.endTo > filter.timeRange.start && s.endTo <= filter.timeRange.end) ||
-      (s.startFrom <= filter.timeRange.start && s.endTo >= filter.timeRange.end)
-    );
-
-    return matchesEntity && (filter.day === '' || matchesDay) && 
-           (matchesTimeRange || filter.timeRange.start === 8 && filter.timeRange.end === 18);
-  });
+    // If no specific entity is selected, consider all days available
+    return [...Array(7).keys()]; // Returns [0,1,2,3,4,5,6] for all days
+  };
+  
+  const availableDays = getAvailableDays();
 
   // Handle filter changes
   const handleFilterChange = (newFilter) => {
-    console.log('Filter changed:', newFilter);
+    console.log('Filter change requested:', newFilter);
+    
+    // Convert day to a number if it's a string
+    if (newFilter.day !== undefined && newFilter.day !== '' && typeof newFilter.day === 'string') {
+      newFilter.day = parseInt(newFilter.day, 10);
+    }
+    
     setFilter(prev => ({
       ...prev,
       ...newFilter
@@ -349,7 +422,7 @@ const ManageSchedule = () => {
   const handleResetFilters = () => {
     console.log('Resetting filters');
     setFilter({
-      day: new Date().getDay(),
+      day: '',
       entityId: '',
       timeRange: {
         start: 8,
@@ -357,6 +430,21 @@ const ManageSchedule = () => {
       }
     });
   };
+
+  // Get schedule data ready for display in the calendar
+  const getDisplaySchedules = () => {
+    if (filter.entityId) {
+      return filteredSchedules;
+    }
+    
+    // If no entity is selected, return all schedules
+    return schedules;
+  };
+
+  const displaySchedules = getDisplaySchedules();
+
+  // Check if any operations are in progress
+  const isDataLoading = isLoading || isLoadingSchedules;
 
   return (
     <div className="space-y-6 px-4 sm:px-6 md:px-0">
@@ -381,7 +469,7 @@ const ManageSchedule = () => {
                 setIsFormOpen(true);
               }}
               className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              disabled={isLoading || isLoadingSchedules}
+              disabled={isDataLoading}
             >
               <FiPlus className="h-5 w-5" />
               <span>Add Schedule</span>
@@ -398,7 +486,7 @@ const ManageSchedule = () => {
                   ? 'bg-blue-600 text-white hover:bg-blue-700' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
-              disabled={isLoading || isLoadingSchedules}
+              disabled={isDataLoading}
             >
               <FiUser className="mr-2" />
               Staff Schedules
@@ -410,7 +498,7 @@ const ManageSchedule = () => {
                   ? 'bg-blue-600 text-white hover:bg-blue-700' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
-              disabled={isLoading || isLoadingSchedules}
+              disabled={isDataLoading}
             >
               <FiMapPin className="mr-2" />
               Room Schedules
@@ -425,6 +513,8 @@ const ManageSchedule = () => {
               viewMode={viewMode}
               entities={schedules}
               onReset={handleResetFilters}
+              isDisabled={isDataLoading}
+              availableDays={availableDays}
             />
           </div>
         </div>
@@ -440,7 +530,20 @@ const ManageSchedule = () => {
         </div>
       ) : schedules.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
-          <p className="text-sm sm:text-base">No {viewMode === 'staff' ? 'staff members' : 'rooms'} found. Add one to get started.</p>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-sm sm:text-base">No {viewMode === 'staff' ? 'staff members' : 'rooms'} found.</p>
+            <button
+              onClick={() => {
+                setSelectedSchedule(null);
+                setIsTimeSlotForm(false);
+                setIsFormOpen(true);
+              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+            >
+              <FiPlus className="inline mr-1" />
+              Add {viewMode === 'staff' ? 'Staff Member' : 'Room'}
+            </button>
+          </div>
         </div>
       ) : isLoadingSchedules ? (
         <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
@@ -449,9 +552,17 @@ const ManageSchedule = () => {
             <p className="text-gray-500 text-sm">Loading schedules...</p>
           </div>
         </div>
-      ) : filteredSchedules.length === 0 ? (
+      ) : displaySchedules.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
-          <p className="text-sm sm:text-base">No schedules found matching your criteria.</p>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-sm sm:text-base">No schedules found matching your criteria.</p>
+            <button
+              onClick={handleResetFilters}
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-medium rounded-lg transition-colors shadow-sm"
+            >
+              Reset Filters
+            </button>
+          </div>
         </div>
       ) : (
         <>
@@ -462,12 +573,41 @@ const ManageSchedule = () => {
                 <FiCalendar className="mr-2 text-blue-600" />
                 Calendar View
               </h2>
+              {filter.entityId && (
+                <span className="text-sm text-blue-600">
+                  Showing schedule for: {
+                    displaySchedules.find(e => e.id === filter.entityId)?.name || 
+                    (viewMode === 'staff' ? 'Selected staff' : 'Selected room')
+                  }
+                </span>
+              )}
             </div>
             <div className="overflow-x-auto">
               <ScheduleCalendar
-                schedules={filteredSchedules}
+                schedules={displaySchedules}
                 filter={filter}
-                onScheduleClick={setSelectedSchedule}
+                onScheduleClick={(schedule) => {
+                  if (schedule && schedule.id) {
+                    // For calendar clicks, we need to look up the entity using the schedule
+                    const entityWithSchedule = schedules.find(e => 
+                      e.schedules.some(s => s.id === schedule.id)
+                    );
+                    
+                    if (entityWithSchedule) {
+                      const scheduleDetails = entityWithSchedule.schedules.find(s => s.id === schedule.id);
+                      setSelectedSchedule({
+                        id: entityWithSchedule.id,
+                        ...scheduleDetails
+                      });
+                      setIsTimeSlotForm(true);
+                      setIsFormOpen(true);
+                    }
+                  } else {
+                    setSelectedSchedule(schedule);
+                    setIsTimeSlotForm(true);
+                    setIsFormOpen(true);
+                  }
+                }}
                 viewMode={viewMode}
               />
             </div>
@@ -481,12 +621,12 @@ const ManageSchedule = () => {
                 Schedule List
               </h2>
               <span className="text-sm text-gray-500">
-                {filteredSchedules.length} {viewMode === 'staff' ? 'staff' : 'rooms'} found
+                {displaySchedules.length} {viewMode === 'staff' ? 'staff' : 'rooms'} found
               </span>
             </div>
             <div className="overflow-x-auto">
               <ScheduleList
-                schedules={filteredSchedules}
+                schedules={displaySchedules}
                 viewMode={viewMode}
                 onAdd={() => {
                   setSelectedSchedule(null);
@@ -519,6 +659,8 @@ const ManageSchedule = () => {
         initialData={selectedSchedule}
         viewMode={viewMode}
         isSaving={isSaving}
+        existingEntities={schedules}
+        availableDays={availableDays}
       />
     </div>
   );
