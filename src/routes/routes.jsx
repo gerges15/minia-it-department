@@ -4,7 +4,6 @@ import ForgotPassword from '../../src/features/ForgotPassword';
 import HomePage from '../../src/features/Home/HomePage';
 import Login from '../../src/features/Login/Login';
 import ManageCourses from '../../src/features/ManageCourses';
-import ManageDependencies from '../../src/features/ManageDependencies';
 import ManageSchedule from '../../src/features/ManageSchedule';
 import ManageStudents from '../../src/features/ManageStudents';
 import ManageTeachingPlace from '../../src/features/ManageTeachingPlaces';
@@ -49,10 +48,6 @@ const router = createBrowserRouter([
       {
         path: 'manage-courses',
         element: <ManageCourses />,
-      },
-      {
-        path: 'manage-dependencies',
-        element: <ManageDependencies />,
       },
       {
         path: 'manage-students',

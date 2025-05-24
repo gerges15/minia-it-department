@@ -7,7 +7,6 @@ import {
   FiUsers,
   FiBriefcase,
   FiClock,
-  FiLink,
 } from 'react-icons/fi';
 
 import useSidebarStore from '../../../store/useSidebarStore';
@@ -41,7 +40,6 @@ export default function SidebarNavigation() {
       icon: FiCalendar,
     },
     { name: 'Manage Courses', href: '/manage-courses', icon: FiBook },
-    { name: 'Manage Dependencies', href: '/manage-dependencies', icon: FiLink },
     { name: 'Manage Students', href: '/manage-students', icon: FiUsers },
     {
       name: 'Manage Teaching Staff',
