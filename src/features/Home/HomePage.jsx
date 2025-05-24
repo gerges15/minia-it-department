@@ -1,5 +1,6 @@
 import { FiPlusCircle } from 'react-icons/fi';
 import { Outlet, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import DesktopSidebar from './Sidebar/DesktopSidebar';
 import HomeQuickStats from './HomeQuickStats';
 import HomeWelcomeSection from './HomeWelcomSection';
@@ -10,6 +11,11 @@ import useSidebarStore from '../../store/useSidebarStore';
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
   const currentPath = useLocation().pathname;
+  const navigate = useNavigate();
+
+  const handleQuickAction = (path) => {
+    navigate(path);
+  };
 
   // mokc recent courses added
   const recentCourses = [
@@ -82,16 +88,28 @@ export default function HomePage() {
                 Quick Actions
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-1 gap-4">
-                <button className="p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors w-full">
+                <button
+                  className="p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors w-full cursor-pointer"
+                  onClick={() => handleQuickAction('/manage-courses')}
+                >
                   Add New Course
                 </button>
-                <button className="p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors w-full">
+                <button
+                  className="p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors w-full cursor-pointer"
+                  onClick={() => handleQuickAction('/manage-timetables')}
+                >
                   Schedule Class
                 </button>
-                <button className="p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors w-full">
+                <button
+                  className="p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors w-full cursor-pointer"
+                  onClick={() => handleQuickAction('/manage-students')}
+                >
                   Manage Students
                 </button>
-                <button className="p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors w-full">
+                <button
+                  className="p-4 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors w-full cursor-pointer"
+                  onClick={() => handleQuickAction('/manage-teaching-staff')}
+                >
                   Manage Teaching Staff
                 </button>
               </div>
