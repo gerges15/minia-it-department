@@ -8,7 +8,6 @@ export const deleteTeachingPlace = async id =>
 export const editCourse = async (id, updatedCourseData) =>
   await api.put(`/api/Courses/${id}`, updatedCourseData);
 
-export const deleteCourse = async id => api.delete(`/api/Courses/`, { data: id });
 export const addNewCourse = async newCourse =>
   api.post('/api/Courses', newCourse);
 
@@ -62,7 +61,7 @@ export const getCourses = async (page = 0, level = null, semester = null, name =
 export const updateCourse = async (courseId, courseData) =>
   await api.put(`/api/Courses`, courseData);
 export const deleteCourses = async courseIds =>
-  await api.delete('/api/Courses', courseIds);
+  await api.delete('/api/Courses',courseIds);
 export const addCourseDependencies = async (courseId, coursesId) =>
   await api.post(`/api/Courses/${courseId}/Dependencies`, { coursesId });
 export const removeCourseDependencies = async (courseId, coursesId) =>
