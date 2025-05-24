@@ -8,6 +8,7 @@ import {
   editCourse,
   deleteCourse,
   addNewCourse,
+  getCourseDependencies,
 } from '../../api/endpoints';
 
 export default function ManageCourses() {
@@ -21,6 +22,9 @@ export default function ManageCourses() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editCourseId, setEditCourseId] = useState(null);
+  const [showDependencies, setShowDependencies] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [dependencies, setDependencies] = useState({ parents: [], childs: [] });
 
   // fetch courses on component mount
   useEffect(() => {
@@ -144,6 +148,24 @@ export default function ManageCourses() {
     }
   };
 
+  const handleViewDependencies = async (courseId) => {
+    try {
+      setError(null);
+      const course = courses.find(c => c.id === courseId);
+      setSelectedCourse(course);
+      const response = await getCourseDependencies(courseId);
+      if (response && response.parents && response.childs) {
+        setDependencies(response);
+      } else {
+        setDependencies({ parents: [], childs: [] });
+      }
+      setShowDependencies(true);
+    } catch (err) {
+      setError('Failed to fetch dependencies. Please try again later.');
+      console.error('Error fetching dependencies:', err);
+    }
+  };
+
   // filter courses based on search and filters (course code, course name)
   const filteredCourses = courses.filter(course => {
     const matchesSearch =
@@ -225,11 +247,12 @@ export default function ManageCourses() {
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-        <CourseTable
-          courses={filteredCourses}
-          onEdit={handleEditCourse}
-          onDelete={handleDeleteCourse}
-        />
+            <CourseTable
+              courses={filteredCourses}
+              onEdit={handleEditCourse}
+              onDelete={handleDeleteCourse}
+              onViewDependencies={handleViewDependencies}
+            />
           </div>
         </div>
       )}
@@ -251,6 +274,65 @@ export default function ManageCourses() {
         }
         isEditing={isEditing}
       />
+
+      {/* Dependencies Modal */}
+      {showDependencies && selectedCourse && (
+        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-lg">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Dependencies for {selectedCourse.code}
+              </h3>
+              <button
+                onClick={() => {
+                  setShowDependencies(false);
+                  setSelectedCourse(null);
+                  setDependencies({ parents: [], childs: [] });
+                }}
+                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Prerequisites</h4>
+                {dependencies.parents.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No prerequisites required</p>
+                ) : (
+                  <div className="space-y-2">
+                    {dependencies.parents.map((dep) => (
+                      <div key={dep.id} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="font-medium text-gray-800">{dep.code}</div>
+                        <div className="text-sm text-gray-600">{dep.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Required For</h4>
+                {dependencies.childs.length === 0 ? (
+                  <p className="text-gray-500 text-sm">Not a prerequisite for any course</p>
+                ) : (
+                  <div className="space-y-2">
+                    {dependencies.childs.map((dep) => (
+                      <div key={dep.id} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="font-medium text-gray-800">{dep.code}</div>
+                        <div className="text-sm text-gray-600">{dep.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
