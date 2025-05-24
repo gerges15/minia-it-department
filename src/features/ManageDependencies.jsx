@@ -6,7 +6,7 @@ import {
   addCourseDependencies,
   removeCourseDependencies,
 } from '../../api/endpoints';
-import AddDependenciesModal from '../components/courses/AddDependenciesModal';
+import DependenciesModal from '../components/courses/DependenciesModal';
 
 export default function ManageDependencies() {
   // State management
@@ -329,7 +329,7 @@ export default function ManageDependencies() {
       </div>
 
       {/* Add Dependencies Modal */}
-      <AddDependenciesModal
+      <DependenciesModal
         isOpen={showAddDependency}
         onClose={() => {
           setShowAddDependency(false);
