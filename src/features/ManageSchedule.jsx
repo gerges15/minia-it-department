@@ -28,13 +28,34 @@ const ManageSchedule = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [entities, setEntities] = useState([]);
   const [filter, setFilter] = useState({
-    day: '',  // Changed from new Date().getDay() to show all days initially
+    day: '',  // Show all days initially
     entityId: '',
     timeRange: {
       start: 8,
       end: 18
     }
   });
+
+  // Helper function to get full display name for staff
+  const getStaffDisplayName = (entity) => {
+    if (entity.firstName && entity.lastName) {
+      return `${entity.firstName} ${entity.lastName}`;
+    } else if (entity.name) {
+      return entity.name;
+    } else if (entity.userName) {
+      // Convert username to a more readable format
+      const username = entity.userName;
+      if (username.includes('.')) {
+        // Convert format like "john.doe" to "John Doe"
+        return username
+          .split('.')
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' ');
+      }
+      return username;
+    }
+    return 'Unknown Staff';
+  };
 
   // Debug filter changes
   useEffect(() => {
@@ -109,22 +130,29 @@ const ManageSchedule = () => {
             return {
               id: viewMode === 'staff' ? entity.userName : entity.id,
               name: viewMode === 'staff' 
-                ? `${entity.firstName || ''} ${entity.lastName || ''}`.trim() 
+                ? getStaffDisplayName(entity)
                 : entity.name || '',
+              firstName: entity.firstName || '',
+              lastName: entity.lastName || '',
               userName: entity.userName || '',
               placeId: entity.id || '',
-              schedules: normalizedSchedules
+              schedules: normalizedSchedules,
+              // Store the complete entity data for reference
+              entityData: entity
             };
           } catch (error) {
             console.error(`Error fetching schedules for ${entity.userName || entity.name || entity.id}:`, error);
             return {
               id: viewMode === 'staff' ? entity.userName : entity.id,
               name: viewMode === 'staff' 
-                ? `${entity.firstName || ''} ${entity.lastName || ''}`.trim() 
+                ? getStaffDisplayName(entity)
                 : entity.name || '',
+              firstName: entity.firstName || '',
+              lastName: entity.lastName || '',
               userName: entity.userName || '',
               placeId: entity.id || '',
-              schedules: []
+              schedules: [],
+              entityData: entity
             };
           }
         })
@@ -133,8 +161,17 @@ const ManageSchedule = () => {
       // Debug schedules data
       console.log('Schedules loaded successfully, raw data:', entitiesWithSchedules);
       
-      // Filter out entities with no ID
-      const validSchedules = entitiesWithSchedules.filter(e => e.id);
+      // Filter out entities with no ID and sort by name
+      const validSchedules = entitiesWithSchedules
+        .filter(e => e.id)
+        .sort((a, b) => {
+          if (viewMode === 'staff') {
+            return a.name.localeCompare(b.name);
+          } else {
+            return (a.name || a.placeId || '').localeCompare(b.name || b.placeId || '');
+          }
+        });
+      
       setSchedules(validSchedules);
     } catch (error) {
       console.error('Error fetching schedules:', error);
@@ -175,6 +212,8 @@ const ManageSchedule = () => {
           id: formData.identifier,
           [viewMode === 'staff' ? 'userName' : 'id']: formData.identifier,
           name: formData.name || formData.identifier,
+          firstName: formData.firstName || '',
+          lastName: formData.lastName || '',
           schedules: []
         };
         
@@ -244,7 +283,11 @@ const ManageSchedule = () => {
         id: formData.id || `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         day: day,
         startFrom: startTime,
-        endTo: endTime
+        endTo: endTime,
+        notes: formData.notes || '',
+        courseCode: formData.courseCode || '',
+        location: formData.location || '',
+        teachingAssistant: formData.teachingAssistant || ''
       };
       
       console.log('New time slot data:', newTimeSlot);
@@ -443,8 +486,37 @@ const ManageSchedule = () => {
 
   const displaySchedules = getDisplaySchedules();
 
+  // Get selected entity details
+  const getSelectedEntityDetails = () => {
+    if (!filter.entityId) return null;
+    
+    const entity = schedules.find(e => e.id === filter.entityId);
+    if (!entity) return null;
+    
+    return {
+      name: entity.name,
+      userName: entity.userName,
+      placeId: entity.placeId,
+      firstName: entity.firstName,
+      lastName: entity.lastName,
+      // Count schedules by day
+      scheduleCounts: DAYS.map((day, index) => {
+        return {
+          day: index,
+          dayName: day,
+          count: entity.schedules.filter(s => s.day === index).length
+        };
+      }).filter(d => d.count > 0)
+    };
+  };
+
+  const selectedEntityDetails = getSelectedEntityDetails();
+
   // Check if any operations are in progress
   const isDataLoading = isLoading || isLoadingSchedules;
+
+  // List of days for display
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   return (
     <div className="space-y-6 px-4 sm:px-6 md:px-0">
@@ -519,6 +591,66 @@ const ManageSchedule = () => {
           </div>
         </div>
       </div>
+
+      {/* Selected entity details */}
+      {selectedEntityDetails && (
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+              {viewMode === 'staff' ? 'Staff Details' : 'Room Details'}
+            </h2>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-700 mb-2">
+                  {viewMode === 'staff' ? 'Staff Member' : 'Room'} Information
+                </h3>
+                <div className="space-y-1">
+                  <p className="text-sm">
+                    <span className="font-medium">Name:</span> {selectedEntityDetails.name}
+                  </p>
+                  {viewMode === 'staff' && (
+                    <p className="text-sm">
+                      <span className="font-medium">Username:</span> {selectedEntityDetails.userName}
+                    </p>
+                  )}
+                  {viewMode === 'room' && (
+                    <p className="text-sm">
+                      <span className="font-medium">Room ID:</span> {selectedEntityDetails.placeId}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex-1">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-700 mb-2">Schedule Summary</h3>
+                <div className="space-y-1">
+                  {selectedEntityDetails.scheduleCounts.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedEntityDetails.scheduleCounts.map(dayInfo => (
+                        <span 
+                          key={dayInfo.day}
+                          className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded"
+                          onClick={() => handleFilterChange({ day: dayInfo.day })}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {dayInfo.dayName}: {dayInfo.count} slot{dayInfo.count !== 1 ? 's' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No schedules found</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       {isLoading ? (

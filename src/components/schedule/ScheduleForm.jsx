@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiClock, FiCalendar, FiLoader } from 'react-icons/fi';
+import { FiX, FiClock, FiCalendar, FiLoader, FiBook, FiMapPin, FiFileText } from 'react-icons/fi';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => i);
@@ -11,16 +11,24 @@ const ScheduleForm = ({
   isTimeSlotForm = true, 
   initialData = null, 
   viewMode = 'staff',
-  isSaving = false
+  isSaving = false,
+  existingEntities = [],
+  availableDays = [...Array(7).keys()] // Default to all days
 }) => {
   const [formData, setFormData] = useState(
     isTimeSlotForm ? {
       day: 1, // Monday
       startFrom: 8,
       endTo: 10,
-      entityId: initialData?.id || ''
+      entityId: initialData?.id || '',
+      courseCode: '',
+      location: '',
+      notes: ''
     } : {
-      identifier: ''
+      identifier: '',
+      firstName: '',
+      lastName: '',
+      name: ''
     }
   );
 
@@ -35,29 +43,41 @@ const ScheduleForm = ({
           startFrom: initialData.startFrom || 8,
           endTo: initialData.endTo || 10,
           entityId: initialData.id || '',
-          id: initialData.id || undefined // Keep existing ID for edits
+          id: initialData.id || undefined, // Keep existing ID for edits
+          courseCode: initialData.courseCode || '',
+          location: initialData.location || '',
+          notes: initialData.notes || ''
         });
       } else {
         setFormData({
-          identifier: initialData.identifier || ''
+          identifier: initialData.identifier || '',
+          firstName: initialData.firstName || '',
+          lastName: initialData.lastName || '',
+          name: initialData.name || ''
         });
       }
     } else {
       // Reset to defaults
       if (isTimeSlotForm) {
         setFormData({
-          day: 1,
+          day: availableDays.length > 0 ? availableDays[0] : 1,
           startFrom: 8,
           endTo: 10,
-          entityId: ''
+          entityId: '',
+          courseCode: '',
+          location: '',
+          notes: ''
         });
       } else {
         setFormData({
-          identifier: ''
+          identifier: '',
+          firstName: '',
+          lastName: '',
+          name: ''
         });
       }
     }
-  }, [initialData, isTimeSlotForm, isOpen]);
+  }, [initialData, isTimeSlotForm, isOpen, availableDays]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -73,6 +93,19 @@ const ScheduleForm = ({
     } else {
       if (!formData.identifier.trim()) {
         newErrors.identifier = `${viewMode === 'staff' ? 'Staff ID' : 'Room ID'} is required`;
+      }
+      
+      if (viewMode === 'staff') {
+        if (!formData.firstName.trim()) {
+          newErrors.firstName = 'First name is required';
+        }
+        if (!formData.lastName.trim()) {
+          newErrors.lastName = 'Last name is required';
+        }
+      } else {
+        if (!formData.name.trim()) {
+          newErrors.name = 'Room name is required';
+        }
       }
     }
 
@@ -93,10 +126,16 @@ const ScheduleForm = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Handle number fields versus string fields
+    const numberFields = ['startFrom', 'endTo', 'day'];
+    const newValue = numberFields.includes(name) ? parseInt(value, 10) : value;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'identifier' ? value : parseInt(value, 10)
+      [name]: newValue
     }));
+    
     // Clear error when user makes changes
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
@@ -157,9 +196,9 @@ const ScheduleForm = ({
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                     disabled={isSaving}
                   >
-                    {DAYS.map((day, index) => (
-                      <option key={day} value={index}>
-                        {day}
+                    {availableDays.map(dayIndex => (
+                      <option key={DAYS[dayIndex]} value={dayIndex}>
+                        {DAYS[dayIndex]}
                       </option>
                     ))}
                   </select>
@@ -215,31 +254,164 @@ const ScheduleForm = ({
                   </div>
                 </div>
               </div>
+              
+              {/* Course Code Field */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">
+                  Course Code
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiBook className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    name="courseCode"
+                    value={formData.courseCode}
+                    onChange={handleChange}
+                    placeholder="e.g., CS101"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+              
+              {/* Location Field */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">
+                  Location
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiMapPin className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="e.g., Room 101"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
+              
+              {/* Notes Field */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">
+                  Notes
+                </label>
+                <div className="relative">
+                  <div className="absolute top-3 left-3 flex items-start pointer-events-none">
+                    <FiFileText className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <textarea
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleChange}
+                    placeholder="Additional information..."
+                    rows={3}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                    disabled={isSaving}
+                  />
+                </div>
+              </div>
             </>
           ) : (
-            <div>
-              <label className="block text-gray-700 text-sm font-medium mb-1">
-                {viewMode === 'staff' ? 'Staff ID' : 'Room ID'}
-              </label>
-              <input
-                type="text"
-                name="identifier"
-                value={formData.identifier}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                disabled={isSaving}
-                required
-              />
-              {errors.identifier && (
-                <p className="mt-1 text-sm text-red-600">{errors.identifier}</p>
+            <>
+              {/* Form fields for adding staff or room */}
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-1">
+                  {viewMode === 'staff' ? 'Username' : 'Room ID'}
+                </label>
+                <input
+                  type="text"
+                  name="identifier"
+                  value={formData.identifier}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                  disabled={isSaving}
+                  required
+                  placeholder={viewMode === 'staff' ? 'e.g., john.doe' : 'e.g., LAB101'}
+                />
+                {errors.identifier && (
+                  <p className="mt-1 text-sm text-red-600">{errors.identifier}</p>
+                )}
+              </div>
+              
+              {viewMode === 'staff' ? (
+                <>
+                  {/* First Name and Last Name fields for Staff */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                        disabled={isSaving}
+                        required
+                        placeholder="John"
+                      />
+                      {errors.firstName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                        disabled={isSaving}
+                        required
+                        placeholder="Doe"
+                      />
+                      {errors.lastName && (
+                        <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Room Name field for Rooms */}
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">
+                      Room Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                      disabled={isSaving}
+                      required
+                      placeholder="Computer Lab 101"
+                    />
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                    )}
+                  </div>
+                </>
               )}
-            </div>
+            </>
           )}
 
           {Object.keys(errors).length > 0 && isTimeSlotForm && (
             <div className="bg-red-50 border border-red-200 rounded-md p-3">
               {Object.entries(errors).map(([key, message]) => (
-                key !== 'identifier' && (
+                key !== 'identifier' && key !== 'firstName' && key !== 'lastName' && key !== 'name' && (
                   <p key={key} className="text-sm text-red-600">
                     {message}
                   </p>

@@ -8,7 +8,7 @@ export const deleteTeachingPlace = async id =>
 export const editCourse = async (id, updatedCourseData) =>
   await api.put(`/api/Courses/${id}`, updatedCourseData);
 
-export const deleteCourse = async id => api.delete(`/api/Courses/`, id);
+export const deleteCourse = async id => api.delete(`/api/Courses/`, { data: id });
 export const addNewCourse = async newCourse =>
   api.post('/api/Courses', newCourse);
 

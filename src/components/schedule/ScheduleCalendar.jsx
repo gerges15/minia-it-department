@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiClock, FiUser, FiMapPin } from 'react-icons/fi';
+import { FiClock, FiUser, FiMapPin, FiBook, FiFileText } from 'react-icons/fi';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8 AM to 6 PM
@@ -9,7 +9,7 @@ const ScheduleCalendar = ({ schedules = [], filter, onScheduleClick, viewMode })
   const formatTimeDisplay = (hour) => {
     return hour < 12 ? `${hour}:00 AM` : hour === 12 ? `${hour}:00 PM` : `${hour - 12}:00 PM`;
   };
-  
+
   // Extract all schedule entries across entities for a specific day
   const getScheduleBlocks = (day) => {
     if (!Array.isArray(schedules) || schedules.length === 0) return [];
@@ -31,7 +31,10 @@ const ScheduleCalendar = ({ schedules = [], filter, onScheduleClick, viewMode })
               entityName: selectedEntity.name,
               entityId: selectedEntity.id,
               userName: selectedEntity.userName || '',
-              placeId: selectedEntity.placeId || ''
+              placeId: selectedEntity.placeId || '',
+              courseCode: schedule.courseCode || '',
+              location: schedule.location || '',
+              notes: schedule.notes || ''
             });
           });
       }
@@ -47,7 +50,10 @@ const ScheduleCalendar = ({ schedules = [], filter, onScheduleClick, viewMode })
                 entityName: entity.name,
                 entityId: entity.id,
                 userName: entity.userName || '',
-                placeId: entity.placeId || ''
+                placeId: entity.placeId || '',
+                courseCode: schedule.courseCode || '',
+                location: schedule.location || '',
+                notes: schedule.notes || ''
               });
             });
         }
@@ -91,6 +97,15 @@ const ScheduleCalendar = ({ schedules = [], filter, onScheduleClick, viewMode })
               <FiClock className="mr-1" />
               <span>{formatTimeDisplay(startHour)} - {formatTimeDisplay(endHour)}</span>
             </div>
+            
+            {/* Course Code */}
+            {schedule.courseCode && (
+              <div className="flex items-center text-gray-800 font-medium mb-1">
+                <FiBook className="mr-1" />
+                <span className="truncate">{schedule.courseCode}</span>
+              </div>
+            )}
+            
             <div className="flex items-center text-gray-600">
               {viewMode === 'staff' ? (
                 <>
@@ -104,8 +119,21 @@ const ScheduleCalendar = ({ schedules = [], filter, onScheduleClick, viewMode })
                 </>
               )}
             </div>
+            
+            {/* Location */}
+            {schedule.location && (
+              <div className="mt-1 text-gray-600 text-xs flex items-center">
+                <FiMapPin className="mr-1" />
+                <span className="truncate">{schedule.location}</span>
+              </div>
+            )}
+            
+            {/* Notes */}
             {schedule.notes && (
-              <div className="mt-1 text-gray-500 text-xs truncate">{schedule.notes}</div>
+              <div className="mt-1 text-gray-500 text-xs flex items-center">
+                <FiFileText className="mr-1" />
+                <span className="truncate">{schedule.notes}</span>
+              </div>
             )}
           </div>
         </div>
@@ -117,7 +145,7 @@ const ScheduleCalendar = ({ schedules = [], filter, onScheduleClick, viewMode })
   const hasScheduleData = schedules.some(entity => 
     entity.schedules && entity.schedules.length > 0
   );
-
+  
   return (
     <div className="relative bg-white rounded-lg overflow-hidden">
       {/* Time column */}
@@ -202,6 +230,4 @@ const ScheduleCalendar = ({ schedules = [], filter, onScheduleClick, viewMode })
   );
 };
 
-export default ScheduleCalendar;
-
-
+export default ScheduleCalendar; 

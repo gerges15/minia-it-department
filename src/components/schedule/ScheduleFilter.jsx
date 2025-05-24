@@ -56,52 +56,62 @@ const ScheduleFilter = ({
     const entity = entities.find(e => e.id === entityId);
     if (entity) {
       if (viewMode === 'staff') {
-        return entity.name || entity.userName || 'Unknown';
+        return getStaffDisplayName(entity);
       } else {
         return entity.name || entity.placeId || 'Unknown';
       }
     }
     return 'Selected';
   };
-
-  // Filter entities based on view mode
-  const filteredEntities = entities.filter(entity => {
-    if (viewMode === 'staff') {
-      return !!entity.userName; // Only show staff entities with a username
-    } else {
-      return !!entity.placeId; // Only show room entities with a placeId
+  
+  // Helper function to format staff member names for display
+  const getStaffDisplayName = (entity) => {
+    if (entity.firstName && entity.lastName) {
+      return `${entity.firstName} ${entity.lastName}`;
+    } else if (entity.name) {
+      return entity.name;
+    } else if (entity.userName) {
+      // Convert username to a more readable format
+      const username = entity.userName;
+      if (username.includes('.')) {
+        // Convert format like "john.doe" to "John Doe"
+        return username
+          .split('.')
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' ');
+      }
+      return username;
     }
-  });
+    return 'Unknown Staff';
+  };
+
+  // Filter entities based on view mode and sort them
+  const filteredEntities = entities
+    .filter(entity => {
+      if (viewMode === 'staff') {
+        return !!entity.userName; // Only show staff entities with a username
+      } else {
+        return !!entity.placeId; // Only show room entities with a placeId
+      }
+    })
+    .sort((a, b) => {
+      if (viewMode === 'staff') {
+        // Sort staff by name
+        const nameA = getStaffDisplayName(a).toLowerCase();
+        const nameB = getStaffDisplayName(b).toLowerCase();
+        return nameA.localeCompare(nameB);
+      } else {
+        // Sort rooms by name or ID
+        const roomA = (a.name || a.placeId || '').toLowerCase();
+        const roomB = (b.name || b.placeId || '').toLowerCase();
+        return roomA.localeCompare(roomB);
+      }
+    });
 
   return (
     <div className="w-full">
       <div className="flex flex-col md:flex-row gap-4">
-        {/* Day Filter */}
-        <div className="relative w-full md:w-1/3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Day
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiCalendar className="h-4 w-4 text-gray-500" />
-            </div>
-            <select
-              value={filter.day === '' ? '' : filter.day}
-              onChange={handleDayChange}
-              className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm ${isDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              disabled={isDisabled}
-            >
-              <option value="">All Days</option>
-              {availableDays.map(dayIndex => (
-                <option key={DAYS[dayIndex]} value={dayIndex}>
-                  {DAYS[dayIndex]}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Entity Filter (Staff/Room) */}
+        {/* Entity Filter (Staff/Room) - Moved to first position for better UX */}
         <div className="relative w-full md:w-1/3">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             {viewMode === 'staff' ? 'Teaching Staff' : 'Room'}
@@ -124,9 +134,34 @@ const ScheduleFilter = ({
               {filteredEntities.map(entity => (
                 <option key={entity.id} value={entity.id}>
                   {viewMode === 'staff' 
-                    ? (entity.name || entity.userName) 
+                    ? getStaffDisplayName(entity)
                     : (entity.name || entity.placeId)
                   }
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        {/* Day Filter */}
+        <div className="relative w-full md:w-1/3">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Day
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiCalendar className="h-4 w-4 text-gray-500" />
+            </div>
+            <select
+              value={filter.day === '' ? '' : filter.day}
+              onChange={handleDayChange}
+              className={`w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm ${isDisabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              disabled={isDisabled}
+            >
+              <option value="">All Days</option>
+              {availableDays.map(dayIndex => (
+                <option key={DAYS[dayIndex]} value={dayIndex}>
+                  {DAYS[dayIndex]}
                 </option>
               ))}
             </select>
@@ -161,18 +196,8 @@ const ScheduleFilter = ({
       {/* Active Filters Display */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <span className="text-sm text-gray-500 mr-2">Active filters:</span>
-        {filter.day !== '' ? (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-            <FiCalendar className="mr-1 h-3 w-3" />
-            {DAYS[filter.day]}
-          </span>
-        ) : (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-            <FiCalendar className="mr-1 h-3 w-3" />
-            All Days
-          </span>
-        )}
         
+        {/* Entity Filter Badge - Moved to first position */}
         {filter.entityId ? (
           <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
             {viewMode === 'staff' ? <FiUsers className="mr-1 h-3 w-3" /> : <FiMapPin className="mr-1 h-3 w-3" />}
@@ -186,6 +211,20 @@ const ScheduleFilter = ({
           </span>
         )}
         
+        {/* Day Filter Badge */}
+        {filter.day !== '' ? (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+            <FiCalendar className="mr-1 h-3 w-3" />
+            {DAYS[filter.day]}
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+            <FiCalendar className="mr-1 h-3 w-3" />
+            All Days
+          </span>
+        )}
+        
+        {/* Time Range Badge */}
         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-purple-100 text-purple-800">
           <FiClock className="mr-1 h-3 w-3" />
           {filter.timeRange.start}:00 - {filter.timeRange.end}:00
