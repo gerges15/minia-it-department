@@ -1,11 +1,12 @@
 import React from 'react';
-import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiLink } from 'react-icons/fi';
 import { Course, CourseLevel, CourseSemester, CourseType } from '../../types/course';
 
 interface CourseTableProps {
   courses: Course[];
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
+  onViewDependencies: (id: number) => void;
 }
 
 const getLevelName = (level: CourseLevel): string => {
@@ -20,7 +21,7 @@ const getTypeName = (type: CourseType): string => {
   return CourseType[type];
 };
 
-const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete }) => {
+const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete, onViewDependencies }) => {
   return (
     <div className="overflow-hidden">
       <div className="overflow-x-auto">
@@ -75,6 +76,13 @@ const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete }) 
                 </td>
                 <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
                   <div className="flex gap-4 justify-end">
+                    <button
+                      onClick={() => onViewDependencies(course.id)}
+                      className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors"
+                      aria-label="View dependencies"
+                    >
+                      <FiLink className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </button>
                     <button
                       onClick={() => onEdit(course.id)}
                       className="p-1.5 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded-full transition-colors"
