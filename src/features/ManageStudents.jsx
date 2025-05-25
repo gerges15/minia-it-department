@@ -4,7 +4,6 @@ import StudentForm from '../components/students/StudentForm';
 import StudentFilter from '../components/students/StudentFilter';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Papa from 'papaparse';
 import { FiPlus, FiUpload } from 'react-icons/fi';
 import {
   addNewUser,
@@ -12,15 +11,17 @@ import {
   getUserById,
   updateUser,
   deleteStudent,
+  registerFromFile,
 } from '../../api/endpoints';
 
-// todo: replace mock data with real API calls
-// API endpoints to implement:
-// GET /api/students - Fetch all students
-// POST /api/students - Create new student
-// PUT /api/students/:id - Update student
-// DELETE /api/students/:id - Delete student
-// POST /api/students/bulk - Bulk upload students from CSV
+// Expected Excel xlsx format for student upload:
+// Required columns:
+// - firstName: string (e.g., "John")
+// - lastName: string (e.g., "Doe")
+// - gender: number (0: Male, 1: Female)
+// - level: number (1: First, 2: Second, 3: Third, 4: Fourth)
+// - dateOfBirth: string (format: "YYYY-MM-DD")
+// - password: string (optional, will use default if not provided)
 
 const ManageStudents = () => {
   const [students, setStudents] = useState([]);
@@ -34,7 +35,6 @@ const ManageStudents = () => {
   const [selectedLevel, setSelectedLevel] = useState('1');
   const [selectedGender, setSelectedGender] = useState('');
 
-  // todo: Replace with real API call
   const fetchStudents = async () => {
     try {
       setIsLoading(true);
@@ -71,10 +71,7 @@ const ManageStudents = () => {
     if (window.confirm('Are you sure you want to delete this student?')) {
       try {
         setIsLoading(true);
-        // Use the proper API call to delete the student - pass username as part of an array
         await deleteStudent([student.userName]);
-
-        // Update the UI to remove the deleted student - filter by userName instead of id
         setStudents(students.filter(s => s.userName !== student.userName));
         toast.success('Student deleted successfully');
       } catch (error) {
@@ -88,78 +85,66 @@ const ManageStudents = () => {
 
   const handleSubmit = async formData => {
     try {
-      // Set the correct data types
       formData.level = parseInt(formData.level);
       formData.gender = parseInt(formData.gender);
       formData.role = 2; // Always ensure role is set to Student (2)
 
       if (isEditing) {
-        // Handle updating existing student
         const updatedStudent = {
           ...selectedStudent,
           ...formData,
         };
         
-        // Create update payload - only include password if provided
         const updatePayload = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           gender: formData.gender,
           level: formData.level,
           dateOfBirth: formData.dateOfBirth,
-          role: 2 // Always a student
+          role: 2
         };
 
-        // Add password to the payload only if it's provided
         if (formData.password) {
           updatePayload.password = formData.password;
         }
         
-        // Call the API to update the student - use userName, not fullId
         await updateUser(selectedStudent.userName, updatePayload);
         
-        // Update the UI
         setStudents(
           students.map(s => (s.id === updatedStudent.id ? updatedStudent : s))
         );
         
         toast.success('Student updated successfully');
       } else {
-        // For new students, password is required
         if (!formData.password) {
           toast.error('Password is required for new students');
           return;
         }
 
-        // Handle creating new student
         const newUserData = {
           ...formData,
           userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
-          role: 2, // Student role
-          password: formData.password // Ensure password is included
+          role: 2,
+          password: formData.password
         };
         
         await addNewUser(newUserData);
         
-        // Create a new student object for the UI
         const newStudent = {
-          id: String(Date.now()), // Use timestamp for temporary ID
-          fullId: `ST-${Date.now()}`, // Generate a temporary ID
+          id: String(Date.now()),
+          fullId: `ST-${Date.now()}`,
           userName: newUserData.userName,
           ...formData,
         };
         
-        // Update the UI
         setStudents([...students, newStudent]);
         toast.success('Student created successfully');
       }
 
-      // Close the form and reset state
       setIsFormOpen(false);
       setSelectedStudent(null);
       setIsEditing(false);
       
-      // Refresh the student list to get the latest data from the server
       fetchStudents();
     } catch (error) {
       toast.error(`Error ${isEditing ? 'updating' : 'creating'} student: ${error.message || 'Unknown error'}`);
@@ -173,42 +158,33 @@ const ManageStudents = () => {
     setIsEditing(false);
   };
 
-  const handleFileUpload = event => {
+  const handleFileUpload = async event => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    Papa.parse(file, {
-      header: true,
-      complete: async results => {
-        try {
-          // TODO: Replace with real API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-          const newStudents = results.data.map((student, index) => ({
-            id: String(students.length + index + 1),
-            fullId: `2023${String(students.length + index + 1).padStart(3, '0')}`,
-            firstName: student.firstName,
-            lastName: student.lastName,
-            gender: parseInt(student.gender),
-            role: 1,
-            level: parseInt(student.level),
-            dateOfBirth: student.dateOfBirth,
-            password: student.password || "123456", // Default password if not provided
-            userName: `${student.firstName.toLowerCase()}.${student.lastName.toLowerCase()}`,
-          }));
-
-          setStudents([...students, ...newStudents]);
-          toast.success('Students uploaded successfully');
-        } catch (error) {
-          toast.error('Error uploading students');
-          console.error('Error:', error);
-        }
-      },
-      error: error => {
-        toast.error('Error parsing CSV file');
-        console.error('Error:', error);
-      },
+    console.log('File selected for upload:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
     });
+
+    try {
+      setIsLoading(true);
+      
+      // Call the API endpoint for bulk registration (0 represents ContentType.Students)
+      console.log('Starting file upload process...');
+      await registerFromFile(0, file);
+
+      // Refresh the student list to show newly added students
+      console.log('File upload successful, refreshing student list...');
+      await fetchStudents();
+      toast.success('Students uploaded successfully');
+    } catch (error) {
+      console.error('Error in handleFileUpload:', error);
+      toast.error('Error uploading students: ' + (error.message || 'Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -227,25 +203,26 @@ const ManageStudents = () => {
           <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
             <label className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
               <FiUpload className="h-5 w-5" />
-              <span>Upload CSV</span>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </label>
-          <button
-            onClick={() => {
-              setIsEditing(false);
-              setSelectedStudent(null);
-              setIsFormOpen(true);
-            }}
+              <span>Upload xlsx</span>
+              <input
+                type="file"
+                accept=".xlsx"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={() => {
+                setIsEditing(false);
+                setSelectedStudent(null);
+                setIsFormOpen(true);
+              }}
               className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
+            >
               <FiPlus className="h-5 w-5" />
               <span>Add Student</span>
-          </button>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -257,7 +234,6 @@ const ManageStudents = () => {
         selectedGender={selectedGender}
         setSelectedGender={setSelectedGender}
       />
-      </div>
 
       {/* Table area */}
       {isLoading ? (
@@ -271,11 +247,11 @@ const ManageStudents = () => {
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-        <StudentTable
-          students={filteredStudents}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+            <StudentTable
+              students={filteredStudents}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           </div>
         </div>
       )}
