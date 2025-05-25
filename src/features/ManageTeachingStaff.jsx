@@ -109,15 +109,14 @@ const ManageTeachingStaff = () => {
 
         console.log('Updating staff member:', selectedStaff.userName);
         
-        // Create update payload - exactly like in ManageStudents.jsx
+        // Create update payload
         const updatePayload = {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          gender: parseInt(formData.gender) || 1,
+          gender: parseInt(formData.gender),
           role: 1, // Always set to 1 for teaching staff
           level: parseInt(formData.level) || 7,
           dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0],
-          // Important: Include userName in the update payload
           userName: selectedStaff.userName
         };
 
@@ -128,13 +127,13 @@ const ManageTeachingStaff = () => {
         
         console.log('Update payload:', updatePayload);
         
-        // Call the API to update the user with userName parameter - exactly like in ManageStudents.jsx
+        // Call the API to update the user
         const response = await updateUser(selectedStaff.userName, updatePayload);
         console.log('Update response:', response);
         
         toast.success('Staff member updated successfully');
         
-        // Close the form and refresh the list - like in ManageStudents.jsx
+        // Close the form and refresh the list
         handleCloseModal();
         await fetchTeachingStaff();
       } else {
@@ -152,7 +151,7 @@ const ManageTeachingStaff = () => {
         const newStaffData = {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          gender: parseInt(formData.gender) || 1,
+          gender: parseInt(formData.gender),
           role: 1, // Always set to 1 for teaching staff
           level: parseInt(formData.level) || 7,
           dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0], 
@@ -166,7 +165,7 @@ const ManageTeachingStaff = () => {
         
         toast.success('Staff member created successfully');
         
-        // Close the form and refresh the list - like in ManageStudents.jsx
+        // Close the form and refresh the list
         handleCloseModal();
         await fetchTeachingStaff();
       }

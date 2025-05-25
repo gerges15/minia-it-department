@@ -174,5 +174,4 @@ export const addTeachingStaff = async (staffData) => {
 export const deleteTeachingStaff = async (usernamesList) => {
   return await api.delete('/api/Users?role=1', usernamesList);
 };
-
 // Function to delete a student by username
