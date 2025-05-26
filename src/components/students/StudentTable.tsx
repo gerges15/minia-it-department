@@ -85,14 +85,14 @@ const StudentTable: React.FC<StudentTableProps> = ({
               <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => onEdit(student)}
-                  className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors"
+                  className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors cursor-pointer"
                   aria-label="Edit student"
                 >
                   <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                   <button
                     onClick={() => onDelete(student)}
-                  className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors"
+                  className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors cursor-pointer"
                   aria-label="Delete student"
                   >
                   <FiTrash2 className="h-4 w-4 sm:h-5 sm:w-5" />
