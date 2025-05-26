@@ -9,7 +9,6 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
     gender: 0,
     level: 7, // Default to Teaching Lecturer
     dateOfBirth: '',
-    password: '',
   });
 
   useEffect(() => {
@@ -20,7 +19,6 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
         gender: initialData.gender || 0,
         level: initialData.level || 7,
         dateOfBirth: initialData.dateOfBirth || '',
-        password: '',
       });
     } else {
       // Reset form to defaults for new staff
@@ -30,7 +28,6 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
         gender: 0,
         level: 7,
         dateOfBirth: '',
-        password: '',
       });
     }
   }, [initialData, isOpen]);
@@ -68,7 +65,7 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
           {!isSaving && (
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
               aria-label="Close"
             >
               <FiX className="h-5 w-5" />
@@ -164,34 +161,18 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-              required={!isEditing}
-              placeholder={isEditing ? "Leave empty to keep current password" : ""}
-              disabled={isSaving}
-            />
-          </div>
-
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer"
               disabled={isSaving}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center gap-2 ${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center gap-2 cursor-pointer ${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
               disabled={isSaving}
             >
               {isSaving && <FiLoader className="animate-spin h-4 w-4" />}

@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { FiPlus, FiTrash2, FiClock, FiMapPin, FiCalendar } from 'react-icons/fi';
+import React, { useState, useEffect, useCallback } from 'react';
+import { FiPlus, FiTrash2, FiClock, FiMapPin, FiCalendar, FiSearch, FiCheck } from 'react-icons/fi';
+import { Combobox } from '@headlessui/react';
 import AddScheduleModal from './ScheduleModal';
 import {
   getUserSchedules,
   addUserSchedules,
   removeUserSchedules,
 } from '../../../api/endpoints';
+import debounce from 'lodash/debounce';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8 AM to 6 PM
@@ -16,12 +18,41 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [editingSchedule, setEditingSchedule] = useState(null);
 
+  // Debounced search function
+  const debouncedSetQuery = useCallback(
+    debounce((value) => {
+      setQuery(value);
+    }, 300),
+    []
+  );
+
+  // Handle search input change
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    event.target.value = value; // Update input value immediately
+    debouncedSetQuery(value);
+  };
+
+  // Improved filtering logic
+  const filteredStaff = React.useMemo(() => {
+    if (!query.trim()) {
+      return teachingStaff;
+    }
+    const searchTerm = query.toLowerCase().trim();
+    return teachingStaff.filter((staff) =>
+      `${staff.firstName} ${staff.lastName}`.toLowerCase().includes(searchTerm)
+    );
+  }, [teachingStaff, query]);
+
+  // Improved default selection logic
   useEffect(() => {
     if (teachingStaff.length > 0 && !selectedStaff) {
       setSelectedStaff(teachingStaff[0].userName);
     }
-  }, [teachingStaff, selectedStaff]);
+  }, [teachingStaff]);
 
   useEffect(() => {
     if (selectedStaff) {
@@ -50,6 +81,27 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSlotClick = (day, hour) => {
+    // Find if there's an existing schedule at this slot
+    const existingSchedule = schedules.find(s => 
+      s.day === DAYS.indexOf(day) && 
+      s.startFrom <= hour && 
+      s.endTo > hour
+    );
+
+    if (existingSchedule) {
+      setEditingSchedule(existingSchedule);
+    } else {
+      setEditingSchedule({
+        day: DAYS.indexOf(day),
+        startFrom: hour,
+        endTo: hour + 1,
+        location: ''
+      });
+    }
+    setIsModalOpen(true);
   };
 
   const handleAddSchedule = async (schedule) => {
@@ -97,23 +149,78 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
             <h2 className="text-lg font-medium text-gray-900">Teaching Staff Schedules</h2>
             <p className="text-sm text-gray-500 mt-1">Select a staff member and manage their schedule</p>
           </div>
-          <select
-            value={selectedStaff}
-            onChange={(e) => setSelectedStaff(e.target.value)}
-            className="block w-full sm:w-64 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-            disabled={loading}
-          >
-            <option value="">Select a teaching staff member</option>
-            {teachingStaff.map((staff) => (
-              <option key={staff.userName} value={staff.userName}>
-                {staff.firstName} {staff.lastName}
-              </option>
-            ))}
-          </select>
+          <div className="w-full sm:w-64">
+            <Combobox value={selectedStaff} onChange={setSelectedStaff}>
+              <div className="relative">
+                <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left border border-gray-300 focus-within:border-purple-500 focus-within:ring-1 focus-within:ring-purple-500">
+                  <Combobox.Input
+                    className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
+                    displayValue={(userName) => {
+                      const staff = teachingStaff.find(s => s.userName === userName);
+                      return staff ? `${staff.firstName} ${staff.lastName}` : '';
+                    }}
+                    onChange={handleSearchChange}
+                    placeholder="Search staff..."
+                  />
+                  <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                    <FiSearch className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                  </Combobox.Button>
+                </div>
+                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  {filteredStaff.length === 0 ? (
+                    <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
+                      {query.trim() ? 'Nothing found.' : 'No staff available.'}
+                    </div>
+                  ) : (
+                    filteredStaff.map((staff) => (
+                      <Combobox.Option
+                        key={staff.userName}
+                        className={({ active }) =>
+                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                            active ? 'bg-purple-600 text-white' : 'text-gray-900'
+                          }`
+                        }
+                        value={staff.userName}
+                      >
+                        {({ selected, active }) => (
+                          <>
+                            <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                              {staff.firstName} {staff.lastName}
+                            </span>
+                            {selected ? (
+                              <span
+                                className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                  active ? 'text-white' : 'text-purple-600'
+                                }`}
+                              >
+                                <FiCheck className="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            ) : null}
+                          </>
+                        )}
+                      </Combobox.Option>
+                    ))
+                  )}
+                </Combobox.Options>
+              </div>
+            </Combobox>
+          </div>
         </div>
 
         {selectedStaff && !loading && (
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="flex justify-end p-4 border-b border-gray-200">
+              <button
+                onClick={() => {
+                  setEditingSchedule(null);
+                  setIsModalOpen(true);
+                }}
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 cursor-pointer"
+              >
+                <FiPlus className="mr-2 h-5 w-5" />
+                Add Schedule
+              </button>
+            </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -148,10 +255,11 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
                             <td
                               key={`${day}-${hour}`}
                               rowSpan={rowSpan}
-                              className="relative p-0 border-l border-gray-200 align-top h-full"
+                              className="relative p-0 border-l border-gray-200 align-top h-full cursor-pointer hover:bg-green-50"
                               style={{ minWidth: 120, height: `${rowSpan * 48}px`, padding: 0 }}
+                              onClick={() => handleSlotClick(day, hour)}
                             >
-                              <div className="h-full w-full flex flex-col items-center justify-center bg-green-100 border border-green-300 rounded-lg p-2 text-xs text-green-900 shadow-sm min-h-0" style={{height: '100%'}}>
+                              <div className="h-full w-full flex flex-col items-center justify-center bg-green-100 border border-green-300 rounded-lg p-2 text-xs text-green-900 shadow-sm min-h-0 hover:bg-green-200 transition-colors duration-150" style={{height: '100%'}}>
                                 <span className="font-semibold">
                                   {formatTime(schedule.startFrom)} - {formatTime(schedule.endTo)}
                                 </span>
@@ -169,7 +277,12 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
                           return null;
                         } else {
                           return (
-                            <td key={`${day}-${hour}`} className="px-2 py-1 border-l border-gray-200 bg-gray-50" style={{ minWidth: 120 }}>
+                            <td 
+                              key={`${day}-${hour}`} 
+                              className="px-2 py-1 border-l border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors duration-150" 
+                              style={{ minWidth: 120 }}
+                              onClick={() => handleSlotClick(day, hour)}
+                            >
                               {/* Empty slot */}
                             </td>
                           );
@@ -188,85 +301,54 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700"></div>
           </div>
         )}
-
-        {selectedStaff && !loading && (
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                <FiClock className="mr-2 h-5 w-5 text-purple-600" />
-                Current Schedules
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-              >
-                <FiPlus className="mr-2 h-5 w-5" />
-                Add Schedule
-              </button>
-            </div>
-
-            {schedules.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6">
-                {DAYS.map((day, dayIndex) => {
-                  const daySchedules = schedules.filter(schedule => schedule.day === dayIndex);
-                  if (daySchedules.length === 0) return null;
-                  
-                  return (
-                    <div key={day} className="bg-white shadow rounded-lg p-4 border border-gray-200">
-                      <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                        <FiCalendar className="mr-2 h-5 w-5 text-purple-600" />
-                        {day}
-                      </h4>
-                      <div className="space-y-3">
-                        {daySchedules.map((schedule) => (
-                          <div
-                            key={schedule.id}
-                            className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-purple-300 transition-colors duration-150"
-                          >
-                            <div className="flex items-center space-x-4">
-                              <div className="flex items-center text-sm text-gray-600">
-                                <FiClock className="mr-2 h-4 w-4 text-purple-600" />
-                                {formatTime(schedule.startFrom)} - {formatTime(schedule.endTo)}
-                              </div>
-                              {schedule.location && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <FiMapPin className="mr-2 h-4 w-4 text-purple-600" />
-                                  {schedule.location}
-                                </div>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => handleRemoveSchedules([schedule.id])}
-                              disabled={loading}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50 p-2 rounded-full hover:bg-red-50 transition-colors duration-150"
-                            >
-                              <FiTrash2 className="h-5 w-5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-                <FiMapPin className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-500">No schedules found for this staff member.</p>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* Add Schedule Modal */}
+      {/* Add/Edit Schedule Modal */}
       <AddScheduleModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddSchedule}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingSchedule(null);
+        }}
+        onSubmit={async (schedule) => {
+          setIsModalOpen(false);
+          setLoading(true);
+          setError(null);
+          try {
+            if (editingSchedule?.id) {
+              // Update existing schedule
+              await removeUserSchedules(selectedStaff, [editingSchedule.id]);
+              await addUserSchedules(selectedStaff, [schedule]);
+            } else {
+              // Add new schedule
+              await addUserSchedules(selectedStaff, [schedule]);
+            }
+            await fetchSchedules();
+          } catch (error) {
+            setError('Failed to update schedule. Please try again.');
+          } finally {
+            setLoading(false);
+            setEditingSchedule(null);
+          }
+        }}
+        onDelete={async (scheduleId) => {
+          setIsModalOpen(false);
+          setLoading(true);
+          setError(null);
+          try {
+            await removeUserSchedules(selectedStaff, [scheduleId]);
+            await fetchSchedules();
+          } catch (error) {
+            setError('Failed to delete schedule. Please try again.');
+          } finally {
+            setLoading(false);
+            setEditingSchedule(null);
+          }
+        }}
         days={DAYS}
         hours={HOURS}
         loading={loading}
+        initialSchedule={editingSchedule}
       />
     </div>
   );

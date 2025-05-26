@@ -12,6 +12,7 @@ import {
   getTeachingPlaceSchedules,
   updateTeachingPlace,
 } from '../../api/endpoints';
+import ScheduleViewModal from '../components/TeachingPlaces/ScheduleViewModal';
 
 const ManageTeachingPlaces = () => {
   // State management
@@ -25,6 +26,9 @@ const ManageTeachingPlaces = () => {
   const [editPlaceId, setEditPlaceId] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [selectedPlaceSchedules, setSelectedPlaceSchedules] = useState([]);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
 
   const fetchTeachingPlaces = async () => {
     try {
@@ -146,14 +150,18 @@ const ManageTeachingPlaces = () => {
 
   const handleViewSchedule = async place => {
     try {
+      setIsLoadingSchedules(true);
+      setSelectedPlace(place);
       console.log(`Fetching schedules for place: ${place.name} (ID: ${place.id})`);
       const schedules = await getTeachingPlaceSchedules(place.id);
       console.log('Schedules:', schedules);
-      // Here you could navigate to a schedule view or open a modal with schedules
-      toast.info(`Viewing schedules for ${place.name}`);
+      setSelectedPlaceSchedules(Array.isArray(schedules) ? schedules : schedules.data?.items || []);
+      setIsScheduleModalOpen(true);
     } catch (err) {
       toast.error(`Failed to fetch schedules: ${err.message || 'Unknown error'}`);
       console.error('Error fetching schedules:', err);
+    } finally {
+      setIsLoadingSchedules(false);
     }
   };
 
@@ -185,7 +193,7 @@ const ManageTeachingPlaces = () => {
           <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
             <button
               onClick={handleOpenModal}
-              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
             >
               <FiPlus className="h-5 w-5" />
               <span>Add Place</span>
@@ -230,6 +238,14 @@ const ManageTeachingPlaces = () => {
         initialData={selectedPlace}
         isEditing={isEditing}
         isSaving={isSaving}
+      />
+
+      <ScheduleViewModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        place={selectedPlace}
+        schedules={selectedPlaceSchedules}
+        isLoading={isLoadingSchedules}
       />
     </div>
   );

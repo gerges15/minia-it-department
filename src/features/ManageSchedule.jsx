@@ -77,7 +77,7 @@ export default function ManageSchedule() {
                 )
               }
             >
-              <div className="flex items-center justify-center space-x-2">
+              <div className="flex items-center justify-center space-x-2 cursor-pointer">
                 <FiMapPin className="h-5 w-5" />
                 <span>Teaching Places</span>
               </div>
@@ -93,7 +93,7 @@ export default function ManageSchedule() {
                 )
               }
             >
-              <div className="flex items-center justify-center space-x-2">
+              <div className="flex items-center justify-center space-x-2 cursor-pointer">
                 <FiUsers className="h-5 w-5" />
                 <span>Teaching Staff</span>
               </div>

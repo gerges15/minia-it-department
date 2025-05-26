@@ -3,6 +3,7 @@ import { FiPlus, FiUpload } from 'react-icons/fi';
 import StaffTable from '../components/staff/StaffTable';
 import StaffForm from '../components/staff/StaffForm';
 import StaffFilter from '../components/staff/StaffFilter';
+import StaffPasswordChangeModal from '../components/staff/StaffPasswordChangeModal';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Papa from 'papaparse';
@@ -37,6 +38,7 @@ const ManageTeachingStaff = () => {
   const [editStaffId, setEditStaffId] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Fetch staff with optional filters
   const fetchTeachingStaff = async () => {
@@ -119,11 +121,6 @@ const ManageTeachingStaff = () => {
           dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0],
           userName: selectedStaff.userName
         };
-
-        // Add password to the payload only if it's provided
-        if (formData.password) {
-          updatePayload.password = formData.password;
-        }
         
         console.log('Update payload:', updatePayload);
         
@@ -258,6 +255,36 @@ const ManageTeachingStaff = () => {
     event.target.value = "";
   };
 
+  const handlePasswordChange = (member) => {
+    setSelectedStaff(member);
+    setIsPasswordModalOpen(true);
+  };
+
+  const handlePasswordSubmit = async (newPassword) => {
+    try {
+      setIsLoading(true);
+      const updatePayload = {
+        firstName: selectedStaff.firstName,
+        lastName: selectedStaff.lastName,
+        gender: selectedStaff.gender,
+        level: selectedStaff.level,
+        dateOfBirth: selectedStaff.dateOfBirth,
+        role: 1, // Always set to 1 for teaching staff
+        password: newPassword
+      };
+      
+      await updateUser(selectedStaff.userName, updatePayload);
+      toast.success('Password updated successfully');
+      setIsPasswordModalOpen(false);
+      setSelectedStaff(null);
+    } catch (error) {
+      toast.error('Error updating password: ' + (error.message || 'Unknown error'));
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 px-4 sm:px-6 md:px-0">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -311,7 +338,7 @@ const ManageTeachingStaff = () => {
         </div>
       ) : staff.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
-          <p className="text-sm sm:text-base">No staff members found matching your criteria.</p>
+          <p className="text-sm sm:text-base">No teaching staff found matching your criteria.</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -320,20 +347,35 @@ const ManageTeachingStaff = () => {
               staff={staff}
               onEdit={handleEditStaff}
               onDelete={handleDeleteStaff}
+              onPasswordChange={handlePasswordChange}
             />
           </div>
         </div>
       )}
 
       {/* Staff Form Modal */}
-      <StaffForm
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmitStaff}
-        initialData={selectedStaff}
-        isEditing={isEditing}
-        isSaving={isSaving}
-      />
+      {isModalOpen && (
+        <StaffForm
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleSubmitStaff}
+          initialData={selectedStaff}
+          isEditing={isEditing}
+          isSaving={isSaving}
+        />
+      )}
+
+      {isPasswordModalOpen && (
+        <StaffPasswordChangeModal
+          isOpen={isPasswordModalOpen}
+          onClose={() => {
+            setIsPasswordModalOpen(false);
+            setSelectedStaff(null);
+          }}
+          onSubmit={handlePasswordSubmit}
+          staffName={selectedStaff?.userName}
+        />
+      )}
     </div>
   );
 };

@@ -1,11 +1,12 @@
 import React from 'react';
 import { Student, Gender, Level } from '../../types/student';
-import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiKey } from 'react-icons/fi';
 
 interface StudentTableProps {
   students: Student[];
   onEdit: (student: Student) => void;
   onDelete: (student: Student) => void;
+  onPasswordChange: (student: Student) => void;
 }
 
 const getGenderText = (gender: Gender): string => {
@@ -38,6 +39,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
   students,
   onEdit,
   onDelete,
+  onPasswordChange,
 }) => {
   return (
     <table className="min-w-full divide-y divide-gray-200">
@@ -65,7 +67,7 @@ const StudentTable: React.FC<StudentTableProps> = ({
         </thead>
       <tbody className="bg-white divide-y divide-gray-200">
           {students.map(student => (
-            <tr key={student.id} className="hover:bg-gray-50">
+            <tr key={student.userName || student.id} className="hover:bg-gray-50">
             <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm">
                 {student.userName}
               </td>
@@ -85,14 +87,21 @@ const StudentTable: React.FC<StudentTableProps> = ({
               <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => onEdit(student)}
-                  className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors"
+                  className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors cursor-pointer"
                   aria-label="Edit student"
                 >
                   <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                   <button
+                    onClick={() => onPasswordChange(student)}
+                    className="p-1.5 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded-full transition-colors cursor-pointer"
+                    aria-label="Change password"
+                  >
+                    <FiKey className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
+                  <button
                     onClick={() => onDelete(student)}
-                  className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors"
+                  className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors cursor-pointer"
                   aria-label="Delete student"
                   >
                   <FiTrash2 className="h-4 w-4 sm:h-5 sm:w-5" />

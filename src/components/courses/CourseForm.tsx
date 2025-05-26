@@ -15,7 +15,6 @@ interface CourseFormData {
   semester: number;
   type: CourseType;
   lectureHours: number;
-  dependencies?: string;
 }
 
 interface CourseFormProps {
@@ -41,7 +40,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
     semester: 1,
     type: CourseType.Lecture,
     lectureHours: 2,
-    dependencies: '',
   });
 
   // Reset form when modal opens/closes or initialData changes
@@ -56,7 +54,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
           semester: 1,
           type: CourseType.Lecture,
           lectureHours: 2,
-          dependencies: '',
         }
       );
     }
@@ -102,7 +99,7 @@ const CourseForm: React.FC<CourseFormProps> = ({
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
             aria-label="Close"
           >
             <FiX className="h-5 w-5" />
@@ -234,31 +231,17 @@ const CourseForm: React.FC<CourseFormProps> = ({
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Dependencies (comma-separated course codes)
-            </label>
-            <input
-              type="text"
-              name="dependencies"
-              value={formData.dependencies}
-              onChange={handleChange}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 py-2 px-3 text-sm sm:text-base"
-              placeholder="e.g. CS101, CS102"
-            />
-          </div>
-
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer"
             >
               {isEditing ? 'Update' : 'Create'}
             </button>

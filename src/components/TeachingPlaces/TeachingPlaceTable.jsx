@@ -50,21 +50,21 @@ const TeachingPlaceTable = ({ places, onEdit, onDelete, onViewSchedule }) => {
                     <div className="flex space-x-3">
                       <button
                         onClick={() => onViewSchedule(place)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-900 cursor-pointer"
                         title="View Schedule"
                       >
                         <FiCalendar className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => onEdit(place.id)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 hover:text-blue-900 cursor-pointer"
                         title="Edit"
                       >
                         <FiEdit2 className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => onDelete(place.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900 cursor-pointer"
                         title="Delete"
                       >
                         <FiTrash2 className="h-5 w-5" />
