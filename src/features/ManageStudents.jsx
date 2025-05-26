@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import StudentTable from '../components/students/StudentTable';
 import StudentForm from '../components/students/StudentForm';
 import StudentFilter from '../components/students/StudentFilter';
+import PasswordChangeModal from '../components/students/PasswordChangeModal';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FiPlus, FiUpload } from 'react-icons/fi';
@@ -29,6 +30,7 @@ const ManageStudents = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -187,6 +189,36 @@ const ManageStudents = () => {
     }
   };
 
+  const handlePasswordChange = (student) => {
+    setSelectedStudent(student);
+    setIsPasswordModalOpen(true);
+  };
+
+  const handlePasswordSubmit = async (newPassword) => {
+    try {
+      setIsLoading(true);
+      const updatePayload = {
+        firstName: selectedStudent.firstName,
+        lastName: selectedStudent.lastName,
+        gender: selectedStudent.gender,
+        level: selectedStudent.level,
+        dateOfBirth: selectedStudent.dateOfBirth,
+        role: selectedStudent.role,
+        password: newPassword
+      };
+      
+      await updateUser(selectedStudent.userName, updatePayload);
+      toast.success('Password updated successfully');
+      setIsPasswordModalOpen(false);
+      setSelectedStudent(null);
+    } catch (error) {
+      toast.error('Error updating password: ' + (error.message || 'Unknown error'));
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 px-4 sm:px-6 md:px-0">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -251,6 +283,7 @@ const ManageStudents = () => {
               students={filteredStudents}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onPasswordChange={handlePasswordChange}
             />
           </div>
         </div>
@@ -267,13 +300,24 @@ const ManageStudents = () => {
                   role: selectedStudent.role,
                   level: selectedStudent.level,
                   dateOfBirth: selectedStudent.dateOfBirth,
-                  password: '', // Password is not stored in the student object
                 }
               : undefined
           }
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isEditing={isEditing}
+        />
+      )}
+
+      {isPasswordModalOpen && (
+        <PasswordChangeModal
+          isOpen={isPasswordModalOpen}
+          onClose={() => {
+            setIsPasswordModalOpen(false);
+            setSelectedStudent(null);
+          }}
+          onSubmit={handlePasswordSubmit}
+          studentName={selectedStudent?.userName}
         />
       )}
     </div>

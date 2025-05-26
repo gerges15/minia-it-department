@@ -1,8 +1,8 @@
 import React from 'react';
-import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiKey } from 'react-icons/fi';
 import { STAFF_LEVELS, GENDER_OPTIONS } from '../../types/staff';
 
-const StaffTable = ({ staff, onEdit, onDelete }) => {
+const StaffTable = ({ staff, onEdit, onDelete, onPasswordChange }) => {
   // Helper function to safely get values
   const getGenderLabel = (gender) => {
     return GENDER_OPTIONS[gender] || 'Unknown';
@@ -72,6 +72,13 @@ const StaffTable = ({ staff, onEdit, onDelete }) => {
                     aria-label="Edit staff member"
                   >
                     <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
+                  <button
+                    onClick={() => onPasswordChange(member)}
+                    className="p-1.5 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded-full transition-colors cursor-pointer"
+                    aria-label="Change password"
+                  >
+                    <FiKey className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                   <button
                     onClick={() => onDelete(member)}

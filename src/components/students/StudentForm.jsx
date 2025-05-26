@@ -137,20 +137,21 @@ const StudentForm = ({
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-              required={!isEditing}
-              placeholder={isEditing ? "Leave empty to keep current password" : ""}
-            />
-          </div>
+          {!isEditing && (
+            <div>
+              <label className="block text-gray-700 text-sm font-medium mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                required
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-4">
             <button
