@@ -9,7 +9,6 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
     gender: 0,
     level: 7, // Default to Teaching Lecturer
     dateOfBirth: '',
-    password: '',
   });
 
   useEffect(() => {
@@ -20,7 +19,6 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
         gender: initialData.gender || 0,
         level: initialData.level || 7,
         dateOfBirth: initialData.dateOfBirth || '',
-        password: '',
       });
     } else {
       // Reset form to defaults for new staff
@@ -30,7 +28,6 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
         gender: 0,
         level: 7,
         dateOfBirth: '',
-        password: '',
       });
     }
   }, [initialData, isOpen]);
@@ -160,22 +157,6 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               required
-              disabled={isSaving}
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-              required={!isEditing}
-              placeholder={isEditing ? "Leave empty to keep current password" : ""}
               disabled={isSaving}
             />
           </div>

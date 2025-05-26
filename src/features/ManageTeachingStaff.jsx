@@ -121,11 +121,6 @@ const ManageTeachingStaff = () => {
           dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0],
           userName: selectedStaff.userName
         };
-
-        // Add password to the payload only if it's provided
-        if (formData.password) {
-          updatePayload.password = formData.password;
-        }
         
         console.log('Update payload:', updatePayload);
         

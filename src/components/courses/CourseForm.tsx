@@ -15,7 +15,6 @@ interface CourseFormData {
   semester: number;
   type: CourseType;
   lectureHours: number;
-  dependencies?: string;
 }
 
 interface CourseFormProps {
@@ -41,7 +40,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
     semester: 1,
     type: CourseType.Lecture,
     lectureHours: 2,
-    dependencies: '',
   });
 
   // Reset form when modal opens/closes or initialData changes
@@ -56,7 +54,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
           semester: 1,
           type: CourseType.Lecture,
           lectureHours: 2,
-          dependencies: '',
         }
       );
     }
@@ -232,20 +229,6 @@ const CourseForm: React.FC<CourseFormProps> = ({
               <option value={CourseType.Lecture}>Lecture</option>
               <option value={CourseType.Practical}>Practical</option>
             </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Dependencies (comma-separated course codes)
-            </label>
-            <input
-              type="text"
-              name="dependencies"
-              value={formData.dependencies}
-              onChange={handleChange}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 py-2 px-3 text-sm sm:text-base"
-              placeholder="e.g. CS101, CS102"
-            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
