@@ -68,14 +68,14 @@ const StaffTable = ({ staff, onEdit, onDelete }) => {
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={() => onEdit(member)}
-                    className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors"
+                    className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors cursor-pointer"
                     aria-label="Edit staff member"
                   >
                     <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                   <button
                     onClick={() => onDelete(member)}
-                    className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors"
+                    className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors cursor-pointer"
                     aria-label="Delete staff member"
                   >
                     <FiTrash2 className="h-4 w-4 sm:h-5 sm:w-5" />

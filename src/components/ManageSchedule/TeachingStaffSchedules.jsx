@@ -198,7 +198,7 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
               </h3>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 cursor-pointer"
               >
                 <FiPlus className="mr-2 h-5 w-5" />
                 Add Schedule

@@ -282,7 +282,7 @@ export default function ManageDependencies() {
             {selectedCourse && (
               <button
                 onClick={() => setShowAddDependency(true)}
-                className="flex items-center px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="flex items-center px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors cursor-pointer"
               >
                 <FiPlus className="mr-2" />
                 Add Dependencies

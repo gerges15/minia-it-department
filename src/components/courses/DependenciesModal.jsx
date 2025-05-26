@@ -73,7 +73,7 @@ export default function DependenciesModal({
           <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer"
             >
               Cancel
             </button>
@@ -83,7 +83,7 @@ export default function DependenciesModal({
               className={`px-4 py-2 rounded-lg ${
                 selectedDependencies.length === 0
                   ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-purple-600 hover:bg-purple-700 text-white'
+                  : 'bg-purple-600 hover:bg-purple-700 text-white cursor-pointer'
               }`}
             >
               Add Selected

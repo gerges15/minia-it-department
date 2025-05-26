@@ -78,21 +78,21 @@ const CourseTable: React.FC<CourseTableProps> = ({ courses, onEdit, onDelete, on
                   <div className="flex gap-4 justify-end">
                     <button
                       onClick={() => onViewDependencies(course.id)}
-                      className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors"
+                      className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors cursor-pointer"
                       aria-label="View dependencies"
                     >
                       <FiLink className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                     <button
                       onClick={() => onEdit(course.id)}
-                      className="p-1.5 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded-full transition-colors"
+                      className="p-1.5 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded-full transition-colors cursor-pointer"
                       aria-label="Edit course"
                     >
                       <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                     </button>
                     <button
                       onClick={() => onDelete(course.id)}
-                      className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors"
+                      className="p-1.5 text-red-600 hover:text-red-900 hover:bg-red-100 rounded-full transition-colors cursor-pointer"
                       aria-label="Delete course"
                     >
                       <FiTrash2 className="h-4 w-4 sm:h-5 sm:w-5" />

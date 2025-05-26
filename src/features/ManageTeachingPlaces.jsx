@@ -185,7 +185,7 @@ const ManageTeachingPlaces = () => {
           <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
             <button
               onClick={handleOpenModal}
-              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
             >
               <FiPlus className="h-5 w-5" />
               <span>Add Place</span>
