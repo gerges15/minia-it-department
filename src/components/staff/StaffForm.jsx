@@ -2,13 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { FiX, FiLoader } from 'react-icons/fi';
 import { STAFF_LEVELS, GENDER_OPTIONS } from '../../types/staff';
 
-const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving = false }) => {
+const StaffForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  isEditing,
+  isSaving = false,
+}) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     gender: 0,
     level: 7, // Default to Teaching Lecturer
     dateOfBirth: '',
+    password: '',
   });
 
   useEffect(() => {
@@ -50,11 +58,11 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4"
       onClick={isSaving ? null : onClose}
     >
-      <div 
+      <div
         className="bg-white p-4 sm:p-6 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
@@ -160,6 +168,22 @@ const StaffForm = ({ isOpen, onClose, onSubmit, initialData, isEditing, isSaving
               disabled={isSaving}
             />
           </div>
+
+          {!isEditing && (
+            <div>
+              <label className="block text-gray-700 text-sm font-medium mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                required
+              />
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-4">
             <button
