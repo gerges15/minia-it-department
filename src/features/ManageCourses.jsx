@@ -12,6 +12,7 @@ import {
 } from '../../api/endpoints';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useRecentCoursesStore from '../store/useRecentCoursesStore';
 
 export default function ManageCourses() {
   // State management
@@ -28,6 +29,7 @@ export default function ManageCourses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [dependencies, setDependencies] = useState({ parents: [], childs: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addOrUpdateCourse } = useRecentCoursesStore();
 
   // fetch courses on component mount and when filters change
   useEffect(() => {
@@ -111,14 +113,19 @@ export default function ManageCourses() {
         
         // Call the API to update the course
         await editCourse(editCourseId, updateData);
-        toast.success('Course updated successfully!');
         
-        // Update local state
+        // Update local state and recent courses store
+        const updatedCourse = { ...updateData, updatedAt: new Date().toISOString() };
         setCourses(prev =>
           prev.map(course =>
-            course.id === editCourseId ? {...course, ...updateData} : course
+            course.id === editCourseId ? updatedCourse : course
           )
         );
+        
+        // Add to recent courses
+        addOrUpdateCourse(updatedCourse);
+        
+        toast.success('Course updated successfully!');
       } else {
         // Prepare data for new course
         const newCourseData = {
@@ -133,10 +140,20 @@ export default function ManageCourses() {
         
         // Call API to add new course
         const response = await addNewCourse(newCourseData);
-        toast.success('Course added successfully!');
         
-        // Refresh courses to get the newly added one with server-generated ID
-        fetchCourses();
+        // Create the new course object with server response and current timestamp
+        const newCourse = {
+          ...response,
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Add to recent courses store
+        addOrUpdateCourse(newCourse);
+        
+        // Update local state
+        setCourses(prev => [...prev, newCourse]);
+        
+        toast.success('Course added successfully!');
       }
       
       handleCloseModal();

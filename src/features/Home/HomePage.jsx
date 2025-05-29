@@ -1,52 +1,40 @@
 import { FiPlusCircle } from 'react-icons/fi';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import DesktopSidebar from './Sidebar/DesktopSidebar';
 import HomeQuickStats from './HomeQuickStats';
 import HomeWelcomeSection from './HomeWelcomSection';
 import MobileNavToggle from './MobileNavToggle';
 import MobileSidebar from './Sidebar/MobileSidebar';
 import useSidebarStore from '../../store/useSidebarStore';
-import { getCourses } from '../../../api/endpoints';
+import useRecentCoursesStore from '../../store/useRecentCoursesStore';
 
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
+  const { recentCourses } = useRecentCoursesStore();
   const currentPath = useLocation().pathname;
   const navigate = useNavigate();
-  const [recentCourses, setRecentCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadRecentCourses = async () => {
-      console.log('Starting to load recent courses...');
-      setIsLoading(true);
-      try {
-        const response = await getCourses(0);
-        console.log('Courses received in component:', response);
-        setRecentCourses(response.results || []);
-      } catch (error) {
-        console.error('Error in component while loading courses:', error);
-      } finally {
-        setIsLoading(false);
-        console.log('Loading state updated:', { isLoading: false, coursesCount: recentCourses.length });
-      }
-    };
-
-    loadRecentCourses();
+    // Just a short loading state for UI smoothness
+    setIsLoading(true);
+    setTimeout(() => setIsLoading(false), 500);
   }, []);
 
-  // Log state changes
-  useEffect(() => {
-    console.log('Recent courses state updated:', {
-      isLoading,
-      coursesCount: recentCourses.length,
-      courses: recentCourses
-    });
-  }, [recentCourses, isLoading]);
-
-  const handleQuickAction = (path) => {
+  const handleQuickAction = path => {
     navigate(path);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
   };
 
   const renderMainPage = () => {
@@ -64,8 +52,8 @@ export default function HomePage() {
                 <h2 className="text-lg font-semibold text-gray-800">
                   Recently Added / Updated Courses
                 </h2>
-                <FiPlusCircle 
-                  className="h-5 w-5 text-gray-400 cursor-pointer hover:text-gray-600" 
+                <FiPlusCircle
+                  className="h-5 w-5 text-gray-400 cursor-pointer hover:text-gray-600"
                   onClick={() => handleQuickAction('/manage-courses')}
                 />
               </div>
@@ -77,28 +65,29 @@ export default function HomePage() {
                   </div>
                 ) : recentCourses.length > 0 ? (
                   recentCourses.map((course, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">
+                    <div
+                      key={course.id || index}
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                      onClick={() => handleQuickAction('/manage-courses')}
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">
                           {course.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
+                        </p>
+                        <p className="text-sm text-gray-500">
                           Code: {course.code}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                          {new Date(course.updatedAt).toLocaleDateString()}
-                      </p>
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">
+                          Updated {formatDate(course.updatedAt)}
+                        </p>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-4 text-gray-500">
-                    No courses found
+                    No recent courses found
                   </div>
                 )}
               </div>
