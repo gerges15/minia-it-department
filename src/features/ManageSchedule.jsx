@@ -43,22 +43,6 @@ export default function ManageSchedule() {
     fetchData();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-600 text-lg">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="px-4 py-6 sm:px-0">
       <div className="max-w-7xl mx-auto">
@@ -100,12 +84,24 @@ export default function ManageSchedule() {
             </Tab>
           </Tab.List>
           <Tab.Panels className="mt-6">
-            <Tab.Panel>
-              <TeachingPlaceSchedules teachingPlaces={teachingPlaces} />
-            </Tab.Panel>
-            <Tab.Panel>
-              <TeachingStaffSchedules teachingStaff={teachingStaff} />
-            </Tab.Panel>
+            {loading ? (
+              <div className="flex items-center justify-center h-64 bg-white rounded-lg shadow-sm">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-64 bg-white rounded-lg shadow-sm">
+                <div className="text-red-600 text-lg">{error}</div>
+              </div>
+            ) : (
+              <>
+                <Tab.Panel>
+                  <TeachingPlaceSchedules teachingPlaces={teachingPlaces} />
+                </Tab.Panel>
+                <Tab.Panel>
+                  <TeachingStaffSchedules teachingStaff={teachingStaff} />
+                </Tab.Panel>
+              </>
+            )}
           </Tab.Panels>
         </Tab.Group>
       </div>
