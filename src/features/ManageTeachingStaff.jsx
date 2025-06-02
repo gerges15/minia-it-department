@@ -353,23 +353,23 @@ const ManageTeachingStaff = () => {
   };
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 md:px-0">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-4 md:px-6 lg:px-8">
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+      <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
               Manage Teaching Staff
             </h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">
+            <p className="text-gray-600 mt-1 text-xs sm:text-sm md:text-base">
               View and manage all teaching staff in the department
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
-            <label className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-              <FiUpload className="h-5 w-5" />
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-3">
+            <label className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+              <FiUpload className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Upload CSV</span>
               <input
                 type="file"
@@ -380,50 +380,56 @@ const ManageTeachingStaff = () => {
             </label>
             <button
               onClick={handleOpenModal}
-              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             >
-              <FiPlus className="h-5 w-5" />
+              <FiPlus className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Add Staff</span>
             </button>
           </div>
         </div>
 
-        <StaffFilter
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          selectedLevel={selectedLevel}
-          onLevelChange={setSelectedLevel}
-          selectedGender={selectedGender}
-          onGenderChange={setSelectedGender}
-        />
+        <div className="mt-4">
+          <StaffFilter
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedLevel={selectedLevel}
+            onLevelChange={setSelectedLevel}
+            selectedGender={selectedGender}
+            onGenderChange={setSelectedGender}
+          />
+        </div>
       </div>
 
       {/* Table area */}
       {isLoading ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
-          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-blue-600"></div>
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 flex items-center justify-center h-32 sm:h-48 md:h-64">
+          <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 border-t-2 border-b-2 border-blue-600"></div>
         </div>
       ) : staff.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
-          <p className="text-sm sm:text-base">
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 text-center text-gray-500 h-32 sm:h-48 md:h-64 flex items-center justify-center">
+          <p className="text-xs sm:text-sm md:text-base">
             No teaching staff found matching your criteria.
           </p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <StaffTable
-              staff={staff}
-              onEdit={handleEditStaff}
-              onDelete={handleDeleteStaff}
-              onPasswordChange={handlePasswordChange}
-              onViewSchedule={handleViewSchedule}
-            />
+          <div className="overflow-x-auto -mx-2 sm:mx-0">
+            <div className="min-w-full inline-block align-middle">
+              <div className="overflow-hidden">
+                <StaffTable
+                  staff={staff}
+                  onEdit={handleEditStaff}
+                  onDelete={handleDeleteStaff}
+                  onPasswordChange={handlePasswordChange}
+                  onViewSchedule={handleViewSchedule}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Staff Form Modal */}
+      {/* Modals */}
       {isModalOpen && (
         <StaffForm
           isOpen={isModalOpen}
