@@ -94,12 +94,12 @@ export default function ManageSchedule() {
               </div>
             ) : (
               <>
-                <Tab.Panel>
-                  <TeachingPlaceSchedules teachingPlaces={teachingPlaces} />
-                </Tab.Panel>
-                <Tab.Panel>
-                  <TeachingStaffSchedules teachingStaff={teachingStaff} />
-                </Tab.Panel>
+            <Tab.Panel>
+              <TeachingPlaceSchedules teachingPlaces={teachingPlaces} />
+            </Tab.Panel>
+            <Tab.Panel>
+              <TeachingStaffSchedules teachingStaff={teachingStaff} />
+            </Tab.Panel>
               </>
             )}
           </Tab.Panels>

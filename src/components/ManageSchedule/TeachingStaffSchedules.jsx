@@ -399,7 +399,7 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
           setLoading(true);
           setError(null);
           try {
-            await remove([scheduleId]);
+            await removeSchedules([scheduleId]);
             await fetchSchedules();
           } catch (error) {
             setError('Failed to delete schedule. Please try again.');

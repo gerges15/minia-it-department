@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiUpload } from 'react-icons/fi';
+import { FiPlus, FiUpload, FiCalendar } from 'react-icons/fi';
 import StaffTable from '../components/staff/StaffTable';
 import StaffForm from '../components/staff/StaffForm';
 import StaffFilter from '../components/staff/StaffFilter';
@@ -7,6 +7,7 @@ import StaffPasswordChangeModal from '../components/staff/StaffPasswordChangeMod
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Papa from 'papaparse';
+import ScheduleViewModal from '../components/staff/StaffViewModal';
 import {
   createUser,
   getUsers,
@@ -14,7 +15,8 @@ import {
   updateUser,
   getTeachingStaff,
   addTeachingStaff,
-  deleteTeachingStaff
+  deleteTeachingStaff,
+  getUserSchedules,
 } from '../../api/endpoints';
 
 // TODO: Replace mock data with real API calls
@@ -38,30 +40,50 @@ const ManageTeachingStaff = () => {
   const [editStaffId, setEditStaffId] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  //View Schedule
+  const [selectedStaffSchedules, setSelectedStaffSchedules] = useState([]);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isLoadingSchedules, setIsLoadingSchedules] = useState(false);
 
   // Fetch staff with optional filters
   const fetchTeachingStaff = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      console.log(`Fetching teaching staff with filters - Level: ${selectedLevel}, Gender: ${selectedGender}, Search: ${searchTerm}`);
-      const response = await getTeachingStaff(0, selectedLevel, selectedGender, searchTerm);
+
+      console.log(
+        `Fetching teaching staff with filters - Level: ${selectedLevel}, Gender: ${selectedGender}, Search: ${searchTerm}`
+      );
+      const response = await getTeachingStaff(
+        0,
+        selectedLevel,
+        selectedGender,
+        searchTerm
+      );
       console.log('Teaching staff API response:', response);
-      
+
       // Handle different response formats
       if (response && Array.isArray(response)) {
         setStaff(response);
         console.log(`Loaded ${response.length} staff members`);
-      } else if (response && response.results && Array.isArray(response.results)) {
+      } else if (
+        response &&
+        response.results &&
+        Array.isArray(response.results)
+      ) {
         setStaff(response.results);
-        console.log(`Loaded ${response.results.length} staff members from results`);
+        console.log(
+          `Loaded ${response.results.length} staff members from results`
+        );
       } else if (response && Array.isArray(response.data)) {
         setStaff(response.data);
         console.log(`Loaded ${response.data.length} staff members from data`);
       } else {
-        console.log('No staff members found or unexpected response format:', response);
+        console.log(
+          'No staff members found or unexpected response format:',
+          response
+        );
         setStaff([]);
       }
     } catch (err) {
@@ -73,7 +95,7 @@ const ManageTeachingStaff = () => {
       setIsLoading(false);
     }
   };
-  
+
   // Update when filters change
   useEffect(() => {
     fetchTeachingStaff();
@@ -97,7 +119,7 @@ const ManageTeachingStaff = () => {
   // Staff CRUD operations
   const handleSubmitStaff = async formData => {
     if (isSaving) return; // Prevent multiple submissions
-    
+
     setIsSaving(true);
     try {
       if (isEditing && selectedStaff) {
@@ -110,7 +132,7 @@ const ManageTeachingStaff = () => {
         }
 
         console.log('Updating staff member:', selectedStaff.userName);
-        
+
         // Create update payload
         const updatePayload = {
           firstName: formData.firstName,
@@ -118,18 +140,22 @@ const ManageTeachingStaff = () => {
           gender: parseInt(formData.gender),
           role: 1, // Always set to 1 for teaching staff
           level: parseInt(formData.level) || 7,
-          dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0],
-          userName: selectedStaff.userName
+          dateOfBirth:
+            formData.dateOfBirth || new Date().toISOString().split('T')[0],
+          userName: selectedStaff.userName,
         };
-        
+
         console.log('Update payload:', updatePayload);
-        
+
         // Call the API to update the user
-        const response = await updateUser(selectedStaff.userName, updatePayload);
+        const response = await updateUser(
+          selectedStaff.userName,
+          updatePayload
+        );
         console.log('Update response:', response);
-        
+
         toast.success('Staff member updated successfully');
-        
+
         // Close the form and refresh the list
         handleCloseModal();
         await fetchTeachingStaff();
@@ -151,17 +177,18 @@ const ManageTeachingStaff = () => {
           gender: parseInt(formData.gender),
           role: 1, // Always set to 1 for teaching staff
           level: parseInt(formData.level) || 7,
-          dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0], 
+          dateOfBirth:
+            formData.dateOfBirth || new Date().toISOString().split('T')[0],
           password: formData.password,
-          userName: userName
+          userName: userName,
         };
-        
+
         console.log('Creating new staff with data:', newStaffData);
         const response = await addTeachingStaff(newStaffData);
         console.log('Create response:', response);
-        
+
         toast.success('Staff member created successfully');
-        
+
         // Close the form and refresh the list
         handleCloseModal();
         await fetchTeachingStaff();
@@ -202,7 +229,7 @@ const ManageTeachingStaff = () => {
     if (!file) return;
 
     toast.info('Processing file...');
-    
+
     Papa.parse(file, {
       header: true,
       complete: async results => {
@@ -216,17 +243,22 @@ const ManageTeachingStaff = () => {
               gender: parseInt(member.gender) || 1,
               role: 1, // Always set role to 1 for staff
               level: parseInt(member.level) || 7,
-              dateOfBirth: member.dateOfBirth || new Date().toISOString().split('T')[0],
+              dateOfBirth:
+                member.dateOfBirth || new Date().toISOString().split('T')[0],
               // Use password from CSV if provided, otherwise use a default
-              password: member.password || "123456", 
-              userName: member.userName || `${member.firstName.toLowerCase().trim()}.${member.lastName.toLowerCase().trim()}`
+              password: member.password || '123456',
+              userName:
+                member.userName ||
+                `${member.firstName.toLowerCase().trim()}.${member.lastName.toLowerCase().trim()}`,
             }));
-          
-          console.log(`Processing ${staffMembers.length} staff members from CSV`);
-          
+
+          console.log(
+            `Processing ${staffMembers.length} staff members from CSV`
+          );
+
           // Counter for successful additions
           let successCount = 0;
-          
+
           // For each staff member, call the add function
           for (let i = 0; i < staffMembers.length; i++) {
             try {
@@ -236,10 +268,11 @@ const ManageTeachingStaff = () => {
               console.error(`Error adding staff member ${i + 1}:`, error);
             }
           }
-          
-          toast.success(`Added ${successCount} of ${staffMembers.length} staff members`);
+
+          toast.success(
+            `Added ${successCount} of ${staffMembers.length} staff members`
+          );
           fetchTeachingStaff();
-          
         } catch (err) {
           toast.error('Failed to process file');
           console.error('Error processing file:', err);
@@ -250,17 +283,17 @@ const ManageTeachingStaff = () => {
         console.error('Error parsing CSV:', err);
       },
     });
-    
+
     // Clear the file input
-    event.target.value = "";
+    event.target.value = '';
   };
 
-  const handlePasswordChange = (member) => {
+  const handlePasswordChange = member => {
     setSelectedStaff(member);
     setIsPasswordModalOpen(true);
   };
 
-  const handlePasswordSubmit = async (newPassword) => {
+  const handlePasswordSubmit = async newPassword => {
     try {
       setIsLoading(true);
       const updatePayload = {
@@ -270,18 +303,52 @@ const ManageTeachingStaff = () => {
         level: selectedStaff.level,
         dateOfBirth: selectedStaff.dateOfBirth,
         role: 1, // Always set to 1 for teaching staff
-        password: newPassword
+        password: newPassword,
       };
-      
+
       await updateUser(selectedStaff.userName, updatePayload);
       toast.success('Password updated successfully');
       setIsPasswordModalOpen(false);
       setSelectedStaff(null);
     } catch (error) {
-      toast.error('Error updating password: ' + (error.message || 'Unknown error'));
+      toast.error(
+        'Error updating password: ' + (error.message || 'Unknown error')
+      );
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleViewSchedule = async (staff) => {
+    try {
+      console.log('Viewing schedule for staff:', staff);
+      setIsLoadingSchedules(true);
+      setSelectedStaff(staff);
+      console.log(`Fetching schedules for staff: ${staff.firstName} ${staff.lastName} (ID: ${staff.userName})`);
+      
+      // Get schedules for the staff member
+      const response = await getUserSchedules(staff.userName);
+      console.log('Schedules response:', response);
+      
+      // Handle different response formats
+      let schedules = [];
+      if (Array.isArray(response)) {
+        schedules = response;
+      } else if (response?.data?.items) {
+        schedules = response.data.items;
+      } else if (response?.results) {
+        schedules = response.results;
+      }
+      
+      setSelectedStaffSchedules(schedules);
+      setIsScheduleModalOpen(true);
+    } catch (err) {
+      const errorMsg = `Failed to fetch schedules: ${err.message || 'Unknown error'}`;
+      toast.error(errorMsg);
+      console.error('Error fetching schedules:', err);
+    } finally {
+      setIsLoadingSchedules(false);
     }
   };
 
@@ -338,7 +405,9 @@ const ManageTeachingStaff = () => {
         </div>
       ) : staff.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
-          <p className="text-sm sm:text-base">No teaching staff found matching your criteria.</p>
+          <p className="text-sm sm:text-base">
+            No teaching staff found matching your criteria.
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -348,6 +417,7 @@ const ManageTeachingStaff = () => {
               onEdit={handleEditStaff}
               onDelete={handleDeleteStaff}
               onPasswordChange={handlePasswordChange}
+              onViewSchedule={handleViewSchedule}
             />
           </div>
         </div>
@@ -376,6 +446,20 @@ const ManageTeachingStaff = () => {
           staffName={selectedStaff?.userName}
         />
       )}
+
+      <ScheduleViewModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => {
+          setIsScheduleModalOpen(false);
+          setSelectedStaffSchedules([]);
+        }}
+        place={{
+          name: selectedStaff ? `${selectedStaff.firstName} ${selectedStaff.lastName}` : '',
+          id: selectedStaff?.userName
+        }}
+        schedules={selectedStaffSchedules}
+        isLoading={isLoadingSchedules}
+      />
     </div>
   );
 };

@@ -1,8 +1,14 @@
 import React from 'react';
-import { FiEdit2, FiTrash2, FiKey } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiKey, FiCalendar } from 'react-icons/fi';
 import { STAFF_LEVELS, GENDER_OPTIONS } from '../../types/staff';
 
-const StaffTable = ({ staff, onEdit, onDelete, onPasswordChange }) => {
+const StaffTable = ({
+  staff,
+  onEdit,
+  onDelete,
+  onPasswordChange,
+  onViewSchedule,
+}) => {
   // Helper function to safely get values
   const getGenderLabel = (gender) => {
     return GENDER_OPTIONS[gender] || 'Unknown';
@@ -67,15 +73,22 @@ const StaffTable = ({ staff, onEdit, onDelete, onPasswordChange }) => {
               <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right">
                 <div className="flex gap-3 justify-end">
                   <button
-                    onClick={() => onEdit(member)}
+                    onClick={() => onViewSchedule(member)}
                     className="p-1.5 text-blue-600 hover:text-blue-900 hover:bg-blue-100 rounded-full transition-colors cursor-pointer"
+                    aria-label="View Schedule"
+                  >
+                    <FiCalendar className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </button>
+                  <button
+                    onClick={() => onEdit(member)}
+                    className="p-1.5 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-100 rounded-full transition-colors cursor-pointer"
                     aria-label="Edit staff member"
                   >
                     <FiEdit2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   </button>
                   <button
                     onClick={() => onPasswordChange(member)}
-                    className="p-1.5 text-purple-600 hover:text-purple-900 hover:bg-purple-100 rounded-full transition-colors cursor-pointer"
+                    className="p-1.5 text-yellow-600 hover:text-yellow-900 hover:bg-yellow-100 rounded-full transition-colors cursor-pointer"
                     aria-label="Change password"
                   >
                     <FiKey className="h-4 w-4 sm:h-5 sm:w-5" />
