@@ -257,11 +257,6 @@ const ManageStudents = () => {
       formData.role = 2; // Always ensure role is set to Student (2)
 
       if (isEditing) {
-        const updatedStudent = {
-          ...selectedStudent,
-          ...formData,
-        };
-
         const updatePayload = {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -276,11 +271,6 @@ const ManageStudents = () => {
         }
 
         await updateUser(selectedStudent.userName, updatePayload);
-
-        setStudents(
-          students.map(s => (s.id === updatedStudent.id ? updatedStudent : s))
-        );
-
         toast.success('Student updated successfully');
       } else {
         if (!formData.password) {
@@ -288,30 +278,31 @@ const ManageStudents = () => {
           return;
         }
 
-        const newUserData = {
-          ...formData,
-          userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
-          role: 2,
+        // Generate userName for new student
+        const userName = `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`;
+        console.log('Generated userName for new student:', userName);
+
+        const newStudentData = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          gender: formData.gender,
+          role: 2, // Always set to 2 for students
+          level: formData.level,
+          dateOfBirth: formData.dateOfBirth || new Date().toISOString().split('T')[0],
           password: formData.password,
+          userName: userName,
         };
 
-        await addNewUser(newUserData);
+        console.log('Creating new student with data:', newStudentData);
+        const response = await addNewUser(newStudentData);
+        console.log('Create response:', response);
 
-        const newStudent = {
-          id: String(Date.now()),
-          fullId: `ST-${Date.now()}`,
-          userName: newUserData.userName,
-          ...formData,
-        };
-
-        setStudents([...students, newStudent]);
         toast.success('Student created successfully');
       }
 
       setIsFormOpen(false);
       setSelectedStudent(null);
       setIsEditing(false);
-
       fetchStudents();
     } catch (error) {
       toast.error(

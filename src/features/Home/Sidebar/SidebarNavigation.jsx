@@ -8,6 +8,7 @@ import {
   FiBriefcase,
   FiLink,
   FiClock,
+  FiUser,
 } from 'react-icons/fi';
 
 import useSidebarStore from '../../../store/useSidebarStore';
@@ -34,7 +35,7 @@ export default function SidebarNavigation() {
   }
 
   const adminNavigation = [
-    { name: 'Home', href: '/home', icon: FiHome },
+    { name: 'Admin Home', href: '/home', icon: FiHome },
     {
       name: 'Manage Timetables',
       href: '/manage-timetables',
@@ -61,13 +62,15 @@ export default function SidebarNavigation() {
   ];
 
   const teachingStaffNavigation = [
-    { name: 'Home', href: '/', icon: FiHome },
+    { name: 'Staff Home', href: '/staff-home', icon: FiHome },
     { name: 'View Timetable', href: '/timetables', icon: FiCalendar },
+    { name: 'My Profile', href: '/staff-profile', icon: FiUser },
   ];
 
   const studentsNavigation = [
-    { name: 'Home', href: '/', icon: FiHome },
-    { name: 'View Timetable', href: '/timetables', icon: FiCalendar },
+    { name: 'Student Home', href: '/student-home', icon: FiHome },
+    { name: 'View Timetable', href: '/student-timetable', icon: FiCalendar },
+    { name: 'My Profile', href: '/student-profile', icon: FiUser },
   ];
 
   let navigation = [];
