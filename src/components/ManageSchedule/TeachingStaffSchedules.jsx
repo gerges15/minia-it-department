@@ -14,6 +14,7 @@ import {
   getUserSchedules,
   addUserSchedules,
   removeSchedules,
+  updateSchedules,
 } from '../../../api/endpoints';
 import debounce from 'lodash/debounce';
 
@@ -380,14 +381,21 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
           try {
             if (editingSchedule?.id) {
               // Update existing schedule
-              await removeSchedules([editingSchedule.id]);
-              await addUserSchedules(selectedStaff, [schedule]);
+              const updatePayload = {
+                day: schedule.day,
+                startFrom: schedule.startFrom,
+                endTo: schedule.endTo
+              };
+              console.log('Update payload:', updatePayload);
+              console.log(editingSchedule.id);
+              await updateSchedules(editingSchedule.id, updatePayload);
             } else {
               // Add new schedule
               await addUserSchedules(selectedStaff, [schedule]);
             }
             await fetchSchedules();
           } catch (error) {
+            console.log(error);
             setError('Failed to update schedule. Please try again.');
           } finally {
             setLoading(false);
@@ -402,6 +410,7 @@ export default function TeachingStaffSchedules({ teachingStaff = [] }) {
             await removeSchedules([scheduleId]);
             await fetchSchedules();
           } catch (error) {
+            console.log(error);
             setError('Failed to delete schedule. Please try again.');
           } finally {
             setLoading(false);

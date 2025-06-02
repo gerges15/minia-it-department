@@ -101,6 +101,8 @@ export const removeTeachingPlaceSchedules = async scheduleIdsList =>
 export const removeSchedules = async placeIds => {
   await api.delete('/api/Shedules', placeIds);
 };
+export const updateSchedules = async (scheduleId, schedules) =>
+  await api.put(`/api/Shedules/${scheduleId}`, schedules);
 export const getTeachingPlaceSchedules = async placeId =>
   await api.get(`/api/TeachingPlaces/${placeId}/Schedules`);
 
