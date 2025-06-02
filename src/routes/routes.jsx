@@ -1,24 +1,24 @@
 import { createBrowserRouter } from 'react-router';
 import { Outlet } from 'react-router-dom';
-import ForgotPassword from '../../src/features/ForgotPassword';
-import HomePage from '../../src/features/Home/HomePage';
-import Login from '../../src/features/Login/Login';
-import ManageCourses from '../../src/features/ManageCourses';
-import ManageDependencies from '../../src/features/ManageDependencies';
-import ManageStudents from '../../src/features/ManageStudents';
-import ManageTeachingPlace from '../../src/features/ManageTeachingPlaces';
-import ManageTeachingStaff from '../../src/features/ManageTeachingStaff';
-import ManageTimetable from '../../src/features/TimeTable/ManageTimeTable';
+import ForgotPassword from '../features/ForgotPassword';
+import HomePage from '../features/Home/HomePage';
+import Login from '../features/Login/Login';
+import ManageCourses from '../features/ManageCourses';
+import ManageDependencies from '../features/ManageDependencies';
+import ManageStudents from '../features/ManageStudents';
+import ManageTeachingPlace from '../features/ManageTeachingPlaces';
+import ManageTeachingStaff from '../features/ManageTeachingStaff';
+import ManageTimetable from '../features/TimeTable/ManageTimeTable';
 import ManageSchedule from '../features/ManageSchedule';
-import NotFound from '../../src/features/NotFound';
+import NotFound from '../features/NotFound';
 import ProtectedRoute from '../utils/ProtectedRoute';
 import StudentHome from '../components/students/StudentHome';
 import StudentProfile from '../components/students/StudentProfile';
 import StudentTimeTable from '../components/students/StudentTimeTableView';
 import StaffProfile from '../components/staff/StaffProfile';
+import AdminProfile from '../components/admin/ProfileOfAdmin';
 import StaffHome from '../components/staff/StaffHome';
 import StaffTimeTableView from '../components/staff/StaffTimeTableView';
-import AdminProfile from '../components/admin/AdminProfile';
 
 const RootLayout = () => <Outlet />;
 
