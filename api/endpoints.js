@@ -44,8 +44,18 @@ export const refreshUserToken = async (fullId, refreshToken) =>
 export const logout = async (fullId, refreshToken) =>
   await api.delete(`/api/Users/${fullId}/Authentications`, { refreshToken });
 
+//Timetable
+//{{baseUrl}}/api/TimeTables/{{user-name}}
+export const getTimetableByUserName = async userName =>
+  await api.get(`/api/TimeTables/${userName}`);
+
+//{{baseUrl}}/api/TimeTables/{{user-name}}/{{level}}
+export const getTimetableByLevel = async (userName, level) =>
+  await api.get(`/api/TimeTables/${level}`);
+
+
 // Courses
-//{{baseUrl}}/api/Courses?page=0&level=4&semester=0&name=c
+
 export const getCoursesByLevelAndSemester = async (level, semester, name) =>
   await api.get(
     `/api/Courses?page=0&level=${level}&semester=${semester}&name=${name}`
