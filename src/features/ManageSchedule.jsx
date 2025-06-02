@@ -4,6 +4,8 @@ import { FiCalendar, FiUsers, FiMapPin } from 'react-icons/fi';
 import TeachingPlaceSchedules from '../components/ManageSchedule/TeachingPlaceSchedules';
 import TeachingStaffSchedules from '../components/ManageSchedule/TeachingStaffSchedules';
 import { getTeachingPlaces, getTeachingStaff } from '../../api/endpoints';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -33,8 +35,11 @@ export default function ManageSchedule() {
 
         setTeachingPlaces(places);
         setTeachingStaff(staff);
+        toast.success(`Successfully loaded ${places.length} teaching places and ${staff.length} staff members`);
       } catch (error) {
-        setError('Failed to load data. Please try again later.');
+        const errorMsg = 'Failed to load data. Please try again later.';
+        setError(errorMsg);
+        toast.error(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -45,6 +50,19 @@ export default function ManageSchedule() {
 
   return (
     <div className="px-4 py-6 sm:px-0">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Manage Schedules</h1>
         
@@ -94,12 +112,12 @@ export default function ManageSchedule() {
               </div>
             ) : (
               <>
-            <Tab.Panel>
-              <TeachingPlaceSchedules teachingPlaces={teachingPlaces} />
-            </Tab.Panel>
-            <Tab.Panel>
-              <TeachingStaffSchedules teachingStaff={teachingStaff} />
-            </Tab.Panel>
+                <Tab.Panel>
+                  <TeachingPlaceSchedules teachingPlaces={teachingPlaces} />
+                </Tab.Panel>
+                <Tab.Panel>
+                  <TeachingStaffSchedules teachingStaff={teachingStaff} />
+                </Tab.Panel>
               </>
             )}
           </Tab.Panels>

@@ -34,12 +34,10 @@ const ManageTeachingPlaces = () => {
     try {
       setIsLoading(true);
       setError(null);
-      console.log("Fetching teaching places...");
       const response = await getTeachingPlaces();
-      console.log("Teaching places response:", response);
       const teachingPlaces = response.results;
       setTeachingPlaces(teachingPlaces);
-      console.log(`Loaded ${teachingPlaces.length} teaching places`);
+      toast.success(`Successfully loaded ${teachingPlaces.length} teaching places`);
     } catch (err) {
       const errorMsg = 'Failed to fetch teaching places. Please try again later.';
       setError(errorMsg);
@@ -89,7 +87,7 @@ const ManageTeachingPlaces = () => {
         console.log("Update payload:", updatePayload);
         await updateTeachingPlace(editPlaceId, updatePayload);
         
-        toast.success('Teaching place updated successfully');
+        toast.success(`Teaching place "${formData.name}" updated successfully`);
         
         // Close modal and refresh list
         handleCloseModal();
@@ -106,15 +104,20 @@ const ManageTeachingPlaces = () => {
         console.log("Create payload:", newPlaceData);
         await createTeachingPlace(newPlaceData);
         
-        toast.success('Teaching place created successfully');
+        toast.success(`Teaching place "${formData.name}" created successfully`);
         
         // Close modal and refresh list
         handleCloseModal();
         await fetchTeachingPlaces();
       }
     } catch (err) {
-      const errorMsg = `Failed to ${isEditing ? 'update' : 'create'} teaching place: ${err.message || 'Unknown error'}`;
-      toast.error(errorMsg);
+      console.log("err", err);
+      if (err.response?.data?.detail?.includes("already exists")) {
+        toast.error("Same Name Already Exist Try Another!");
+      } else {
+        const errorMsg = `Failed to ${isEditing ? 'update' : 'create'} teaching place: ${err.message || 'Unknown error'}`;
+        toast.error(errorMsg);
+      }
       console.error('Error saving teaching place:', err);
     } finally {
       setIsSaving(false);
@@ -133,16 +136,20 @@ const ManageTeachingPlaces = () => {
   };
 
   const handleDeletePlace = async id => {
+    const placeToDelete = teachingPlaces.find(p => p.id === id);
+    if (!placeToDelete) return;
+
     if (
-      window.confirm('Are you sure you want to delete this teaching place?')
+      window.confirm(`Are you sure you want to delete "${placeToDelete.name}"?`)
     ) {
       try {
         console.log(`Deleting teaching place with ID ${id}`);
         await deleteTeachingPlaces([id]);
-        toast.success('Teaching place deleted successfully');
+        toast.success(`Teaching place "${placeToDelete.name}" deleted successfully`);
         await fetchTeachingPlaces(); // Refresh the list to get the latest data
       } catch (err) {
-        toast.error(`Failed to delete teaching place: ${err.message || 'Unknown error'}`);
+        const errorMsg = `Failed to delete teaching place: ${err.message || 'Unknown error'}`;
+        toast.error(errorMsg);
         console.error('Error deleting teaching place:', err);
       }
     }
@@ -157,8 +164,10 @@ const ManageTeachingPlaces = () => {
       console.log('Schedules:', schedules);
       setSelectedPlaceSchedules(Array.isArray(schedules) ? schedules : schedules.data?.items || []);
       setIsScheduleModalOpen(true);
+      toast.success(`Successfully loaded schedules for "${place.name}"`);
     } catch (err) {
-      toast.error(`Failed to fetch schedules: ${err.message || 'Unknown error'}`);
+      const errorMsg = `Failed to fetch schedules: ${err.message || 'Unknown error'}`;
+      toast.error(errorMsg);
       console.error('Error fetching schedules:', err);
     } finally {
       setIsLoadingSchedules(false);
@@ -206,6 +215,8 @@ const ManageTeachingPlaces = () => {
           onSearchChange={setSearchTerm}
           selectedType={selectedType}
           onTypeChange={setSelectedType}
+          onPlacesLoaded={setTeachingPlaces}
+          setIsLoading={setIsLoading}
         />
       </div>
 

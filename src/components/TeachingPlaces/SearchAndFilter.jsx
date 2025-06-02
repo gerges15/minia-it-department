@@ -1,13 +1,49 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FiSearch, FiFilter } from 'react-icons/fi';
-import { debounce } from 'lodash';
+import { getTeachingPlacesByName, getTeachingPlaces } from '../../../api/endpoints';
 
-const SearchAndFilter = ({ searchTerm, onSearchChange, selectedType, onTypeChange }) => {
-  // Create a debounced search handler to avoid too many API calls while typing
-  const handleSearchChange = debounce((value) => {
-    onSearchChange(value);
-  }, 500);
-  
+const SearchAndFilter = ({
+  searchTerm,
+  onSearchChange,
+  selectedType,
+  onTypeChange,
+  onPlacesLoaded,
+  setIsLoading,
+}) => {
+  // Function to fetch teaching places
+  const fetchPlaces = async (search) => {
+    try {
+      setIsLoading(true);
+      const type = selectedType !== 'All' ? parseInt(selectedType) : 0;
+      
+      let response;
+      if (search.trim() === '') {
+        // If search is empty, get all places
+        response = await getTeachingPlaces();
+      } else {
+        // If search has text, use the search endpoint
+        response = await getTeachingPlacesByName(0, type, search);
+      }
+      
+      if (response && response.results) {
+        onPlacesLoaded(response.results);
+      }
+    } catch (error) {
+      console.error('Error searching teaching places:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Effect to handle search changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchPlaces(searchTerm);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, selectedType]);
+
   return (
     <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-4">
       <div className="flex-1 relative">
@@ -16,10 +52,10 @@ const SearchAndFilter = ({ searchTerm, onSearchChange, selectedType, onTypeChang
         </div>
         <input
           type="text"
-          defaultValue={searchTerm}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          placeholder="Search by name..."
-          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-sm sm:text-base"
+          placeholder="Search teaching places..."
+          value={searchTerm}
+          onChange={e => onSearchChange(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 transition-colors text-sm sm:text-base"
         />
       </div>
 
@@ -28,12 +64,12 @@ const SearchAndFilter = ({ searchTerm, onSearchChange, selectedType, onTypeChang
           <FiFilter className="text-gray-400 flex-shrink-0" />
           <select
             value={selectedType}
-            onChange={(e) => onTypeChange(e.target.value)}
-            className="w-full sm:w-auto px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-            aria-label="Select place type"
+            onChange={e => onTypeChange(e.target.value)}
+            className="w-full sm:w-auto px-2 sm:px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 text-sm sm:text-base"
+            aria-label="Select type"
           >
             <option value="All">All Types</option>
-            <option value="0">Hall</option>
+            <option value="0">Lecture Hall</option>
             <option value="1">Lab</option>
           </select>
         </div>
