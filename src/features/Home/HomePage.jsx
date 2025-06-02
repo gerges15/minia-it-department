@@ -1,40 +1,22 @@
-import { FiPlusCircle } from 'react-icons/fi';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+
 import DesktopSidebar from './Sidebar/DesktopSidebar';
 import HomeQuickStats from './HomeQuickStats';
 import HomeWelcomeSection from './HomeWelcomSection';
 import MobileNavToggle from './MobileNavToggle';
 import MobileSidebar from './Sidebar/MobileSidebar';
 import useSidebarStore from '../../store/useSidebarStore';
-import useRecentCoursesStore from '../../store/useRecentCoursesStore';
+import RecentCourses from './RecentCourses';
 
 export default function HomePage() {
   const { isSidebarOpen, toggle } = useSidebarStore();
-  const { recentCourses } = useRecentCoursesStore();
+
   const currentPath = useLocation().pathname;
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Just a short loading state for UI smoothness
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 500);
-  }, []);
 
   const handleQuickAction = path => {
     navigate(path);
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
   };
 
   const renderMainPage = () => {
@@ -47,52 +29,7 @@ export default function HomePage() {
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Recent Courses */}
-            <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Recently Added / Updated Courses
-                </h2>
-                <FiPlusCircle
-                  className="h-5 w-5 text-gray-400 cursor-pointer hover:text-gray-600"
-                  onClick={() => handleQuickAction('/manage-courses')}
-                />
-              </div>
-              <div className="space-y-4">
-                {isLoading ? (
-                  <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">Loading courses...</p>
-                  </div>
-                ) : recentCourses.length > 0 ? (
-                  recentCourses.map((course, index) => (
-                    <div
-                      key={course.id || index}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                      onClick={() => handleQuickAction('/manage-courses')}
-                    >
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {course.name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Code: {course.code}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-500">
-                          Updated {formatDate(course.updatedAt)}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    No recent courses found
-                  </div>
-                )}
-              </div>
-            </div>
-
+            <RecentCourses />
             {/* Quick Actions */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-800 mb-4">
