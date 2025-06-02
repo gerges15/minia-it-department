@@ -14,7 +14,7 @@ export default function AddScheduleModal({
   const defaultSchedule = {
     day: 0,
     startFrom: 8,
-    endTo: 9
+    endTo: 9,
   };
 
   const [schedule, setSchedule] = useState(defaultSchedule);
@@ -28,7 +28,7 @@ export default function AddScheduleModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = e => {
     e.preventDefault();
     onSubmit(schedule);
   };
@@ -54,7 +54,9 @@ export default function AddScheduleModal({
             </label>
             <select
               value={schedule.day}
-              onChange={(e) => setSchedule({ ...schedule, day: parseInt(e.target.value) })}
+              onChange={e =>
+                setSchedule({ ...schedule, day: parseInt(e.target.value) })
+              }
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
               required
             >
@@ -73,11 +75,16 @@ export default function AddScheduleModal({
               </label>
               <select
                 value={schedule.startFrom}
-                onChange={(e) => setSchedule({ ...schedule, startFrom: parseInt(e.target.value) })}
+                onChange={e =>
+                  setSchedule({
+                    ...schedule,
+                    startFrom: parseInt(e.target.value),
+                  })
+                }
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
                 required
               >
-                {hours.map((hour) => (
+                {hours.map(hour => (
                   <option key={`start-${hour}`} value={hour}>
                     {hour}:00 {hour < 12 ? 'AM' : 'PM'}
                   </option>
@@ -91,11 +98,13 @@ export default function AddScheduleModal({
               </label>
               <select
                 value={schedule.endTo}
-                onChange={(e) => setSchedule({ ...schedule, endTo: parseInt(e.target.value) })}
+                onChange={e =>
+                  setSchedule({ ...schedule, endTo: parseInt(e.target.value) })
+                }
                 className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
                 required
               >
-                {hours.map((hour) => (
+                {hours.map(hour => (
                   <option key={`end-${hour}`} value={hour}>
                     {hour}:00 {hour < 12 ? 'AM' : 'PM'}
                   </option>
@@ -128,11 +137,15 @@ export default function AddScheduleModal({
               disabled={loading}
               className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50"
             >
-              {loading ? 'Saving...' : isEditing ? 'Update Schedule' : 'Add Schedule'}
+              {loading
+                ? 'Saving...'
+                : isEditing
+                  ? 'Update Schedule'
+                  : 'Add Schedule'}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-} 
+}

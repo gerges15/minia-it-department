@@ -15,18 +15,23 @@ export const addNewCourse = async newCourse =>
 
 export const addNewUser = async data => api.post('/api/Users/', data);
 
-export const getStudents = async (page = 0, level = null, gender = null, name = '') => {
-  let query = `page=${page}&role=2`;  // Always include role=2 to get only students
+export const getStudents = async (
+  page = 0,
+  level = null,
+  gender = null,
+  name = ''
+) => {
+  let query = `page=${page}&role=2`; // Always include role=2 to get only students
   if (level !== null && level !== '') query += `&level=${level}`;
   if (gender !== null && gender !== '') query += `&gender=${gender}`;
   if (name) query += `&name=${name}`;
-  
+
   return await api.get(`/api/Users?${query}`);
 };
 
 // Function to delete a student by username
 
-export const deleteStudent = async (usernamesList) => 
+export const deleteStudent = async usernamesList =>
   await api.delete(`/api/Users?role=2`, usernamesList);
 
 // Authentication
@@ -43,25 +48,30 @@ export const logout = async (fullId, refreshToken) =>
 export const createCourse = async courseData =>
   await api.post('/api/Courses', courseData);
 // get courses by level and semester
-export const getCourses = async (page = 0, level = null, semester = null, name = '') => {
+export const getCourses = async (
+  page = 0,
+  level = null,
+  semester = null,
+  name = ''
+) => {
   // For "All" selection, use a simple request without specific filters
   if (level === null && semester === null) {
     return await api.get(`/api/Courses?page=${page}`);
   }
-  
+
   // Otherwise, build query with specific filters
   let query = `page=${page}`;
   if (level !== null) query += `&level=${level}`;
   if (semester !== null) query += `&semester=${semester}`;
   if (name) query += `&name=${name}`;
-  
+
   return await api.get(`/api/Courses?${query}`);
 };
 //export const getCourses = async () => await api.get('/api/Courses');
 export const updateCourse = async (courseId, courseData) =>
   await api.put(`/api/Courses`, courseData);
 export const deleteCourses = async courseIds =>
-  await api.delete('/api/Courses',courseIds);
+  await api.delete('/api/Courses', courseIds);
 export const addCourseDependencies = async (courseId, coursesId) =>
   await api.post(`/api/Courses/${courseId}/Dependencies`, { coursesId });
 export const removeCourseDependencies = async (courseId, coursesId) =>
@@ -85,8 +95,12 @@ export const deleteTeachingPlaces = async placeId =>
   await api.delete('/api/TeachingPlaces', placeId);
 export const addTeachingPlaceSchedules = async (placeId, schedules) =>
   await api.post(`/api/TeachingPlaces/${placeId}/Schedules`, schedules);
-export const removeTeachingPlaceSchedules = async (placeId, scheduleIds) =>
-  await api.delete(`/api/TeachingPlaces/${placeId}/Schedules`, scheduleIds);
+export const removeTeachingPlaceSchedules = async scheduleIdsList =>
+  await api.delete(`/api/Schedules`, [146]);
+
+export const removeSchedules = async placeIds => {
+  await api.delete('/api/Shedules', placeIds);
+};
 export const getTeachingPlaceSchedules = async placeId =>
   await api.get(`/api/TeachingPlaces/${placeId}/Schedules`);
 
@@ -132,30 +146,35 @@ export const getFileRegistrationData = async contentType =>
 export const getStatistics = async () => await api.get('/api/Statistics');
 
 // teaching staff endpoints
-export const getTeachingStaff = async (page = 0, level = null, gender = null, name = '') => {
+export const getTeachingStaff = async (
+  page = 0,
+  level = null,
+  gender = null,
+  name = ''
+) => {
   // Start with role=1 for teaching staff
   let query = `page=${page}&role=1`;
-  
+
   // Add level filter if provided
   if (level !== null && level !== '') {
     query += `&level=${level}`;
   }
-  
+
   // Add optional gender filter
   if (gender !== null && gender !== '') {
     query += `&gender=${gender}`;
   }
-  
+
   // Add name search if provided
   if (name) {
     query += `&name=${name}`;
   }
-  
+
   console.log(`Fetching teaching staff with query: ${query}`);
   return await api.get(`/api/Users?${query}`);
 };
 
-export const addTeachingStaff = async (staffData) => {
+export const addTeachingStaff = async staffData => {
   // Ensure the role is set to 1 for teaching staff
   const data = {
     firstName: staffData.firstName,
@@ -165,13 +184,15 @@ export const addTeachingStaff = async (staffData) => {
     level: staffData.level || 7,
     dateOfBirth: staffData.dateOfBirth,
     password: staffData.password, // Take password directly from the form
-    userName: staffData.userName || `${staffData.firstName.toLowerCase()}.${staffData.lastName.toLowerCase()}`
+    userName:
+      staffData.userName ||
+      `${staffData.firstName.toLowerCase()}.${staffData.lastName.toLowerCase()}`,
   };
   return await api.post('/api/Users', data);
 };
 
 // Delete teaching staff (by role=1)
-export const deleteTeachingStaff = async (usernamesList) => {
+export const deleteTeachingStaff = async usernamesList => {
   return await api.delete('/api/Users?role=1', usernamesList);
 };
 // Function to delete a student by username

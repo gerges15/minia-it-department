@@ -29,27 +29,42 @@ class ApiClint {
       method,
       headers,
     };
+
     if (body) config.body = JSON.stringify(body);
 
     try {
       const response = await fetch(`${this.url}${endpoint}`, config);
 
-      if (response.status == 401 && retry) {
+      if (response.status === 401 && retry) {
         const refreshed = await this.refreshToken();
         if (refreshed) {
           return this.request(endpoint, method, body, false);
         } else {
           window.location.href = '/login';
+          return;
         }
-        return;
       }
 
-      if (response.status == 204) return null;
-      if (!response.ok) throw new Error(`Error ${response.status}`);
+      if (response.status === 204) return null;
 
-      return await response.json();
+      const contentType = response.headers.get('content-type');
+      const text = await response.text();
+
+      if (!response.ok) {
+        console.error('Request failed:', {
+          status: response.status,
+          body: text,
+        });
+        throw new Error(`Error ${response.status}`);
+      }
+
+      if (contentType && contentType.includes('application/json')) {
+        return JSON.parse(text);
+      }
+
+      return text || null;
     } catch (err) {
-      console.error(err);
+      console.error('Network or parsing error:', err);
       throw err;
     }
   }

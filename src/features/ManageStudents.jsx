@@ -28,95 +28,101 @@ import {
 // Required columns for Excel upload
 const REQUIRED_COLUMNS = ['username', 'name', 'gender', 'level', 'dateofbirth'];
 
-const validateExcelFile = async (file) => {
+const validateExcelFile = async file => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
-    reader.onload = (e) => {
+
+    reader.onload = e => {
       try {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        
+
         // Get the first sheet
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        
+
         // Convert to JSON, skipping the header row
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        
+
         if (jsonData.length < 2) {
           reject(new Error('File is empty or contains no data rows'));
           return;
         }
-        
+
         // Skip header row and validate data rows
         const dataRows = jsonData.slice(1);
         const invalidRows = [];
-        
+
         dataRows.forEach((row, index) => {
-          if (!row || row.length < 5) { // Check minimum required fields
+          if (!row || row.length < 5) {
+            // Check minimum required fields
             invalidRows.push(index + 2);
           }
         });
-        
+
         if (invalidRows.length > 0) {
-          reject(new Error(
-            `Invalid data in rows: ${invalidRows.join(', ')}`
-          ));
+          reject(new Error(`Invalid data in rows: ${invalidRows.join(', ')}`));
           return;
         }
-        
+
         resolve(true);
       } catch (error) {
         reject(new Error('Invalid Excel file format'));
       }
     };
-    
+
     reader.onerror = () => {
       reject(new Error('Error reading file'));
     };
-    
+
     reader.readAsArrayBuffer(file);
   });
 };
 
-const processExcelData = (rows) => {
-  return rows.map(row => {
-    // Create a username from the first and last name (if provided)
-    const firstName = String(row[0] || '').trim();
-    const lastName = String(row[1] || '').trim();
-    const userName = `${firstName.toLowerCase()}.${lastName.toLowerCase()}`.replace(/\s+/g, '');
+const processExcelData = rows => {
+  return rows
+    .map(row => {
+      // Create a username from the first and last name (if provided)
+      const firstName = String(row[0] || '').trim();
+      const lastName = String(row[1] || '').trim();
+      const userName =
+        `${firstName.toLowerCase()}.${lastName.toLowerCase()}`.replace(
+          /\s+/g,
+          ''
+        );
 
-    return {
-      userName,
-      firstName,
-      lastName,
-      gender: parseInt(row[2]) || 0, // Default to 0 (Male) if invalid
-      level: parseInt(row[3]) || 1,  // Default to 1 if invalid
-      dateOfBirth: row[4] || new Date().toISOString().split('T')[0], // Default to current date if invalid
-      role: 2, // Student role
-      password: row[5] || 'defaultPassword123' // Use provided password or default
-    };
-  }).filter(student => 
-    student.firstName && 
-    student.lastName && 
-    !isNaN(student.gender) && 
-    !isNaN(student.level) &&
-    student.dateOfBirth
-  );
+      return {
+        userName,
+        firstName,
+        lastName,
+        gender: parseInt(row[2]) || 0, // Default to 0 (Male) if invalid
+        level: parseInt(row[3]) || 1, // Default to 1 if invalid
+        dateOfBirth: row[4] || new Date().toISOString().split('T')[0], // Default to current date if invalid
+        role: 2, // Student role
+        password: row[5] || 'defaultPassword123', // Use provided password or default
+      };
+    })
+    .filter(
+      student =>
+        student.firstName &&
+        student.lastName &&
+        !isNaN(student.gender) &&
+        !isNaN(student.level) &&
+        student.dateOfBirth
+    );
 };
 
 const downloadTemplate = () => {
   // Create a new workbook
   const wb = XLSX.utils.book_new();
-  
+
   // Create headers
   const headers = ['Username', 'Name', 'Gender', 'Level', 'DateOfBirth'];
   const exampleData = ['john.doe', 'John Doe', '0', '1', '2000-01-01'];
-  
+
   // Create worksheet with headers and example row
   const ws = XLSX.utils.aoa_to_sheet([headers, exampleData]);
-  
+
   // Add notes about format
   ws['!cols'] = [
     { wch: 15 }, // Username column width
@@ -125,15 +131,15 @@ const downloadTemplate = () => {
     { wch: 10 }, // Level column width
     { wch: 12 }, // DateOfBirth column width
   ];
-  
+
   // Add the worksheet to workbook
   XLSX.utils.book_append_sheet(wb, ws, 'Template');
-  
+
   // Save the file
   XLSX.writeFile(wb, 'student_upload_template.xlsx');
 };
 
-const downloadStudentsByYear = async (year) => {
+const downloadStudentsByYear = async year => {
   try {
     // Fetch students for the specific year
     const response = await getStudents(0, year.toString(), '', '');
@@ -166,7 +172,7 @@ const downloadStudentsByYear = async (year) => {
       { wch: 15 }, // First Name
       { wch: 15 }, // Last Name
       { wch: 10 }, // Gender
-      { wch: 8 },  // Level
+      { wch: 8 }, // Level
       { wch: 12 }, // Date of Birth
     ];
 
@@ -255,26 +261,26 @@ const ManageStudents = () => {
           ...selectedStudent,
           ...formData,
         };
-        
+
         const updatePayload = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           gender: formData.gender,
           level: formData.level,
           dateOfBirth: formData.dateOfBirth,
-          role: 2
+          role: 2,
         };
 
         if (formData.password) {
           updatePayload.password = formData.password;
         }
-        
+
         await updateUser(selectedStudent.userName, updatePayload);
-        
+
         setStudents(
           students.map(s => (s.id === updatedStudent.id ? updatedStudent : s))
         );
-        
+
         toast.success('Student updated successfully');
       } else {
         if (!formData.password) {
@@ -286,18 +292,18 @@ const ManageStudents = () => {
           ...formData,
           userName: `${formData.firstName.toLowerCase()}.${formData.lastName.toLowerCase()}`,
           role: 2,
-          password: formData.password
+          password: formData.password,
         };
-        
+
         await addNewUser(newUserData);
-        
+
         const newStudent = {
           id: String(Date.now()),
           fullId: `ST-${Date.now()}`,
           userName: newUserData.userName,
           ...formData,
         };
-        
+
         setStudents([...students, newStudent]);
         toast.success('Student created successfully');
       }
@@ -305,10 +311,12 @@ const ManageStudents = () => {
       setIsFormOpen(false);
       setSelectedStudent(null);
       setIsEditing(false);
-      
+
       fetchStudents();
     } catch (error) {
-      toast.error(`Error ${isEditing ? 'updating' : 'creating'} student: ${error.message || 'Unknown error'}`);
+      toast.error(
+        `Error ${isEditing ? 'updating' : 'creating'} student: ${error.message || 'Unknown error'}`
+      );
       console.error('Error:', error);
     }
   };
@@ -323,7 +331,6 @@ const ManageStudents = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     const fileType = file.name.split('.').pop().toLowerCase();
     if (!['xlsx', 'xls'].includes(fileType)) {
       toast.error('Please upload only Excel files (.xlsx or .xls)');
@@ -332,38 +339,58 @@ const ManageStudents = () => {
 
     try {
       setIsLoading(true);
-      
-      // Validate file structure
+
+      // Validate the Excel file
       await validateExcelFile(file);
-      
-      // Create FormData
-      const formData = new FormData();
-      
-      // Append the file with the correct field name expected by the server
-      formData.append('excelFile', file);
-      
-      // Upload the file
-      await registerFromFile(0, formData);
-      
-      // Refresh the student list
-      await fetchStudents();
-      toast.success('Students uploaded successfully');
-    } catch (error) {
-      console.error('Error in handleFileUpload:', error);
-      toast.error(error.message || 'Error uploading students');
-    } finally {
+
+      // Read the file and parse data
+      const reader = new FileReader();
+      reader.onload = async e => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+          const rows = jsonData.slice(1); // Skip headers
+          const students = processExcelData(rows);
+
+          if (students.length === 0) {
+            toast.warning('No valid student data found');
+            return;
+          }
+
+          // Register all students via API
+          await registerFromFile(students);
+
+          toast.success('Students uploaded successfully');
+          fetchStudents(); // Refresh the student list
+        } catch (err) {
+          toast.error('Failed to parse Excel file');
+          console.error(err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      reader.onerror = () => {
+        toast.error('Error reading Excel file');
+        setIsLoading(false);
+      };
+
+      reader.readAsArrayBuffer(file);
+    } catch (err) {
+      toast.error(err.message);
       setIsLoading(false);
-      // Reset file input
-      event.target.value = '';
     }
   };
 
-  const handlePasswordChange = (student) => {
+  const handlePasswordChange = student => {
     setSelectedStudent(student);
     setIsPasswordModalOpen(true);
   };
 
-  const handlePasswordSubmit = async (newPassword) => {
+  const handlePasswordSubmit = async newPassword => {
     try {
       setIsLoading(true);
       const updatePayload = {
@@ -373,15 +400,17 @@ const ManageStudents = () => {
         level: selectedStudent.level,
         dateOfBirth: selectedStudent.dateOfBirth,
         role: selectedStudent.role,
-        password: newPassword
+        password: newPassword,
       };
-      
+
       await updateUser(selectedStudent.userName, updatePayload);
       toast.success('Password updated successfully');
       setIsPasswordModalOpen(false);
       setSelectedStudent(null);
     } catch (error) {
-      toast.error('Error updating password: ' + (error.message || 'Unknown error'));
+      toast.error(
+        'Error updating password: ' + (error.message || 'Unknown error')
+      );
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
@@ -391,13 +420,15 @@ const ManageStudents = () => {
   return (
     <div className="space-y-6 px-4 sm:px-6 md:px-0">
       <ToastContainer position="top-right" autoClose={3000} />
-      
+
       {/* Header */}
       <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           {/* Title Section */}
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Manage Students</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+              Manage Students
+            </h1>
             <p className="text-gray-600 mt-1 text-sm sm:text-base">
               View and manage all students in the department
             </p>
@@ -429,7 +460,7 @@ const ManageStudents = () => {
                 {showDownloadMenu && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50">
                     <div className="py-1">
-                      {[1, 2, 3, 4].map((year) => (
+                      {[1, 2, 3, 4].map(year => (
                         <button
                           key={year}
                           onClick={() => {
@@ -491,7 +522,9 @@ const ManageStudents = () => {
         </div>
       ) : filteredStudents.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
-          <p className="text-sm sm:text-base">No students found matching your criteria.</p>
+          <p className="text-sm sm:text-base">
+            No students found matching your criteria.
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
