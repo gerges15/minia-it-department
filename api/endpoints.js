@@ -45,6 +45,11 @@ export const logout = async (fullId, refreshToken) =>
   await api.delete(`/api/Users/${fullId}/Authentications`, { refreshToken });
 
 // Courses
+//{{baseUrl}}/api/Courses?page=0&level=4&semester=0&name=c
+export const getCoursesByLevelAndSemester = async (level, semester, name) =>
+  await api.get(
+    `/api/Courses?page=0&level=${level}&semester=${semester}&name=${name}`
+  );
 export const createCourse = async courseData =>
   await api.post('/api/Courses', courseData);
 // get courses by level and semester

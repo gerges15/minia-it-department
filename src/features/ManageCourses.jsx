@@ -233,14 +233,6 @@ export default function ManageCourses() {
     }
   };
 
-  // filter courses based on search and filters (course code, course name)
-  const filteredCourses = courses.filter(course => {
-    const matchesSearch =
-      course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      course.code.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
-
   return (
     <div className="space-y-6 px-3 sm:px-6 md:px-0">
       <ToastContainer position="top-right" autoClose={3000} />
@@ -300,6 +292,8 @@ export default function ManageCourses() {
           onYearChange={setSelectedYear}
           selectedSemester={selectedSemester}
           onSemesterChange={setSelectedSemester}
+          onCoursesLoaded={setCourses}
+          setIsLoading={setIsLoading}
         />
       </div>
 
@@ -308,7 +302,7 @@ export default function ManageCourses() {
         <div className="bg-white rounded-xl shadow-sm p-6 flex items-center justify-center h-48 sm:h-64">
           <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-purple-600"></div>
         </div>
-      ) : filteredCourses.length === 0 ? (
+      ) : courses.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500 h-48 sm:h-64 flex items-center justify-center">
           <p className="text-sm sm:text-base">No courses found matching your criteria.</p>
         </div>
@@ -316,7 +310,7 @@ export default function ManageCourses() {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <CourseTable
-              courses={filteredCourses}
+              courses={courses}
               onEdit={handleEditCourse}
               onDelete={handleDeleteCourse}
               onViewDependencies={handleViewDependencies}
