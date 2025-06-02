@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiUser, FiMail, FiCalendar, FiBook, FiUserCheck, FiGraduationCap } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiBook, FiUserCheck,FiCompass } from 'react-icons/fi';
 import { getUserById } from '../../../api/endpoints';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
@@ -73,7 +73,7 @@ export default function StudentProfile() {
             <p className="text-gray-600 mt-1 text-sm">View your student account information.</p>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 rounded-full">
-            <FiGraduationCap className="h-4 w-4 text-blue-600" />
+            <FiCompass className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-700">Student</span>
           </div>
         </div>

@@ -1,35 +1,20 @@
 import { FiPlusCircle } from 'react-icons/fi';
-import { useState, useEffect } from 'react';
-import { getStatistics } from '../../../api/endpoints';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useStatisticsStore from '../../store/useStatisticsStore';
 
 export default function RecentCourses() {
-  const [recentCourses, setRecentCourses] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [statistics, setStatistics] = useState({});
+  const { statistics, isLoading, fetchStatistics } = useStatisticsStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 500);
-  }, []);
-
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        const data = await getStatistics();
-        setStatistics(data);
-        setRecentCourses(data.recentlyAddedCourses);
-      } catch (error) {
-        console.error('Failed to fetch statistics:', error);
-      }
-    };
     fetchStatistics();
-  }, []);
+  }, [fetchStatistics]);
 
   const handleQuickAction = path => {
     navigate(path);
   };
+
   const formatDate = dateString => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
@@ -57,15 +42,14 @@ export default function RecentCourses() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
             <p className="mt-2 text-gray-600">Loading courses...</p>
           </div>
-        ) : recentCourses.length > 0 ? (
-          recentCourses.map((course, index) => (
+        ) : statistics.recentlyAddedCourses?.length > 0 ? (
+          statistics.recentlyAddedCourses.map((course, index) => (
             <div
               key={course.id || index}
               className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               onClick={() => handleQuickAction('/manage-courses')}
             >
               <div>
-                {console.log(statistics.recentlyAddedCourses)}
                 <p className="font-medium text-gray-900">{course.name}</p>
                 <p className="text-sm text-gray-500">Code: {course.code}</p>
               </div>
