@@ -59,6 +59,11 @@ export default function SidebarNavigation() {
       href: '/manage-schedules',
       icon: FiClock,
     },
+    {
+      name: 'My Profile',
+      href: '/admin-profile',
+      icon: FiUser,
+    },
   ];
 
   const teachingStaffNavigation = [

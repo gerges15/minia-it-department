@@ -18,6 +18,7 @@ import StudentTimeTable from '../components/students/StudentTimeTableView';
 import StaffProfile from '../components/staff/StaffProfile';
 import StaffHome from '../components/staff/StaffHome';
 import StaffTimeTableView from '../components/staff/StaffTimeTableView';
+import AdminProfile from '../components/admin/AdminProfile';
 
 const RootLayout = () => <Outlet />;
 
@@ -82,6 +83,11 @@ const router = createBrowserRouter([
       {
         path: 'manage-schedules',
         element: <ManageSchedule />,
+        roles: ['Admin'],
+      },
+      {
+        path: 'admin-profile',
+        element: <AdminProfile />,
         roles: ['Admin'],
       },
 

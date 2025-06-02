@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FiUser, FiMail, FiCalendar, FiBook, FiUserCheck } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiBook, FiUserCheck, FiGraduationCap } from 'react-icons/fi';
 import { getUserById } from '../../../api/endpoints';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
@@ -65,21 +65,27 @@ export default function StudentProfile() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Student Profile</h1>
+            <p className="text-gray-600 mt-1 text-sm">View your student account information.</p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 rounded-full">
+            <FiGraduationCap className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-700">Student</span>
+          </div>
         </div>
-        <p className="text-gray-600">View your personal information.</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
         {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <div className="flex items-center justify-center h-48 sm:h-64">
+            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : error ? (
-          <div className="flex items-center justify-center h-64">
+          <div className="flex items-center justify-center h-48 sm:h-64">
             <div className="text-red-600 text-center">
               <p className="text-lg font-semibold">Error Loading Profile</p>
               <p className="text-sm mt-2">{error}</p>
@@ -87,49 +93,49 @@ export default function StudentProfile() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <FiUser className="h-6 w-6 text-purple-600" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <FiUser className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Full Name</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Full Name</p>
                   <p className="font-medium text-gray-900">{profile.fullName}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <FiUserCheck className="h-6 w-6 text-purple-600" />
+              <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <FiUserCheck className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Username</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Username</p>
                   <p className="font-medium text-gray-900">{profile.userName}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <FiUser className="h-6 w-6 text-purple-600" />
+              <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <FiUser className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Gender</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Gender</p>
                   <p className="font-medium text-gray-900">{getGenderText(profile.gender)}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <FiCalendar className="h-6 w-6 text-purple-600" />
+              <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <FiCalendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Date of Birth</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Date of Birth</p>
                   <p className="font-medium text-gray-900">{profile.dateOfBirth}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <FiBook className="h-6 w-6 text-purple-600" />
+              <div className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <FiBook className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Level</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Level</p>
                   <p className="font-medium text-gray-900">{getLevelText(profile.level)}</p>
                 </div>
               </div>
