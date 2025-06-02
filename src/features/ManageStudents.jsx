@@ -14,6 +14,7 @@ import {
   updateUser,
   deleteStudent,
   registerFromFile,
+  createUser,
 } from '../../api/endpoints';
 
 // Expected Excel xlsx format for student upload:
@@ -294,10 +295,30 @@ const ManageStudents = () => {
         };
 
         console.log('Creating new student with data:', newStudentData);
-        const response = await addNewUser(newStudentData);
-        console.log('Create response:', response);
-
-        toast.success('Student created successfully');
+        
+        try {
+          // Use createUser instead of addNewUser
+          const response = await createUser(newStudentData);
+          console.log('Create response:', response);
+          toast.success('Student created successfully');
+        } catch (error) {
+          console.error('Error creating student:', error);
+          if (error.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.error('Error response:', error.response.data);
+            toast.error(`Failed to create student: ${error.response.data.message || 'Server error'}`);
+          } else if (error.request) {
+            // The request was made but no response was received
+            console.error('No response received:', error.request);
+            toast.error('No response from server. Please try again.');
+          } else {
+            // Something happened in setting up the request that triggered an Error
+            console.error('Error setting up request:', error.message);
+            toast.error(`Error: ${error.message}`);
+          }
+          return; // Exit the function on error
+        }
       }
 
       setIsFormOpen(false);
@@ -305,10 +326,10 @@ const ManageStudents = () => {
       setIsEditing(false);
       fetchStudents();
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       toast.error(
         `Error ${isEditing ? 'updating' : 'creating'} student: ${error.message || 'Unknown error'}`
       );
-      console.error('Error:', error);
     }
   };
 
